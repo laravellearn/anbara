@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('mobile', 20);
-            $table->string('code', 6);           // فقط ۶ رقم کافیه
+            $table->string('code');           // فقط ۶ رقم کافیه
             $table->timestamp('expires_at');
             $table->integer('attempts')->default(0);
             $table->boolean('is_used')->default(false);

@@ -103,9 +103,9 @@
                     </form>
                     <p class="text-center">
                         <span>کاربر جدید هستید؟</span>
-                        {{-- <a href="{{ route('register') }}">
+                        <a href="{{ route('register') }}">
                             <span>ثبت نام</span>
-                        </a> --}}
+                        </a> 
                     </p>
 
                 </div>

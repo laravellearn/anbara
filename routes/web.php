@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\{
     LoginController,
+    RegisterController
 
 
 };
@@ -33,6 +34,12 @@ Route::middleware('guest')->group(function () {
     // ارسال مجدد کد
     Route::post('/login/otp/resend', [LoginController::class, 'resendOtp'])->name('login.otp.resend');
 
+    // ثبت نام
+    Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+    // ارسال کد OTP - ثبت نام
+    Route::get('/register/otp/request', [RegisterController::class, 'showOtpRequestForm'])->name('register.otp.form');
+    Route::post('/register/otp/send', [RegisterController::class, 'sendOtp'])->name('register.otp.send');
 
 });
 

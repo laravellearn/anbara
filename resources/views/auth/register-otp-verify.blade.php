@@ -82,7 +82,7 @@
                         کد ارسال شده به شماره
 
                         <strong dir="ltr">
-                            {{ $mobile }}
+                            {{ $user->mobile }}
                         </strong>
 
                         را وارد کنید.

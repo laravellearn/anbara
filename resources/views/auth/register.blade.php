@@ -71,7 +71,7 @@
 
                     <!-- /Logo -->
 
-                    <form id="formAuthentication" class="mb-3" action="{{ route('register.store') }}" method="POST">
+                    <form id="formAuthentication" class="mb-3" action="{{ route('register.post') }}" method="POST">
                       @CSRF
                       @include('errors.error')
               

@@ -71,7 +71,7 @@
 
                     <!-- /Logo -->
 
-                    <form id="formAuthentication" class="mb-3" action="{{ route('password.send.otp') }}" method="POST">
+                    <form id="formAuthentication" class="mb-3" action="{{ route('password.send') }}" method="POST">
                       @CSRF
                       @include('errors.error')
               

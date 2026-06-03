@@ -52,8 +52,8 @@
             <!-- /Left Text -->
             <div class="d-none d-lg-flex col-lg-7 col-xl-8 align-items-center">
                 <div class="flex-row text-center mx-auto">
-                    <img src="bg-light.jpg" alt="Auth Cover Bg color" class="img-fluid authentication-cover-img"
-                        data-app-light-img="bg-light.jpg" data-app-dark-img="bg-dark.jpg">
+                    <img src="/bg-light.jpg" alt="Auth Cover Bg color" class="img-fluid authentication-cover-img"
+                        data-app-light-img="/bg-light.jpg" data-app-dark-img="/bg-dark.jpg">
                 </div>
             </div>
             <!-- /Left Text -->
@@ -64,8 +64,8 @@
                     <!-- Logo -->
                     <div class="app-brand mb-4 d-flex justify-content-center">
                         <a href="" class="app-brand-link">
-                            <img src="logo-light.png" alt="Anbara Logo" style="max-width: 180px;height:auto;"
-                                data-app-light-img="logo-light.png" data-app-dark-img="logo-dark.png">
+                            <img src="/logo-light.png" alt="Anbara Logo" style="max-width: 180px;height:auto;"
+                                data-app-light-img="/logo-light.png" data-app-dark-img="/logo-dark.png">
                         </a>
                     </div> <!-- /Logo -->
 

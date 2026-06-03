@@ -80,9 +80,9 @@
                         <div class="mb-3 form-password-toggle">
                             <div class="d-flex justify-content-between">
                                 <label class="form-label" for="password">رمز عبور:</label>
-                                {{-- <a href="{{ route('password.forgot') }}">
+                                <a href="{{ route('password.request') }}">
                                     <small>رمز عبور را فراموش کردید؟</small>
-                                </a> --}}
+                                </a>
                             </div>
                             <div class="input-group input-group-merge">
                                 <input type="password" id="password" class="form-control text-start" name="password"
@@ -102,9 +102,9 @@
                         </a>
                     </form>
                     <p class="text-center">
-                        <span>کاربر جدید هستید؟</span>
+                        <span>سازمان جدید هستید؟</span>
                         <a href="{{ route('register') }}">
-                            <span>ثبت نام</span>
+                            <span>ثبت نام سازمان</span>
                         </a> 
                     </p>
 

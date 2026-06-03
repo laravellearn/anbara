@@ -74,7 +74,14 @@
                     <form id="formAuthentication" class="mb-3" action="{{ route('register.post') }}" method="POST">
                       @CSRF
                       @include('errors.error')
-              
+                      <ul class="alert alert-info">
+                
+                            <li class="alert-info d-flex align-items-center" role="alert">
+                               تنها در صورتی که سازمان هستید فرم زیر را تکمیل نمائید. <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                            </li>
+                    </ul>
+                
                         <div class="mb-3">
                             <label for="name" class="form-label">نام و نام خانوادگی:</label>
                             <input type="text" class="form-control text-start" id="name" name="name"

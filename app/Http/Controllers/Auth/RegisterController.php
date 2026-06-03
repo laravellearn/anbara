@@ -8,12 +8,22 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use App\Services\OtpService;
 use App\Services\Sms\IPPanelService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\OtpCode;
+use Illuminate\Http\JsonResponse;
+use App\Services\Auth\AuthService;
 
 class RegisterController extends Controller
 {
+    protected AuthService $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function showRegisterForm()
     {
         return view('auth.register');
@@ -21,40 +31,131 @@ class RegisterController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $user = User::create([
-            'name' => $request->name,
-            'mobile' => $request->mobile,
-            'password' => Hash::make(
-                $request->password
-            ),
-        ]);
+        DB::beginTransaction();
 
-        $code = app(OtpService::class)->generate($user);
+        try {
 
-        app(IPPanelService::class)->sendOtp(
-            $user->mobile,
-            $code
-        );
+            $user = User::where(
+                'mobile',
+                $request->mobile
+            )->first();
 
-        session([
-            'pending_user_id' => $user->id
-        ]);
-        
+            // کاربر قبلاً ثبت نام کرده و تایید شده
+            if (
+                $user &&
+                $user->mobile_verified_at
+            ) {
 
-        return redirect()->route('register.otp.form');   
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'mobile' => 'این شماره موبایل قبلاً ثبت شده است.'
+                    ]);
+            }
+
+            // کاربر وجود ندارد
+            if (!$user) {
+
+                $user = User::create([
+                    'name' => $request->name,
+                    'mobile' => $request->mobile,
+                    'password' => Hash::make(
+                        $request->password
+                    ),
+                    'is_active' => false,
+                ]);
+            }
+
+            // اگر وجود دارد ولی تایید نشده
+            else {
+
+                $user->update([
+                    'name' => $request->name,
+                    'password' => Hash::make(
+                        $request->password
+                    ),
+                ]);
+            }
+
+            $code = app(OtpService::class)
+                ->generate($user);
+
+            $sent = app(IPPanelService::class)
+                ->sendOtp(
+                    $user->mobile,
+                    $code
+                );
+
+            if (!$sent) {
+
+                DB::rollBack();
+
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'mobile' => 'خطا در ارسال پیامک. مجدداً تلاش کنید.'
+                    ]);
+            }
+
+            session([
+                'pending_user_id' => $user->id
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('register.otp.form');
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            report($e);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'mobile' => 'خطایی رخ داده است.'
+                ]);
+        }
+
     }
-
     public function showOtpRequestForm()
     {
         $userId = session('pending_user_id');
 
-        abort_unless($userId, 403);
-    
-        $user = User::findOrFail($userId);
-    
+        if (!$userId) {
+            return redirect()->route('register')
+                ->withErrors([
+                    'error' => 'ابتدا ثبت نام را انجام دهید.'
+                ]);
+        }
+
+        $user = User::find($userId);
+
+        if (!$user) {
+
+            session()->forget('pending_user_id');
+
+            return redirect()->route('register')
+                ->withErrors([
+                    'error' => 'کاربر یافت نشد.'
+                ]);
+        }
+
+        $otp = $user->otpCodes()
+            ->latest()
+            ->first();
+
+        if (!$otp) {
+            return redirect()->route('register')
+                ->withErrors([
+                    'error' => 'کد تاییدی برای این کاربر یافت نشد.'
+                ]);
+        }
+
         return view('auth.register-otp-verify', [
             'user' => $user,
-            'expiresAt' => $user->otp->expires_at,
+            'expiresAt' => $otp->expires_at,
         ]);
     }
 
@@ -69,18 +170,18 @@ class RegisterController extends Controller
             ->latest()
             ->first();
 
-            if (
-                !$otp ||
-                !Hash::check(
-                    $request->otp,
-                    $otp->code
-                )
-            ) {
-                return back()->withErrors([
-                    'otp' => 'کد تایید صحیح نیست.'
-                ]);
-            }
-            if (!$otp) {
+        if (
+            !$otp ||
+            !Hash::check(
+                $request->otp,
+                $otp->code
+            )
+        ) {
+            return back()->withErrors([
+                'otp' => 'کد تایید صحیح نیست.'
+            ]);
+        }
+        if (!$otp) {
             return back()
                 ->withErrors([
                     'code' => 'کد نامعتبر است'
@@ -110,6 +211,119 @@ class RegisterController extends Controller
         session()->regenerate();
 
         return redirect('dashboard');
-        
+
     }
+
+    public function resendOtp(
+        OtpService $otpService,
+        IPPanelService $smsService
+    ): JsonResponse {
+
+        $userId = session('pending_user_id');
+
+        if (!$userId) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'نشست شما منقضی شده است.'
+            ], 422);
+        }
+
+        $user = User::find($userId);
+
+        if (!$user) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'کاربر یافت نشد.'
+            ], 404);
+        }
+
+        // جلوگیری از اسپم
+        $lastOtp = $user->otpCodes()
+            ->latest()
+            ->first();
+
+        if (
+            $lastOtp &&
+            now()->lt($lastOtp->expires_at)
+        ) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'هنوز امکان ارسال مجدد کد وجود ندارد.'
+            ], 429);
+        }
+
+        $code = $otpService->generate($user);
+
+        $sent = $smsService->sendOtp(
+            $user->mobile,
+            $code
+        );
+
+        if (!$sent) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در ارسال پیامک.'
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'کد تایید مجدداً ارسال شد.',
+            'expires_at' => now()->addMinutes(2)
+                ->timestamp,
+        ]);
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'code' => ['required', 'digits:6'],
+        ]);
+
+        $userId = session('pending_user_id');
+
+        if (!$userId) {
+            return redirect()->route('register.otp.form')
+                ->withErrors([
+                    'error' => 'جلسه شما منقضی شده است.'
+                ]);
+        }
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            return redirect()->route('register')
+                ->withErrors([
+                    'error' => 'کاربر یافت نشد.'
+                ]);
+        }
+
+        $result = $this->authService->verifyRegisterOtp(
+            $user->mobile,
+            $request->code
+        );
+
+        if (!$result) {
+            return back()->withErrors([
+                'code' => 'کد وارد شده اشتباه یا منقضی شده است.'
+            ]);
+        }
+
+        $user->update([
+            'mobile_verified_at' => now(),
+            'is_active' => true,
+        ]);
+
+        session()->forget('pending_user_id');
+
+        Auth::login($user);
+
+        return redirect()->route('dashboard')
+            ->with('success', 'ثبت نام شما با موفقیت تکمیل شد.');
+    }
+
 }

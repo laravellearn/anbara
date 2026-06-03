@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'ippanel' => [
+        'username' => env('IPPANEL_USERNAME'),
+        'password' => env('IPPANEL_PASSWORD'),
+        'from' => env('IPPANEL_FROM'),
+        'pattern' => env('IPPANEL_PATTERN'),
+    ],
+
 ];

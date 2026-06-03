@@ -18,15 +18,18 @@ class IPPanelService
                 'http://ippanel.com/class/sms/wsdlservice/server.php?wsdl'
             );
             $response = $client->sendPatternSms(
-                '+989998764947',
+                config('services.ippanel.from'),
                 $mobile,
                 config('services.ippanel.username'),
                 config('services.ippanel.password'),
-                'gbfxp7oo8h2jmsg',
+                config('services.ippanel.pattern'),
                 [
                     'code' => $code,
                 ]
             );
+            logger()->info('IPPANEL RESPONSE', [
+                'response' => $response
+            ]);
             return $response > 0;
         } catch (Throwable $e) {
             report($e);

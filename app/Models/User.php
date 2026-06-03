@@ -90,8 +90,8 @@ class User extends Authenticatable
         return $this->hasOne(Employee::class);
     }
 
-    public function otp()
+    public function otpCodes()
     {
-        return $this->hasOne(OtpCode::class);
+        return $this->hasMany(OtpCode::class);
     }
 }

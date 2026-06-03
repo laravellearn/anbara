@@ -45,7 +45,7 @@
 
 </head>
 
-<body>
+<>
 
     <div class="authentication-wrapper authentication-cover">
 
@@ -87,16 +87,18 @@
 
                         را وارد کنید.
                         <br>
-                        <a href="{{ route('register') }}" style="text-align: center">ویرایش شماره</a>
+                        <a href="{{ route('password.request') }}" style="text-align: center">ویرایش شماره</a>
+
                     </p>
 
 
-                    <form action="{{ route('register.otp.verify') }}" method="POST">
+                    <form action="{{ route('password.otp.verify') }}" method="POST">
 
                         @csrf
                         @include('errors.error')
                         <div id="ajax-alert" class="alert d-none" role="alert">
                         </div>
+
                         <div class="mb-4">
 
                             <div class="d-flex justify-content-center" dir="ltr">
@@ -121,7 +123,7 @@
 
                         <button type="submit" class="btn btn-primary w-100">
 
-                            تایید و ورود
+                            تایید موبایل
 
                         </button>
 
@@ -129,9 +131,11 @@
 
                     <div class="text-center mt-4">
                         زمان باقیمانده:
-                        <span id="timer" class="countdown text-warning">
+                        <div id="timer" class="countdown text-warning">
+
                             02:00
-                        </span>
+
+                        </div>
 
                     </div>
 
@@ -140,8 +144,6 @@
                         <button type="button" id="resend-btn" class="btn btn-label-secondary w-100 d-none">
                             ارسال مجدد کد
                         </button>
-
-
 
                     </div>
 
@@ -162,38 +164,38 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    
+
             const inputs = document.querySelectorAll('.otp-input');
             const hiddenInput = document.getElementById('code');
-    
+
             const timer = document.getElementById('timer');
             const resendBtn = document.getElementById('resend-btn');
-    
+
             let expiresAt = {{ $expiresAt->timestamp }};
             let timerInterval = null;
-    
+
             /*
             |--------------------------------------------------------------------------
             | OTP INPUTS
             |--------------------------------------------------------------------------
             */
             inputs.forEach((input, index) => {
-    
+
                 input.addEventListener('input', function() {
-    
+
                     this.value = this.value.replace(/\D/g, '');
-    
+
                     if (this.value.length === 1 && index < inputs.length - 1) {
                         inputs[index + 1].focus();
                     }
-    
+
                     hiddenInput.value = [...inputs]
                         .map(item => item.value)
                         .join('');
                 });
-    
+
                 input.addEventListener('keydown', function(e) {
-    
+
                     if (
                         e.key === 'Backspace' &&
                         this.value === '' &&
@@ -202,154 +204,156 @@
                         inputs[index - 1].focus();
                     }
                 });
-    
+
                 input.addEventListener('paste', function(e) {
-    
+
                     e.preventDefault();
-    
+
                     const pastedText = (
                         e.clipboardData ||
                         window.clipboardData
                     ).getData('text');
-    
+
                     if (!/^\d{6}$/.test(pastedText)) {
                         return;
                     }
-    
+
                     inputs.forEach((item, i) => {
                         item.value = pastedText[i] ?? '';
                     });
-    
+
                     hiddenInput.value = pastedText;
-    
+
                     inputs[5].focus();
                 });
             });
-    
+
             /*
             |--------------------------------------------------------------------------
             | TIMER
             |--------------------------------------------------------------------------
             */
             function updateTimer() {
-    
+
                 const now = Math.floor(Date.now() / 1000);
                 const remaining = expiresAt - now;
-    
+
                 if (remaining <= 0) {
-    
+
                     timer.innerHTML = '00:00';
-    
+
                     resendBtn.classList.remove('d-none');
-    
+
                     clearInterval(timerInterval);
-    
+
                     return;
                 }
-    
+
                 const minutes = Math.floor(remaining / 60);
                 const seconds = remaining % 60;
-    
+
                 timer.innerHTML =
                     String(minutes).padStart(2, '0') +
                     ':' +
                     String(seconds).padStart(2, '0');
             }
-    
+
             function startTimer() {
-    
+
                 clearInterval(timerInterval);
-    
+
                 updateTimer();
-    
+
                 timerInterval = setInterval(updateTimer, 1000);
             }
-    
+
             startTimer();
-    
+
             /*
             |--------------------------------------------------------------------------
             | RESEND OTP
             |--------------------------------------------------------------------------
             */
             resendBtn.addEventListener('click', function() {
-    
+
                 resendBtn.disabled = true;
                 resendBtn.innerHTML = 'در حال ارسال...';
-    
-                fetch("{{ route('register.otp.resend') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-    
-                    if (data.success) {
-    
+
+                fetch("{{ route('password.otp.resend') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+
+                        if (data.success) {
+
+                            showAlert(
+                                data.message,
+                                'success'
+                            );
+
+                            expiresAt = data.expires_at;
+
+                            resendBtn.classList.add('d-none');
+
+                            resendBtn.disabled = false;
+                            resendBtn.innerHTML = 'ارسال مجدد کد';
+
+                            startTimer();
+
+                            return;
+                        }
+
                         showAlert(
                             data.message,
-                            'success'
+                            'danger'
                         );
-    
-                        expiresAt = data.expires_at;
-    
-                        resendBtn.classList.add('d-none');
-    
+
                         resendBtn.disabled = false;
                         resendBtn.innerHTML = 'ارسال مجدد کد';
-    
-                        startTimer();
-    
-                        return;
-                    }
-    
-                    showAlert(
-                        data.message,
-                        'danger'
-                    );
-    
-                    resendBtn.disabled = false;
-                    resendBtn.innerHTML = 'ارسال مجدد کد';
-                })
-                .catch(error => {
-    
-                    console.error(error);
-    
-                    showAlert(
-                        'خطا در ارسال مجدد کد',
-                        'danger'
-                    );
-    
-                    resendBtn.disabled = false;
-                    resendBtn.innerHTML = 'ارسال مجدد کد';
-                });
+                    })
+                    .catch(error => {
+
+                        console.error(error);
+
+                        showAlert(
+                            'خطا در ارسال مجدد کد',
+                            'danger'
+                        );
+
+                        resendBtn.disabled = false;
+                        resendBtn.innerHTML = 'ارسال مجدد کد';
+                    });
             });
-    
+
         });
-    
+
         function showAlert(message, type = 'success') {
-    
+
             const alertBox = document.getElementById('ajax-alert');
-    
+
             alertBox.className = `alert alert-${type}`;
-    
+
             alertBox.innerHTML = message;
-    
+
             alertBox.classList.remove('d-none');
-    
+
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
-    
+
             setTimeout(() => {
                 alertBox.classList.add('d-none');
             }, 500000);
         }
-    </script></body>
+    </script>
+
+    </body>
 
 </html>

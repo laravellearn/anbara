@@ -66,7 +66,7 @@ class AuthService
     {
         $user = $this->otpService->verify($mobile, $code);
 
-        if (!$user || !$user->is_active) {
+        if (!$user) {
             return null;
         }
 
@@ -76,6 +76,22 @@ class AuthService
             'last_ip' => request()->ip(),
         ]);
 
+        return $user;
+    }
+
+    public function verifyRegisterOtp(string $mobile, string $code): ?User
+    {
+        $user = $this->otpService->verify($mobile, $code);
+    
+        if (!$user) {
+            return null;
+        }
+    
+        $user->update([
+            'last_login_at' => now(),
+            'last_ip' => request()->ip(),
+        ]);
+    
         return $user;
     }
 }

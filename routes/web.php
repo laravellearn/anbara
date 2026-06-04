@@ -16,7 +16,7 @@ use App\Http\Controllers\{
 
 
 //Authentication-----------------
-Route::middleware('guest')->group(function () {
+Route::middleware(['guest','throttle:5,1'])->group(function () {
 
 //Login-----------------
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

@@ -30,4 +30,4 @@
 
     <script src="{{ asset('vendor/js/template-customizer.js') }}"></script>
     <script src="{{ asset('js/config.js') }}"></script>
-    @yield('head')
+    @yield('styles')

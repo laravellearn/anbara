@@ -7,6 +7,7 @@ use App\Services\OtpService;
 use App\Services\Sms\IPPanelService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Bus;
 
 class AuthService
 {
@@ -46,22 +47,26 @@ class AuthService
     public function sendLoginOtp(string $mobile): bool
     {
         $user = User::where('mobile', $mobile)->first();
-
+    
         if (!$user) {
             return false;
         }
-
+    
         if ($user->is_active === false) {
-            $user->update(['is_active' => true]);
+            $user->update([
+                'is_active' => true
+            ]);
         }
-
+    
         $code = $this->otpService->generate($user);
-
-        // ارسال پیامک از طریق پنل IPPanel
-        return SendOtpJob::dispatch($user->mobile, $code);
-    }
-
-    /**
+    
+        dispatch(function () use ($user, $code) {
+            app(\App\Services\Sms\IPPanelService::class)
+                ->sendOtp($user->mobile, $code);
+        })->afterResponse();
+    
+        return true;
+    }    /**
      * تأیید کد یکبار مصرف
      */
     public function verifyLoginOtp(string $mobile, string $code): ?User

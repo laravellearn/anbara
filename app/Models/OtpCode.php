@@ -12,7 +12,8 @@ class OtpCode extends Model
         'code',
         'expires_at',
         'attempts',
-        'is_used'
+        'is_used',
+        'ip'
     ];
 
     protected function casts(): array

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\OtpCode;
+use App\Models\User;
 use App\Services\Auth\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 
 class LoginController extends Controller
 {
@@ -46,7 +48,7 @@ class LoginController extends Controller
         }
         auth()->user()->update([
             'last_login_at' => now(),
-            'last_ip' => now()
+            'last_ip' => request()->ip()
         ]);
 
         Auth::login($user, $request->filled('remember'));
@@ -67,8 +69,17 @@ class LoginController extends Controller
             'mobile' => 'required|digits:11|exists:users,mobile',
         ]);
 
-        $sent = $this->authService->sendLoginOtp($request->mobile);
+        $key = 'login-otp-send:' . $request->mobile;
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            $seconds = RateLimiter::availableIn($key);
+            return back()->withErrors([
+                'mobile' => "لطفاً {$seconds} ثانیه دیگر تلاش کنید."
+            ]);
+        }
+        RateLimiter::hit($key, 120);
 
+
+        $sent = $this->authService->sendLoginOtp($request->mobile);
         if (!$sent) {
             return back()->withErrors(['mobile' => 'ارسال کد با مشکل مواجه شد. لطفاً دوباره تلاش کنید.']);
         }
@@ -98,7 +109,7 @@ class LoginController extends Controller
 
         $expiresAt = $otp ? $otp->expires_at : now()->addMinutes(2);
 
-        return view('auth.otp-verify', [
+        return view('auth.login-otp-verify', [
             'mobile' => $mobile,
             'expiresAt' => $expiresAt
         ]);
@@ -110,28 +121,49 @@ class LoginController extends Controller
         $request->validate([
             'code' => 'required|digits:6',
         ]);
-
+    
         $mobile = session('login_otp_mobile');
-
+    
         if (!$mobile) {
             return redirect()->route('login.otp.request')
-                ->withErrors(['error' => 'جلسه شما منقضی شده است.']);
+                ->withErrors([
+                    'error' => 'جلسه شما منقضی شده است.'
+                ]);
         }
-
-        $result = $this->authService->verifyLoginOtp($mobile, $request->code);
-
+    
+        $result = $this->authService->verifyLoginOtp(
+            $mobile,
+            $request->code
+        );
+    
         if (!$result) {
-            return back()->withErrors(['code' => 'کد وارد شده اشتباه یا منقضی شده است.']);
+    
+            $otp = OtpCode::where('mobile', $mobile)
+                ->where('is_used', false)
+                ->latest()
+                ->first();
+    
+            if ($otp && $otp->attempts >= 5) {
+    
+                return back()->withErrors([
+                    'code' => 'تعداد دفعات مجاز وارد کردن کد به پایان رسیده است. لطفاً درخواست کد جدید بدهید.'
+                ]);
+            }
+    
+            return back()->withErrors([
+                'code' => 'کد وارد شده اشتباه یا منقضی شده است.'
+            ]);
         }
-
+    
         session()->forget('login_otp_mobile');
-
-        Auth::login($result['user']);
-
+    
+        Auth::login($result);
+    
+        $request->session()->regenerate();
+    
         return redirect()->intended('/dashboard')
             ->with('success', 'با موفقیت وارد شدید.');
     }
-
     // ... متدهای قبلی (showLoginForm, showOtpRequestForm, sendOtp, showOtpVerifyForm, verifyOtp) ...
 
     /**
@@ -141,12 +173,18 @@ class LoginController extends Controller
     {
         $mobile = session('login_otp_mobile');
 
+        
+        $otp = $user->otps()
+        ->latest()
+        ->first();
+
         if (!$mobile) {
             return response()->json([
                 'success' => false,
                 'message' => 'جلسه شما منقضی شده است. لطفاً دوباره از ابتدا شروع کنید.'
             ], 400);
         }
+        $user = User::where('mobile', $mobile)->first();
 
         $sent = $this->authService->sendLoginOtp($mobile);
 
@@ -160,13 +198,17 @@ class LoginController extends Controller
         // بروزرسانی زمان انقضا در سشن (اختیاری)
         return response()->json([
             'success' => true,
-            'message' => 'کد جدید ارسال شد.'
+            'message' => 'کد جدید ارسال شد.',
+            'expires_at' => $otp->expires_at->timestamp,
+
         ]);
     }
 
     public function logout()
     {
         Auth::logout();
-        return redirect()->route('login');
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');    
     }
 }

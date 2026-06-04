@@ -40,7 +40,7 @@
             <div class="card1">
             <div style="text-align:center;margin:20px 0 5px;">
                     <a class="d-flex align-items-center justify-content-center"
-                       href="{{ route('dashboard.index') }}"
+                       href="{{ route('dashboard') }}"
                        style="text-decoration:none;">
                        <img src="/logo-light.png" alt="Anbara Logo" style="max-width:180px;height:auto;"
                                 data-app-light-img="/logo-light.png" data-app-dark-img="/logo-dark.png">
@@ -63,7 +63,7 @@
 
                     <div class="d-flex justify-content-center gap-2">
                         <a href="{{ url()->previous() }}" class="btn btn-primary">بازگشت</a>
-                        <a href="{{ route('dashboard.index') }}" class="btn btn-outline-secondary">صفحه اصلی</a>
+                        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">صفحه اصلی</a>
                     </div>
 
                 </div>

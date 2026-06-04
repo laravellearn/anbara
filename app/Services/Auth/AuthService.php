@@ -45,18 +45,20 @@ class AuthService
      */
     public function sendLoginOtp(string $mobile): bool
     {
-        $user = User::where('mobile', $mobile)
-            ->where('is_active', true)
-            ->first();
+        $user = User::where('mobile', $mobile)->first();
 
         if (!$user) {
             return false;
         }
 
+        if ($user->is_active === false) {
+            $user->update(['is_active' => true]);
+        }
+
         $code = $this->otpService->generate($user);
 
         // ارسال پیامک از طریق پنل IPPanel
-        return $this->smsService->sendOtp($mobile, $code);
+        return SendOtpJob::dispatch($user->mobile, $code);
     }
 
     /**

@@ -13,9 +13,12 @@ class IPPanelService
     ): bool {
 
         try {
-
             $client = new SoapClient(
-                'http://ippanel.com/class/sms/wsdlservice/server.php?wsdl'
+                'https://ippanel.com/class/sms/wsdlservice/server.php?wsdl',
+                [
+                    'connection_timeout' => 5,
+                    'cache_wsdl' => WSDL_CACHE_MEMORY,
+                ]
             );
             $response = $client->sendPatternSms(
                 config('services.ippanel.from'),

@@ -13,7 +13,7 @@ class OtpService
      */
     public function generate(User $user): string
     {
-        // حذف کدهای قبلی این کاربر
+        // حذف OTP های قبلی
         OtpCode::where('user_id', $user->id)->delete();
 
         $code = app()->environment('local')
@@ -23,38 +23,60 @@ class OtpService
         OtpCode::create([
             'user_id'    => $user->id,
             'mobile'     => $user->mobile,
-            'code'       => Hash::make($code),        // هش شده ذخیره می‌شود
+            'code'       => Hash::make($code),
             'expires_at' => now()->addMinutes(2),
             'ip'         => request()->ip(),
             'attempts'   => 0,
+            'is_used'    => false,
         ]);
 
-        return $code; // کد خام برای ارسال پیامک
+        return $code;
     }
 
     /**
-     * بررسی اعتبار کد OTP
+     * بررسی اعتبار OTP
      */
     public function verify(string $mobile, string $inputCode): ?User
     {
         $otp = OtpCode::where('mobile', $mobile)
-            ->where('expires_at', '>', now())
             ->where('is_used', false)
+            ->where('expires_at', '>', now())
+            ->latest()
             ->first();
 
         if (!$otp) {
             return null;
         }
 
-        // افزایش تعداد تلاش
-        $otp->increment('attempts');
+        // بیش از حد مجاز تلاش کرده
+        if ($otp->attempts >= 5) {
 
-        if (!Hash::check($inputCode, $otp->code)) {
+            $otp->update([
+                'is_used' => true
+            ]);
+
             return null;
         }
 
-        // موفق بود
-        $otp->update(['is_used' => true]);
+        // کد اشتباه
+        if (!Hash::check($inputCode, $otp->code)) {
+
+            $otp->increment('attempts');
+
+            // بعد از پنجمین خطا OTP باطل شود
+            if (($otp->attempts + 1) >= 5) {
+                $otp->update([
+                    'is_used' => true
+                ]);
+            }
+
+            return null;
+        }
+
+        // موفق
+        $otp->update([
+            'is_used' => true,
+        ]);
 
         return User::find($otp->user_id);
     }

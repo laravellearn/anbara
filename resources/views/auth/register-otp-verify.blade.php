@@ -350,6 +350,7 @@
                 alertBox.classList.add('d-none');
             }, 500000);
         }
-    </script></body>
+    </script>
+    </body>
 
 </html>

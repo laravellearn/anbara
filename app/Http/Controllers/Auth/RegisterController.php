@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\OtpCode;
 use Illuminate\Http\JsonResponse;
 use App\Services\Auth\AuthService;
+use Illuminate\Support\Facades\RateLimiter;
 
 class RegisterController extends Controller
 {
@@ -85,6 +86,7 @@ class RegisterController extends Controller
                     $user->mobile,
                     $code
                 );
+
 
             if (!$sent) {
 
@@ -163,6 +165,15 @@ class RegisterController extends Controller
     {
         $userId = session('pending_user_id');
         $user = User::findOrFail($userId);
+
+        $key = 'register-otp-send:' . $user->mobile;
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            $seconds = RateLimiter::availableIn($key);
+            return back()->withErrors([
+                'mobile' => "لطفاً {$seconds} ثانیه دیگر تلاش کنید."
+            ]);
+        }
+        RateLimiter::hit($key, 120);
 
         $otp = OtpCode::query()
             ->where('user_id', $user->id)
@@ -273,8 +284,8 @@ class RegisterController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'کد تایید مجدداً ارسال شد.',
-            'expires_at' => now()->addMinutes(2)
-                ->timestamp,
+            'expires_at' => $otp->expires_at->timestamp,
+
         ]);
     }
 
@@ -283,47 +294,61 @@ class RegisterController extends Controller
         $request->validate([
             'code' => ['required', 'digits:6'],
         ]);
-
+    
         $userId = session('pending_user_id');
-
+    
         if (!$userId) {
             return redirect()->route('register.otp.form')
                 ->withErrors([
                     'error' => 'جلسه شما منقضی شده است.'
                 ]);
         }
-
+    
         $user = User::find($userId);
-
+    
         if (!$user) {
+            session()->forget('pending_user_id');
+    
             return redirect()->route('register')
                 ->withErrors([
                     'error' => 'کاربر یافت نشد.'
                 ]);
         }
-
+    
         $result = $this->authService->verifyRegisterOtp(
             $user->mobile,
             $request->code
         );
-
+    
         if (!$result) {
+    
+            $otp = OtpCode::where('mobile', $user->mobile)
+                ->latest()
+                ->first();
+    
+            if ($otp && $otp->attempts >= 5) {
+                return back()->withErrors([
+                    'code' => 'تعداد دفعات مجاز وارد کردن کد به پایان رسیده است. لطفاً کد جدید دریافت کنید.'
+                ]);
+            }
+    
             return back()->withErrors([
                 'code' => 'کد وارد شده اشتباه یا منقضی شده است.'
             ]);
         }
-
+    
         $user->update([
             'mobile_verified_at' => now(),
             'is_active' => true,
         ]);
-
+    
         session()->forget('pending_user_id');
-
-        Auth::login($user);
-
+    
+        Auth::login($result);
+    
+        $request->session()->regenerate();
+    
         return redirect()->route('dashboard')
             ->with('success', 'ثبت نام شما با موفقیت تکمیل شد.');
     }
-
 }

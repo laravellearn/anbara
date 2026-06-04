@@ -83,7 +83,7 @@
                         کد ارسال شده به شماره
 
                         <strong dir="ltr">
-                            {{ $user->mobile }}
+                            {{ $mobile }}
                         </strong>
 
                         را وارد کنید.
@@ -95,7 +95,9 @@
                     <form action="{{ route('login.otp.verify') }}" method="POST">
 
                         @csrf
-
+@include('errors.error')
+<div id="ajax-alert" class="alert d-none" role="alert">
+</div>
                         <div class="mb-4">
 
                             <div class="d-flex justify-content-center" dir="ltr">
@@ -114,7 +116,7 @@
 
                             </div>
 
-                            <input type="hidden" name="otp" id="otp">
+                            <input type="hidden" name="code" id="code">
 
                         </div>
 
@@ -128,28 +130,18 @@
 
                     <div class="text-center mt-4">
                         زمان باقیمانده:
-                        <div id="timer" class="countdown text-warning">
+                        <span id="timer" class="countdown text-warning">
 
                             02:00
 
-                        </div>
+    </span>
 
                     </div>
 
                     <div class="text-center mt-3">
-
-                        <form action="{{ route('otp.resend') }}" method="POST">
-
-                            @csrf
-
-                            <button type="submit" id="resendBtn" class="btn btn-label-secondary btn-sm" disabled>
-
-                                ارسال مجدد کد
-
-                            </button>
-
-                        </form>
-
+                        <button type="button" id="resend-btn" class="btn btn-label-secondary w-100 d-none">
+                            ارسال مجدد کد
+                        </button>
                     </div>
 
                 </div>
@@ -169,28 +161,38 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
+    
             const inputs = document.querySelectorAll('.otp-input');
-            const hiddenInput = document.getElementById('otp');
-
+            const hiddenInput = document.getElementById('code');
+    
+            const timer = document.getElementById('timer');
+            const resendBtn = document.getElementById('resend-btn');
+    
+            let expiresAt = {{ $expiresAt->timestamp }};
+            let timerInterval = null;
+    
+            /*
+            |--------------------------------------------------------------------------
+            | OTP INPUTS
+            |--------------------------------------------------------------------------
+            */
             inputs.forEach((input, index) => {
-
+    
                 input.addEventListener('input', function() {
-
-                    this.value = this.value.replace(/[^0-9]/g, '');
-
+    
+                    this.value = this.value.replace(/\D/g, '');
+    
                     if (this.value.length === 1 && index < inputs.length - 1) {
                         inputs[index + 1].focus();
                     }
-
+    
                     hiddenInput.value = [...inputs]
                         .map(item => item.value)
                         .join('');
-
                 });
-
+    
                 input.addEventListener('keydown', function(e) {
-
+    
                     if (
                         e.key === 'Backspace' &&
                         this.value === '' &&
@@ -198,45 +200,155 @@
                     ) {
                         inputs[index - 1].focus();
                     }
-
                 });
-
+    
+                input.addEventListener('paste', function(e) {
+    
+                    e.preventDefault();
+    
+                    const pastedText = (
+                        e.clipboardData ||
+                        window.clipboardData
+                    ).getData('text');
+    
+                    if (!/^\d{6}$/.test(pastedText)) {
+                        return;
+                    }
+    
+                    inputs.forEach((item, i) => {
+                        item.value = pastedText[i] ?? '';
+                    });
+    
+                    hiddenInput.value = pastedText;
+    
+                    inputs[5].focus();
+                });
             });
-
-            const expiresAt = {{ $expiresAt->timestamp }};
-            const timer = document.getElementById('timer');
-            const resendBtn = document.getElementById('resendBtn');
-
+    
+            /*
+            |--------------------------------------------------------------------------
+            | TIMER
+            |--------------------------------------------------------------------------
+            */
             function updateTimer() {
-
+    
                 const now = Math.floor(Date.now() / 1000);
-
                 const remaining = expiresAt - now;
-
+    
                 if (remaining <= 0) {
-
+    
                     timer.innerHTML = '00:00';
-
-                    resendBtn.disabled = false;
-
+    
+                    resendBtn.classList.remove('d-none');
+    
+                    clearInterval(timerInterval);
+    
                     return;
                 }
-
+    
                 const minutes = Math.floor(remaining / 60);
                 const seconds = remaining % 60;
-
+    
                 timer.innerHTML =
-                    minutes.toString().padStart(2, '0') +
+                    String(minutes).padStart(2, '0') +
                     ':' +
-                    seconds.toString().padStart(2, '0');
-
+                    String(seconds).padStart(2, '0');
             }
+    
+            function startTimer() {
+    
+                clearInterval(timerInterval);
+    
+                updateTimer();
+    
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+    
+            startTimer();
+    
+            /*
+            |--------------------------------------------------------------------------
+            | RESEND OTP
+            |--------------------------------------------------------------------------
+            */
+            resendBtn.addEventListener('click', function() {
+    
+                resendBtn.disabled = true;
+                resendBtn.innerHTML = 'در حال ارسال...';
+    
+                fetch("{{ route('login.otp.resend') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+    
+                    if (data.success) {
+                        console.log(data);
+                        showAlert(
+                            data.message,
+                            'success'
+                        );
 
-            updateTimer();
-
-            setInterval(updateTimer, 1000);
-
+                        expiresAt = data.expires_at;
+    
+                        resendBtn.classList.add('d-none');
+    
+                        resendBtn.disabled = false;
+                        resendBtn.innerHTML = 'ارسال مجدد کد';
+    
+                        startTimer();
+    
+                        return;
+                    }
+    
+                    showAlert(
+                        data.message,
+                        'danger'
+                    );
+    
+                    resendBtn.disabled = false;
+                    resendBtn.innerHTML = 'ارسال مجدد کد';
+                })
+                .catch(error => {
+    
+                    console.error(error);
+    
+                    showAlert(
+                        'خطا در ارسال مجدد کد',
+                        'danger'
+                    );
+    
+                    resendBtn.disabled = false;
+                    resendBtn.innerHTML = 'ارسال مجدد کد';
+                });
+            });
+    
         });
+    
+        function showAlert(message, type = 'success') {
+    
+            const alertBox = document.getElementById('ajax-alert');
+    
+            alertBox.className = `alert alert-${type}`;
+    
+            alertBox.innerHTML = message;
+    
+            alertBox.classList.remove('d-none');
+    
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+    
+            setTimeout(() => {
+                alertBox.classList.add('d-none');
+            }, 500000);
+        }
     </script>
 
 </body>

@@ -16,36 +16,50 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     use HasDatabase, HasDomains;
 
     protected $fillable = [
-        'name', 'title', 'slug', 'domain', 'email', 'phone', 'address',
-        'website', 'logo_path', 'favicon_path', 'theme_color',
-        'plan_id', 'subscription_status', 'trial_ends_at', 
-        'subscription_ends_at', 'data', 'settings', 'is_active'
+        'name',
+        'title',
+        'slug',
+        'domain',
+        'email',
+        'phone',
+        'address',
+        'website',
+        'logo_path',
+        'favicon_path',
+        'theme_color',
+        'data',
+        'settings',
+        'is_active'
     ];
 
     public static function getCustomColumns(): array
     {
         return [
-            'id', 'name', 'title', 'slug', 'domain', 'email', 
-            'phone', 'is_active', 'subscription_status'
+            'id',
+            'name',
+            'title',
+            'slug',
+            'domain',
+            'email',
+            'phone',
+            'is_active'
         ];
     }
 
     protected $casts = [
         'settings' => 'array',
         'is_active' => 'boolean',
-        'trial_ends_at' => 'datetime',
-        'subscription_ends_at' => 'datetime',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relations
-    |--------------------------------------------------------------------------
-    */
-
-    public function plan(): BelongsTo
+    // Business Layer
+    public function users(): HasMany
     {
-        return $this->belongsTo(Plan::class);
+        return $this->hasMany(User::class);
+    }
+
+    public function companies(): HasMany
+    {
+        return $this->hasMany(Company::class);
     }
 
     public function subscriptions(): HasMany
@@ -53,26 +67,13 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         return $this->hasMany(Subscription::class);
     }
 
-    public function organizations(): HasMany
+    public function roles()
     {
-        return $this->hasMany(Organization::class);
-    }
-
-    public function users(): HasMany
-    {
-        return $this->hasMany(User::class);
-    }
-
-    public function warehouses(): HasMany
-    {
-        return $this->hasMany(Warehouse::class);
-    }
-
-    public function payments(): HasMany
-    {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Role::class);
     }
 }
+
+
 
 
 

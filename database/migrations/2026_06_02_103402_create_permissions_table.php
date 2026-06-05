@@ -43,6 +43,8 @@ return new class extends Migration
             $table->foreignId('user_id')
                 ->constrained()
                 ->cascadeOnDelete();
+            $table->foreignId('tenant_id')->nullable()->after('user_id')->constrained('tenants')->cascadeOnDelete();
+            $table->index('tenant_id');
 
             $table->primary([
                 'permission_id',
@@ -58,23 +60,39 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
+            // کد یکتا برای استفاده در برنامه
+            $table->string('code');
+
+            // عنوان نمایشی
             $table->string('title');
 
             $table->text('description')
                 ->nullable();
 
+            // نقش های سیستمی قابل حذف نباشند
+            $table->boolean('is_system')
+                ->default(false);
+
             $table->boolean('is_active')
                 ->default(true);
 
+            $table->timestamps();
+
             $table->softDeletes();
 
-            $table->timestamps();
+            $table->unique([
+                'tenant_id',
+                'code'
+            ]);
 
             $table->unique([
                 'tenant_id',
                 'title'
             ]);
+
+            $table->index('tenant_id');
         });
+
 
         Schema::create('permission_role', function (Blueprint $table) {
 
@@ -92,23 +110,12 @@ return new class extends Migration
             ]);
         });
 
-
-        Schema::create('role_user', function (Blueprint $table) {
-            $table->foreignId('role_id')
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->foreignId('user_id')
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->unique(['role_id', 'user_id']);
-        });
-
-        Schema::create('organization_user_role', function (Blueprint $table) {
+        Schema::create('company_user_role', function (Blueprint $table) {
 
             $table->id();
 
-            $table->foreignId('organization_user_id')
-                ->constrained('organization_user')
+            $table->foreignId('company_user_id')
+                ->constrained('company_user')
                 ->cascadeOnDelete();
 
             $table->foreignId('role_id')
@@ -118,7 +125,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique([
-                'organization_user_id',
+                'company_user_id',
                 'role_id'
             ]);
         });
@@ -131,11 +138,10 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('organization_user_role');
-        Schema::dropIfExists('permission_user');
+        Schema::dropIfExists('company_user_role');
         Schema::dropIfExists('permission_role');
-        Schema::dropIfExists('role_user');
-        Schema::dropIfExists('permissions');
         Schema::dropIfExists('roles');
+        Schema::dropIfExists('permission_user');
+        Schema::dropIfExists('permissions');
     }
 };

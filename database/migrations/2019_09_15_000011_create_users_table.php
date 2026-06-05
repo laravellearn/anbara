@@ -12,35 +12,78 @@ return new class extends Migration {
      */
     public function up()
     {
-        Schema::create('organizations', function (Blueprint $table) {
-            $table->id();
+        Schema::create('companies', function (Blueprint $table) {
 
+            $table->id();
+        
             $table->foreignId('tenant_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
+        
             $table->foreignId('parent_id')
                 ->nullable()
-                ->constrained('organizations')
+                ->constrained('companies')
                 ->nullOnDelete();
-
-            $table->string('title');
-            $table->string('image')->nullable();
-            $table->text('description')->nullable();
-            $table->boolean('is_active')->default(false);
-
-            $table->softDeletes();
+        
+            $table->string('name');
+        
+            $table->string('code')->nullable();
+        
+            $table->string('type')
+                ->default('company');
+        
+            $table->string('national_id')
+                ->nullable();
+        
+            $table->string('economic_code')
+                ->nullable();
+        
+            $table->boolean('is_active')
+                ->default(true);
+        
             $table->timestamps();
+        
+            $table->softDeletes();
+        
+            $table->index('tenant_id');
+        
+            $table->index('parent_id');
+        });
 
-            $table->unique([
-                'tenant_id',
-                'title'
-            ]);
+        Schema::create('organizational_units', function (Blueprint $table) {
 
-            $table->index([
-                'tenant_id',
-                'parent_id'
-            ]);
+            $table->id();
+        
+            $table->foreignId('tenant_id')
+                ->constrained()
+                ->cascadeOnDelete();
+        
+            $table->foreignId('company_id')
+                ->constrained()
+                ->cascadeOnDelete();
+        
+            $table->foreignId('parent_id')
+                ->nullable()
+                ->constrained('organizational_units')
+                ->nullOnDelete();
+        
+            $table->string('name');
+        
+            $table->string('code')
+                ->nullable();
+        
+            $table->foreignId('manager_user_id')
+                ->nullable();
+        
+            $table->boolean('is_active')
+                ->default(true);
+        
+            $table->timestamps();
+        
+            $table->softDeletes();
+        
+            $table->index('tenant_id');
+            $table->index('company_id');
         });
 
         Schema::create('users', function (Blueprint $table) {
@@ -70,41 +113,56 @@ return new class extends Migration {
             $table->softDeletes();
             $table->timestamps();
 
-            $table->unique([
-                'tenant_id',
-                'mobile'
-            ]);
-
-            $table->unique([
-                'tenant_id',
-                'email'
-            ]);
-
             $table->index('tenant_id');
         });
 
-        Schema::create('organization_user', function (Blueprint $table) {
+        Schema::create('company_user', function (Blueprint $table) {
 
             $table->id();
-
-            $table->foreignId('organization_id')
+        
+            $table->foreignId('tenant_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
+        
+            $table->foreignId('company_id')
+                ->constrained()
+                ->cascadeOnDelete();
+        
             $table->foreignId('user_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
-            $table->boolean('is_active')
-                ->default(true);
-
-            $table->timestamp('joined_at')
-                ->nullable();
-
+        
+            $table->boolean('is_default')
+                ->default(false);
+        
             $table->timestamps();
-
+        
             $table->unique([
-                'organization_id',
+                'company_id',
+                'user_id'
+            ]);
+        });
+
+        Schema::create('organizational_unit_user', function (Blueprint $table) {
+
+            $table->id();
+        
+            $table->foreignId('tenant_id')
+                ->constrained()
+                ->cascadeOnDelete();
+        
+            $table->foreignId('organizational_unit_id')
+                ->constrained()
+                ->cascadeOnDelete();
+        
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+        
+            $table->timestamps();
+        
+            $table->unique([
+                'organizational_unit_id',
                 'user_id'
             ]);
         });
@@ -127,8 +185,10 @@ return new class extends Migration {
     public function down()
     {
         Schema::dropIfExists('sessions');
-        Schema::dropIfExists('organization_user');
+        Schema::dropIfExists('organizational_unit_user');
+        Schema::dropIfExists('company_user');
         Schema::dropIfExists('users');
-        Schema::dropIfExists('organizations');
+        Schema::dropIfExists('organizational_units');
+        Schema::dropIfExists('companies');
     }
 };

@@ -2,16 +2,23 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToTenant;
+use App\Concerns\AutoFillTenantAndCompany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Enums\UserStatus;
+use App\Scopes\CompanyScope;
 
 class User extends Authenticatable
 {
-    use Notifiable;
     use SoftDeletes;
+    // use AutoFillTenantAndCompany; // اگر قصد پر کردن اتومات این دو فیلد باشد
+    // use BelongsToTenant; // برای tenant scope
+
+    //برای شرکت
+    // protected static function booted(): void
+    // {
+    //     static::addGlobalScope(new CompanyScope());
+    // }
+
 
     protected $fillable = [
         'tenant_id',
@@ -23,7 +30,6 @@ class User extends Authenticatable
         'avatar',
         'email_verified_at',
         'mobile_verified_at',
-        'status',
         'last_login_at',
         'last_ip',
         'is_active',
@@ -37,11 +43,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'mobile_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'is_active' => 'boolean',
-        'status' => UserStatus::class,
         'last_login_at' => 'datetime',
-
+        'is_active' => 'boolean',
     ];
 
     public function tenant()
@@ -49,24 +52,28 @@ class User extends Authenticatable
         return $this->belongsTo(Tenant::class);
     }
 
-    public function organizations()
+    public function otpCodes()
     {
-        return $this->belongsToMany(
-            Organization::class,
-            'organization_user'
-        )
-            ->withPivot([
-                'is_active',
-                'joined_at'
-            ])
-            ->withTimestamps();
+        return $this->hasmany(otpCode::class);
     }
 
-    public function organizationMemberships()
+    public function companyUsers()
     {
-        return $this->hasMany(
-            OrganizationUser::class
-        );
+        return $this->hasMany(CompanyUser::class);
+    }
+
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'company_user', 'user_id', 'company_id')
+            ->withPivot('is_default')
+            ->withTimestamps();
+    }
+    public function organizationalUnits()
+    {
+        return $this->belongsToMany(
+            OrganizationalUnit::class,
+            'organizational_unit_user'
+        )->withTimestamps();
     }
 
     public function roles()
@@ -74,24 +81,30 @@ class User extends Authenticatable
         return $this->belongsToMany(
             Role::class,
             'role_user'
-        );
+        )->withTimestamps();
     }
 
-    public function permissions()
+    public function hasPermission($permission)
     {
-        return $this->belongsToMany(
-            Permission::class,
-            'permission_user'
-        );
+        $companyId = session('current_company_id');
+
+        return $this->companies()
+            ->where('companies.id', $companyId)
+            ->whereHas('roles.permissions', function ($q) use ($permission) {
+                $q->where('name', $permission);
+            })
+            ->exists();
     }
 
-    public function employee()
+    public function hasRole($role)
     {
-        return $this->hasOne(Employee::class);
-    }
+        $companyId = session('current_company_id');
 
-    public function otpCodes()
-    {
-        return $this->hasMany(OtpCode::class);
+        return $this->companies()
+            ->where('companies.id', $companyId)
+            ->whereHas('roles', function ($q) use ($role) {
+                $q->where('code', $role);
+            })
+            ->exists();
     }
 }

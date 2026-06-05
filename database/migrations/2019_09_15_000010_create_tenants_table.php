@@ -10,14 +10,13 @@ return new class extends Migration
     {
         Schema::create('tenants', function (Blueprint $table) {
             $table->id();
-            
+    
             // فیلدهای ضروری برای stancl/tenancy
             $table->string('name');                    // نام تننت
             $table->string('domain')->nullable()->unique();
             $table->json('data')->nullable();          // خیلی مهم برای پکیج
 
             // فیلدهای سفارشی خودت
-            $table->string('title');
             $table->string('slug')->unique();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
@@ -27,10 +26,7 @@ return new class extends Migration
             $table->string('favicon_path')->nullable();
             $table->string('theme_color')->nullable();
             
-            $table->foreignId('plan_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('subscription_status')->default('trial');
             $table->timestamp('trial_ends_at')->nullable();
-            $table->timestamp('subscription_ends_at')->nullable();
             
             $table->json('settings')->nullable();
             $table->boolean('is_active')->default(true);

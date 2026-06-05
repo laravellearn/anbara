@@ -5,28 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Role extends Model
+class Permission extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
-        'tenant_id',
-        'code',
+        'name',
         'title',
         'description',
-        'is_system',
         'is_active',
     ];
 
-    public function tenant()
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    public function permissions()
+    public function roles()
     {
         return $this->belongsToMany(
-            Permission::class,
+            Role::class,
             'permission_role'
         );
     }
@@ -35,7 +28,7 @@ class Role extends Model
     {
         return $this->belongsToMany(
             User::class,
-            'role_user'
+            'permission_user'
         );
     }
 }

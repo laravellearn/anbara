@@ -83,6 +83,11 @@
                     </ul>
                 
                         <div class="mb-3">
+                            <label for="organization_name" class="form-label">نام سازمان پیش فرض:</label>
+                            <input type="text" class="form-control text-start" id="organization_name" name="organization_name"
+                                autofocus dir="ltr">
+                        </div>
+                        <div class="mb-3">
                             <label for="name" class="form-label">نام و نام خانوادگی:</label>
                             <input type="text" class="form-control text-start" id="name" name="name"
                                 autofocus dir="ltr">

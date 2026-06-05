@@ -107,4 +107,12 @@ class User extends Authenticatable
             })
             ->exists();
     }
+
+    public function defaultCompany()
+    {
+        return $this->belongsToMany(Company::class, 'company_user', 'user_id', 'company_id')
+            ->wherePivot('is_default', true)
+            ->withPivot('is_default')
+            ->first();
+    }
 }

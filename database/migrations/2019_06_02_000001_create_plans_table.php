@@ -14,45 +14,23 @@ return new class extends Migration {
         Schema::create('plans', function (Blueprint $table) {
 
             $table->id();
-        
-            $table->string('name');
-        
-            $table->string('code')
-                ->unique();
-        
-            $table->decimal('monthly_price',12,2)
-                ->default(0);
-        
-            $table->decimal('yearly_price',12,2)
-                ->default(0);
-        
-            $table->text('description')
-                ->nullable();
-        
-            $table->boolean('is_active')
-                ->default(true);
-        
-            $table->timestamps();
-        });
-    
-        Schema::create('plan_features', function (Blueprint $table) {
 
-            $table->id();
-        
-            $table->foreignId('plan_id')
-                ->constrained()
-                ->cascadeOnDelete();
-        
-            $table->string('feature_key');
-        
-            $table->json('feature_value');
-        
+            $table->string('name');
+            $table->string('slug')->unique();            // برای آدرس‌دهی (basic, pro, ...)
+            $table->string('code')->unique()->nullable(); // کد سیستمی (در صورت نیاز جدا)
+            $table->text('description')->nullable();
+
+            $table->decimal('monthly_price', 12, 2)->default(0); // قیمت (ماهانه یا بر اساس duration)
+            $table->decimal('yearly_price', 12, 2)->default(0); // قیمت (ماهانه یا بر اساس duration)
+            $table->string('currency', 10)->default('IRT');
+            $table->unsignedInteger('duration_days')->nullable(); // null = نامحدود
+            $table->json('limits')->nullable();   // محدودیت‌ها (max_users, max_products و غیره)
+            $table->json('features')->nullable(); // قابلیت‌های فعال (core_inventory, api و...)
+
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->boolean('is_active')->default(true);
+
             $table->timestamps();
-        
-            $table->unique([
-                'plan_id',
-                'feature_key'
-            ]);
         });
     }
 
@@ -61,7 +39,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('plan_features');
         Schema::dropIfExists('plans');
     }
 };

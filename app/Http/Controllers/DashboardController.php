@@ -3,29 +3,43 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\TenantManager;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $user = auth()->user();
-    
-        $companyId = CompanyContext::getId();
-    
+
+        /** @var TenantManager $manager */
+        $manager = app(TenantManager::class);
+        $companyId = $manager->getCompanyId();
+
         return view('dashboard', compact('user', 'companyId'));
     }
-    
+
     public function switchCompany($companyId)
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    abort_unless(
-        $user->companies()->where('company_id', $companyId)->exists(),
-        403
-    );
+        abort_unless(
+            $user->companies()->where('company_id', $companyId)->exists(),
+            403
+        );
 
-    session(['current_company_id' => $companyId]);
+        session(['current_company_id' => $companyId]);
 
-    return redirect()->back();
-}
+        // بهتر است بلافاصله context را به‌روز کنیم
+        $manager = app(TenantManager::class);
+        if ($tenant = $manager->getTenant()) {
+            $company = \App\Models\Company::where('tenant_id', $tenant->id)
+                ->where('id', $companyId)
+                ->first();
+            if ($company) {
+                $manager->setCompany($company);
+            }
+        }
+
+        return redirect()->back();
+    }
 }

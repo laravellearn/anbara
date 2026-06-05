@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\OtpCode;
 use Illuminate\Http\JsonResponse;
 use App\Services\Auth\AuthService;
+use App\Services\TenantManager;
+use App\Services\TenantRegistrationService;
 use Illuminate\Support\Facades\RateLimiter;
 
 class RegisterController extends Controller
@@ -103,6 +105,16 @@ class RegisterController extends Controller
                 'pending_user_id' => $user->id
             ]);
 
+            session([
+                'registration_data' => [
+                    'organization_name' => $request->organization_name,
+                    'slug'              => $request->slug,
+                    'email'             => $request->email,
+                    'phone'             => $request->phone,
+                ],
+                'pending_user_id'    => $user->id,
+            ]);
+
             DB::commit();
 
             return redirect()
@@ -119,7 +131,6 @@ class RegisterController extends Controller
                     'mobile' => 'خطایی رخ داده است.'
                 ]);
         }
-
     }
     public function showOtpRequestForm()
     {
@@ -222,7 +233,6 @@ class RegisterController extends Controller
         session()->regenerate();
 
         return redirect('dashboard');
-
     }
 
     public function resendOtp(
@@ -284,71 +294,99 @@ class RegisterController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'کد تایید مجدداً ارسال شد.',
-            'expires_at' => $otp->expires_at->timestamp,
+            'expires_at' => $lastOtp->expires_at->timestamp,
 
         ]);
     }
 
-    public function verifyOtp(Request $request)
+    public function verifyOtp(Request $request, TenantRegistrationService $registrationService)
     {
         $request->validate([
             'code' => ['required', 'digits:6'],
         ]);
-    
+
         $userId = session('pending_user_id');
-    
-        if (!$userId) {
+
+        if (! $userId) {
             return redirect()->route('register.otp.form')
-                ->withErrors([
-                    'error' => 'جلسه شما منقضی شده است.'
-                ]);
+                ->withErrors(['error' => 'جلسه شما منقضی شده است.']);
         }
-    
+
         $user = User::find($userId);
-    
-        if (!$user) {
+
+        if (! $user) {
             session()->forget('pending_user_id');
-    
+
             return redirect()->route('register')
-                ->withErrors([
-                    'error' => 'کاربر یافت نشد.'
-                ]);
+                ->withErrors(['error' => 'کاربر یافت نشد.']);
         }
-    
+
+        // اعتبارسنجی کد OTP
         $result = $this->authService->verifyRegisterOtp(
             $user->mobile,
             $request->code
         );
-    
-        if (!$result) {
-    
+
+        if (! $result) {
             $otp = OtpCode::where('mobile', $user->mobile)
                 ->latest()
                 ->first();
-    
+
             if ($otp && $otp->attempts >= 5) {
                 return back()->withErrors([
-                    'code' => 'تعداد دفعات مجاز وارد کردن کد به پایان رسیده است. لطفاً کد جدید دریافت کنید.'
+                    'code' => 'تعداد دفعات مجاز وارد کردن کد به پایان رسیده است. لطفاً کد جدید دریافت کنید.',
                 ]);
             }
-    
+
             return back()->withErrors([
-                'code' => 'کد وارد شده اشتباه یا منقضی شده است.'
+                'code' => 'کد وارد شده اشتباه یا منقضی شده است.',
             ]);
         }
-    
+
+        // ========== بخش جدید: ایجاد Tenant اگر کاربر جدید است ==========
+        if (! $user->tenant_id) {
+            $registrationData = session('registration_data');
+
+            if (! $registrationData) {
+                // اطلاعات سازمان در سشن موجود نیست – کاربر را به مرحلهٔ اول برگردان
+                session()->forget('pending_user_id');
+                return redirect()->route('register')
+                    ->withErrors(['error' => 'اطلاعات ثبت‌ نام اولیه یافت نشد. لطفاً دوباره تلاش کنید.']);
+            }
+
+            // ایجاد Tenant، شرکت، نقش، اشتراک و …
+            $result = $registrationService->finalizeRegistration($user, $registrationData);
+            $tenant  = $result['tenant'];
+            $company = $result['company'];
+
+            // پاک کردن داده‌های موقت ثبت‌نام
+            session()->forget('registration_data');
+        } else {
+            // کاربر قبلاً Tenant دارد (احراز هویت دوباره، ورود با OTP)
+            $tenant  = $user->tenant;
+            $company = $user->defaultCompany(); // متد زیر را به مدل User اضافه کنید
+        }
+
+        // فعال‌سازی کاربر
         $user->update([
             'mobile_verified_at' => now(),
-            'is_active' => true,
+            'is_active'          => true,
         ]);
-    
+
         session()->forget('pending_user_id');
-    
-        Auth::login($result);
-    
+
+        // ورود کاربر
+        Auth::login($user);
         $request->session()->regenerate();
-    
+
+        // تنظیم Context چندمستأجری
+        $manager = app(TenantManager::class);
+        $manager->setTenant($tenant);
+        $manager->setCompany($company);
+        $manager->setUser($user);
+        session(['current_company_id' => $company->id]);
+
         return redirect()->route('dashboard')
-            ->with('success', 'ثبت نام شما با موفقیت تکمیل شد.');
+            ->with('success', 'ثبت‌ نام شما با موفقیت تکمیل شد. خوش آمدید!');
     }
 }

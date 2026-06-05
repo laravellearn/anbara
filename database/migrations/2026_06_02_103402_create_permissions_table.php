@@ -43,10 +43,10 @@ return new class extends Migration
             $table->foreignId('user_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->foreignId('tenant_id')->nullable()->after('user_id')->constrained('tenants')->cascadeOnDelete();
+            $table->foreignId('tenant_id')->nullable()->constrained('tenants')->cascadeOnDelete();
             $table->index('tenant_id');
 
-            $table->primary([
+            $table->unique([
                 'permission_id',
                 'user_id'
             ]);

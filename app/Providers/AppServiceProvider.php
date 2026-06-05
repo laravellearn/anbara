@@ -35,28 +35,52 @@ class AppServiceProvider extends ServiceProvider
         User::observe(UserObserver::class);
 
         //Permission
-        Gate::define('access', function ($user, $permissionName) {
+        Gate::define('access', function (?User $user, string $permissionName) {
+            if (! $user) {
+                return false;
+            }
+
+            // Super Admin (کاربر بدون Tenant) به همه چیز دسترسی دارد
+            if ($user->isSuperAdmin()) {
+                return true;
+            }
+
+            // مدیر سازمان (tenant_admin) در شرکت جاری به همه چیز دسترسی دارد
+            if ($user->isTenantAdmin()) {
+                return true;
+            }
+
             $manager = app(TenantManager::class);
             $tenantId = $manager->getTenantId();
             $companyId = $manager->getCompanyId();
 
-            if (!$tenantId || !$companyId) return false;
+            if (! $tenantId || ! $companyId) {
+                return false;
+            }
 
-            // 1. چک دسترسی‌های مستقیم کاربر (permission_user) با شرط tenant
+            // چک دسترسی مستقیم کاربر (permission_user)
             $direct = $user->permissions()
                 ->where('name', $permissionName)
                 ->wherePivot('tenant_id', $tenantId)
                 ->exists();
-            if ($direct) return true;
 
-            // 2. چک نقش‌های کاربر در این سازمان خاص
-            $companyUser = CompanyUser::where('user_id', $user->id)
+            if ($direct) {
+                return true;
+            }
+
+            // چک دسترسی از طریق نقش‌ها
+            $companyUser = \App\Models\CompanyUser::where('user_id', $user->id)
                 ->where('company_id', $companyId)
                 ->first();
-            if (!$companyUser) return false;
+
+            if (! $companyUser) {
+                return false;
+            }
 
             return $companyUser->roles()
-                ->whereHas('permissions', fn($q) => $q->where('name', $permissionName))
+                ->whereHas('permissions', function ($query) use ($permissionName) {
+                    $query->where('name', $permissionName);
+                })
                 ->exists();
         });
     }

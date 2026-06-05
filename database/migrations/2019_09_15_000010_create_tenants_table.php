@@ -29,6 +29,10 @@ return new class extends Migration
             $table->timestamp('trial_ends_at')->nullable();
             
             $table->json('settings')->nullable();
+
+            $table->unsignedTinyInteger('fiscal_year_start_month')->default(1);
+            $table->unsignedTinyInteger('fiscal_year_start_day')->default(1);
+
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();

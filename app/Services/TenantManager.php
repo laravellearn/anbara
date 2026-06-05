@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Tenant;
 use App\Models\Company;
+use App\Models\FiscalYear;
 use App\Models\User;
 use RuntimeException;
 
@@ -67,5 +68,26 @@ class TenantManager
     public function getUser(): ?User
     {
         return $this->user;
+    }
+
+    // در TenantManager
+    protected ?FiscalYear $fiscalYear = null;
+
+    public function setFiscalYear(?FiscalYear $fiscalYear): void
+    {
+        $this->fiscalYear = $fiscalYear;
+        session(['current_fiscal_year_id' => $fiscalYear?->id]);
+    }
+
+    public function getFiscalYear(): ?FiscalYear
+    {
+        if ($this->fiscalYear) return $this->fiscalYear;
+        $id = session('current_fiscal_year_id');
+        if ($id) {
+            $this->fiscalYear = FiscalYear::find($id);
+        } else {
+            $this->fiscalYear = FiscalYear::current();
+        }
+        return $this->fiscalYear;
     }
 }

@@ -21,11 +21,14 @@ class Plan extends Model
         'is_active',
     ];
 
+    // app/Models/Plan.php
     protected $casts = [
-        'limits'   => 'array',    // خودکار json_decode شود
-        'features' => 'array',
-        'is_active'=> 'boolean',
-        'price'    => 'decimal:2',
+        'monthly_price' => 'float',
+        'yearly_price'  => 'float',
+        'limits'        => 'array',
+        'features'      => 'array',
+        'is_active'     => 'boolean',
+        'duration_days' => 'integer',
     ];
 
     /**

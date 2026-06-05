@@ -23,9 +23,6 @@ return new class extends Migration
             $table->string('title');
             // ایجاد انبار
 
-            $table->text('description')
-                ->nullable();
-
             $table->boolean('is_active')
                 ->default(true);
 

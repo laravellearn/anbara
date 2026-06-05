@@ -6,6 +6,7 @@ use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Permission;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,7 +22,7 @@ class DatabaseSeeder extends Seeder
         //Plan Seeder
         Plan::insert([
             [
-                'name' => 'نسخه آزمایشی(trial)',
+                'name' => 'نسخه آزمایشی',
                 'code' => 'trial',
                 'slug' => 'trial',
                 'description' => 'نسخه نامحدود 14 روزه',
@@ -63,7 +64,7 @@ class DatabaseSeeder extends Seeder
                 'sort_order' => 1,
             ],
             [
-                'name' => 'پایه (رایگان)',
+                'name' => 'نسخه پایه',
                 'code' => 'basic',
                 'slug' => 'basic',
                 'description' => 'مناسب استارت‌آپ‌ها و کسب‌وکارهای کوچک',
@@ -101,7 +102,7 @@ class DatabaseSeeder extends Seeder
                 'sort_order' => 2,
             ],
             [
-                'name' => 'حرفه‌ای',
+                'name' => 'نسخه حرفه ای',
                 'code' => 'pro',
                 'slug' => 'pro',
                 'description' => 'مناسب شرکت‌های در حال رشد',
@@ -142,7 +143,7 @@ class DatabaseSeeder extends Seeder
                 'sort_order' => 3,
             ],
             [
-                'name' => 'تجاری',
+                'name' => 'نسخه تجاری',
                 'code' => 'business',
                 'slug' => 'business',
                 'description' => 'مناسب کسب‌وکارهای متوسط با چند شعبه',
@@ -184,7 +185,7 @@ class DatabaseSeeder extends Seeder
                 'sort_order' => 4,
             ],
             [
-                'name' => 'سازمانی',
+                'name' => 'نسخه سازمانی',
                 'code' => 'enterprise',
                 'slug' => 'enterprise',
                 'description' => 'برای هلدینگ‌ها و سازمان‌های بزرگ؛ بدون محدودیت',
@@ -227,5 +228,47 @@ class DatabaseSeeder extends Seeder
                 'sort_order' => 5,
             ],
         ]);
+
+
+        //Permissions
+
+        $permissions = [
+            ['name' => 'users.view',         'title' => 'مشاهده لیست کاربران'],
+            ['name' => 'users.create',       'title' => 'ایجاد کاربر جدید'],
+            ['name' => 'users.edit',         'title' => 'ویرایش کاربر'],
+            ['name' => 'users.delete',       'title' => 'حذف کاربر'],
+            ['name' => 'users.assign_role',  'title' => 'تخصیص نقش به کاربر'],
+            ['name' => 'users.import',       'title' => 'ایمپورت کاربران'],
+            ['name' => 'users.export',       'title' => 'خروجی کاربران'],
+
+
+            ['name' => 'companies.view',        'title' => 'مشاهده لیست سازمان‌ها'],
+            ['name' => 'companies.create',      'title' => 'ایجاد سازمان جدید'],
+            ['name' => 'companies.edit',        'title' => 'ویرایش سازمان'],
+            ['name' => 'companies.delete',      'title' => 'حذف سازمان'],
+            ['name' => 'fiscal_years.view',     'title' => 'مشاهده سال‌های مالی'],
+            ['name' => 'fiscal_years.create',   'title' => 'ایجاد سال مالی'],
+            ['name' => 'fiscal_years.edit',     'title' => 'ویرایش سال مالی'],
+            ['name' => 'fiscal_years.delete',   'title' => 'حذف سال مالی'],
+            ['name' => 'activity_logs.view',    'title' => 'مشاهده لاگ فعالیت‌ها'],
+            ['name' => 'subscriptions.history', 'title' => 'مشاهده تاریخچه اشتراک'],
+
+
+            ['name' => 'activity_logs.view', 'title' => 'مشاهده لاگ کاربران'],
+            ['name' => 'billing.history', 'title' => 'مشاهده تاریخچه اشتراک ها'],
+
+
+
+        ];
+
+        foreach ($permissions as $perm) {
+            Permission::firstOrCreate(
+                ['name' => $perm['name']],
+                [
+                    'title'       => $perm['title'],
+                    'is_active'   => true,
+                ]
+            );
+        }
     }
 }

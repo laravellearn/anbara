@@ -7,8 +7,10 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\Role;
 use App\Models\CompanyUser;
+use App\Models\FiscalYear;
 use App\Models\Plan;
 use App\Models\Subscription;
+use Hekmatinasser\Verta\Facades\Verta;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -49,6 +51,24 @@ class TenantRegistrationService
                 'data'          => json_encode([]),
             ]);
 
+            // بخش ایجاد سال مالی - بعد از ایجاد Tenant و قبل از return
+            $month = (int) ($tenant->fiscal_year_start_month ?: 1);
+            $day   = (int) ($tenant->fiscal_year_start_day ?: 1);
+
+            $fiscalStart = Verta::now()->month($month)->day($day);
+
+            if (Verta::now()->lessThan($fiscalStart)) {
+                $fiscalStart->subYear();
+            }
+
+            $fiscalEnd = (clone $fiscalStart)->addYear()->subDay();
+
+            FiscalYear::create([
+                'tenant_id'  => $tenant->id,
+                'name'       => 'سال مالی ' . $fiscalStart->year,
+                'start_date' => $fiscalStart->toCarbon(),
+                'end_date'   => $fiscalEnd->toCarbon(),
+            ]);
             // 2. اتصال کاربر به Tenant و فعال‌سازی
             $user->update([
                 'tenant_id'          => $tenant->id,
@@ -60,7 +80,7 @@ class TenantRegistrationService
             $company = Company::create([
                 'tenant_id' => $tenant->id,
                 'name'      => $data['organization_name'],
-                'code'      => 'MAIN-' . strtoupper(substr($data['slug'], 0, 6)),
+                'code'      => 'MAIN-' . $tenant->id,
                 'is_active' => true,
             ]);
 

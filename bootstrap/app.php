@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             \App\Http\Middleware\SetTenantContext::class,
+            \App\Http\Middleware\SetCompanyContext::class,   // ← حتماً این را بیفزایید
+
         ]);
         $middleware->alias([
             'require.tenant' => \App\Http\Middleware\RequireTenant::class,

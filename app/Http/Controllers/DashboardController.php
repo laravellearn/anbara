@@ -18,28 +18,4 @@ class DashboardController extends Controller
         return view('dashboard', compact('user', 'companyId'));
     }
 
-    public function switchCompany($companyId)
-    {
-        $user = auth()->user();
-
-        abort_unless(
-            $user->companies()->where('company_id', $companyId)->exists(),
-            403
-        );
-
-        session(['current_company_id' => $companyId]);
-
-        // بهتر است بلافاصله context را به‌روز کنیم
-        $manager = app(TenantManager::class);
-        if ($tenant = $manager->getTenant()) {
-            $company = \App\Models\Company::where('tenant_id', $tenant->id)
-                ->where('id', $companyId)
-                ->first();
-            if ($company) {
-                $manager->setCompany($company);
-            }
-        }
-
-        return redirect()->back();
-    }
 }

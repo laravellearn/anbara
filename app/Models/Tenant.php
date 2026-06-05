@@ -67,9 +67,18 @@ class Tenant extends Model
     {
         return $this->hasMany(Role::class);
     }
+
+    // app/Models/Tenant.php
+    public function activeSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('starts_at', '<=', now())
+            ->where(function ($q) {
+                $q->whereNull('ends_at')
+                    ->orWhere('ends_at', '>=', now());
+            })
+            ->orderByDesc('starts_at')
+            ->first(); // → یک نمونه برمی‌گرداند، نه hasOne
+    }
 }
-
-
-
-
-

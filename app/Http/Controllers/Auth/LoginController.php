@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Models\OtpCode;
 use App\Models\User;
 use App\Services\Auth\AuthService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -94,25 +95,21 @@ class LoginController extends Controller
     // نمایش صفحه وارد کردن کد
     public function showOtpVerifyForm()
     {
-        $mobile = session('login_otp_mobile');
 
+        $mobile = session('login_otp_mobile');
         if (!$mobile) {
             return redirect()->route('login.otp.request')
                 ->withErrors(['mobile' => 'لطفاً شماره موبایل خود را وارد کنید.']);
         }
 
-        // پیدا کردن OTP فعال برای محاسبه زمان باقی‌مانده
-        $otp = OtpCode::where('mobile', $mobile)
-            ->where('is_used', false)
-            ->where('expires_at', '>', now())
-            ->first();
-
-        $expiresAt = $otp ? $otp->expires_at : now()->addMinutes(2);
+        $user = User::where('mobile', $mobile)->firstOrFail();
+        $lastOtp = $user->otpCodes()->latest()->firstOrFail();
 
         return view('auth.login-otp-verify', [
             'mobile' => $mobile,
-            'expiresAt' => $expiresAt
+            'expiresAt' => $lastOtp->expires_at, // Carbon instance
         ]);
+
     }
 
     // تأیید کد
@@ -121,46 +118,46 @@ class LoginController extends Controller
         $request->validate([
             'code' => 'required|digits:6',
         ]);
-    
+
         $mobile = session('login_otp_mobile');
-    
+
         if (!$mobile) {
             return redirect()->route('login.otp.request')
                 ->withErrors([
                     'error' => 'جلسه شما منقضی شده است.'
                 ]);
         }
-    
+
         $result = $this->authService->verifyLoginOtp(
             $mobile,
             $request->code
         );
-    
+
         if (!$result) {
-    
+
             $otp = OtpCode::where('mobile', $mobile)
                 ->where('is_used', false)
                 ->latest()
                 ->first();
-    
+
             if ($otp && $otp->attempts >= 5) {
-    
+
                 return back()->withErrors([
                     'code' => 'تعداد دفعات مجاز وارد کردن کد به پایان رسیده است. لطفاً درخواست کد جدید بدهید.'
                 ]);
             }
-    
+
             return back()->withErrors([
                 'code' => 'کد وارد شده اشتباه یا منقضی شده است.'
             ]);
         }
-    
+
         session()->forget('login_otp_mobile');
-    
+
         Auth::login($result);
-    
+
         $request->session()->regenerate();
-    
+
         return redirect()->intended('/dashboard')
             ->with('success', 'با موفقیت وارد شدید.');
     }
@@ -169,23 +166,36 @@ class LoginController extends Controller
     /**
      * ارسال مجدد کد OTP
      */
-    public function resendOtp(Request $request)
+    public function resendOtp(Request $request): JsonResponse
     {
         $mobile = session('login_otp_mobile');
-
-        
-        $otp = $user->otps()
-        ->latest()
-        ->first();
 
         if (!$mobile) {
             return response()->json([
                 'success' => false,
                 'message' => 'جلسه شما منقضی شده است. لطفاً دوباره از ابتدا شروع کنید.'
-            ], 400);
+            ], 422);
         }
+
         $user = User::where('mobile', $mobile)->first();
 
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'کاربری با این شماره یافت نشد.'
+            ], 404);
+        }
+
+        // جلوگیری از اسپم (با استفاده از رابطه صحیح)
+        $lastOtp = $user->otpCodes()->latest()->first();
+        if ($lastOtp && now()->lt($lastOtp->expires_at)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'کد قبلی هنوز معتبر است. لطفاً کمی صبر کنید.'
+            ], 429);
+        }
+
+        // ارسال کد جدید
         $sent = $this->authService->sendLoginOtp($mobile);
 
         if (!$sent) {
@@ -195,18 +205,26 @@ class LoginController extends Controller
             ], 500);
         }
 
-        // بروزرسانی زمان انقضا در سشن (اختیاری)
+        // دریافت آخرین OTP جدید
+        $newOtp = $user->otpCodes()->latest()->first();
+
+        if (!$newOtp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در ایجاد کد جدید.'
+            ], 500);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'کد جدید ارسال شد.',
-            'expires_at' => $otp->expires_at->timestamp,
-
+            'expires_at' => $newOtp->expires_at->timestamp,
         ]);
     }
 
     public function logout()
     {
         Auth::logout();
-        return redirect()->route('login');    
+        return redirect()->route('login');
     }
 }

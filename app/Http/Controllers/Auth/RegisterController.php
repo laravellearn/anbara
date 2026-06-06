@@ -239,66 +239,57 @@ class RegisterController extends Controller
         OtpService $otpService,
         IPPanelService $smsService
     ): JsonResponse {
-
+    
         $userId = session('pending_user_id');
-
+    
         if (!$userId) {
-
             return response()->json([
                 'success' => false,
                 'message' => 'نشست شما منقضی شده است.'
             ], 422);
         }
-
+    
         $user = User::find($userId);
-
+    
         if (!$user) {
-
             return response()->json([
                 'success' => false,
                 'message' => 'کاربر یافت نشد.'
             ], 404);
         }
-
-        // جلوگیری از اسپم
-        $lastOtp = $user->otpCodes()
-            ->latest()
-            ->first();
-
-        if (
-            $lastOtp &&
-            now()->lt($lastOtp->expires_at)
-        ) {
-
+    
+        // جلوگیری از اسپم با بررسی آخرین OTP (قبل از تولید کد جدید)
+        $lastOtp = $user->otpCodes()->latest()->first();
+    
+        if ($lastOtp && now()->lt($lastOtp->expires_at)) {
             return response()->json([
                 'success' => false,
                 'message' => 'هنوز امکان ارسال مجدد کد وجود ندارد.'
             ], 429);
         }
-
+    
+        // تولید و ارسال کد جدید
         $code = $otpService->generate($user);
-
-        $sent = $smsService->sendOtp(
-            $user->mobile,
-            $code
-        );
-
+        $sent = $smsService->sendOtp($user->mobile, $code);
+    
         if (!$sent) {
-
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در ارسال پیامک.'
             ], 500);
         }
-
+    
+        // دریافت آخرین OTP (که الان همان OTP جدید است)
+        $newOtp = $user->otpCodes()->latest()->first();
+    
         return response()->json([
-            'success' => true,
-            'message' => 'کد تایید مجدداً ارسال شد.',
-            'expires_at' => $lastOtp->expires_at->timestamp,
-
+            'success'    => true,
+            'message'    => 'کد تایید مجدداً ارسال شد.',
+            'expires_at' => $newOtp->expires_at->timestamp,
         ]);
     }
 
+    
     public function verifyOtp(Request $request, TenantRegistrationService $registrationService)
     {
         $request->validate([

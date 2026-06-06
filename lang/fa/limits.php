@@ -1,4 +1,5 @@
 <?php
+
 return [
     'max_products' => 'حداکثر کالا',
     'max_users' => 'حداکثر کاربر',

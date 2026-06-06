@@ -52,11 +52,11 @@
 
                     <h1 class="fw-bold mb-2">429</h1>
 
-                    <h4 class="mb-2">خطای درخواست زیاد سرور</h4>
+                    <h4 class="mb-2">خطای درخواست زیاد سمت سرور</h4>
 
                     <p class="text-muted mb-4">
                         درخواست های زیادی سمت سرور ارسال کردید</br>
-                        لطفا منتظر بمانید
+                        لطفا 1 دقیقه منتظر بمانید....
                     </p>
 
                     <div class="d-flex justify-content-center gap-2">

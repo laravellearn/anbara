@@ -128,6 +128,7 @@ html .kanban-container .kanban-text {
 
 html .fw-medium {
   font-weight: 500;
+  font-size: 12px;
 }
 
 html .swal2-container .swal2-popup .swal2-title {

@@ -15,6 +15,10 @@ class DashboardController extends Controller
         $manager = app(TenantManager::class);
         $companyId = $manager->getCompanyId();
 
+        if (auth()->user()?->isSuperAdmin()) {
+            return redirect()->route('super-admin.dashboard');
+        }
+
         return view('dashboard', compact('user', 'companyId'));
     }
 

@@ -24,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'require.tenant' => \App\Http\Middleware\RequireTenant::class,
             'can' => \App\Http\Middleware\CheckPermission::class,
+            'superadmin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+
 
         ]);
     })

@@ -15743,6 +15743,7 @@ html:not(.layout-menu-fixed) .menu-inner-shadow {
 .menu-link > :not(.menu-icon) {
   flex: 0 1 auto;
   opacity: 1;
+  font-size: 14px;
 }
 
 .menu-sub {

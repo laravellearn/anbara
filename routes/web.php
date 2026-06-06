@@ -2,6 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\superAdmin\{
+    SuperDashboardController,
+    SuperTenantController,
+    SuperPlanController,
+    SuperSubscriptionController,
+    SuperActivityLogController
+};
+
+
 use App\Http\Controllers\Core\{
     UserController,
     ProfileController,
@@ -23,6 +32,24 @@ use App\Http\Controllers\{
 };
 
 
+Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superadmin'])->group(function () {
+    // چک Super Admin در یک Middleware اختصاصی (یا با استفاده از Controller)
+    Route::get('/', [SuperDashboardController::class, 'index'])->name('dashboard');
+
+    // مدیریت Tenantها
+    Route::resource('tenants', SuperTenantController::class)->except(['show']);
+
+    // مدیریت پلن‌ها
+    Route::resource('plans', SuperPlanController::class)->except(['show']);
+
+    // مدیریت اشتراک‌ها
+    Route::get('subscriptions', [SuperSubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::post('subscriptions/{subscription}/cancel', [SuperSubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+    Route::post('subscriptions/{subscription}/renew', [SuperSubscriptionController::class, 'renew'])->name('subscriptions.renew');
+
+    // لاگ‌های سیستمی
+    Route::get('activity-logs', [SuperActivityLogController::class, 'index'])->name('activity-logs.index');
+});
 
 //Authentication-----------------
 Route::middleware(['guest','throttle:6,1'])->group(function () {

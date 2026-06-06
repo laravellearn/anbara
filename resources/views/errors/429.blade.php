@@ -60,7 +60,6 @@
                     </p>
 
                     <div class="d-flex justify-content-center gap-2">
-                        <a href="{{ url()->previous() }}" class="btn btn-primary">بازگشت</a>
                         <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">صفحه اصلی</a>
                     </div>
 

@@ -18,6 +18,6 @@ class FiscalYearSwitcherController extends Controller
         $fiscalYear = FiscalYear::where('tenant_id', $manager->getTenantId())->findOrFail($request->fiscal_year_id);
         $manager->setFiscalYear($fiscalYear);
 
-        return redirect()->back()->with('success', 'سال مالی به ' . $fiscalYear->name . ' تغییر کرد.');
+        return redirect()->back()->with('swal_error', 'سال مالی به ' . $fiscalYear->name . ' تغییر کرد.');
     }
 }

@@ -30,7 +30,7 @@ class BillingController extends Controller
 
         $currentPlan = $planService->getCurrentPlan();
         if ($currentPlan && !$planService->canUpgradeTo($currentPlan, $targetPlan)) {
-            return back()->withErrors(['plan' => 'امکان ارتقا به این پلن وجود ندارد.']);
+            return back()->with('swal_error', 'امکان ارتقا به این پلن وجود ندارد.');
         }
 
         // اینجا می‌توان فرآیند پرداخت را فراخوانی کرد.
@@ -54,14 +54,14 @@ class BillingController extends Controller
             'auto_renew' => false,
         ]);
 
-        return redirect()->route('billing.license')->with('success', 'اشتراک شما با موفقیت به ' . $targetPlan->name . ' ارتقا یافت.');
+        return redirect()->route('billing.license')->with('swal_success', 'اشتراک شما با موفقیت به ' . $targetPlan->name . ' ارتقا یافت.');
     }
 
     public function license(PlanService $planService)
     {
         $subscription = $planService->getActiveSubscription();
         if (!$subscription) {
-            return redirect()->route('billing.plans')->withErrors(['license' => 'اشتراک فعالی وجود ندارد.']);
+            return redirect()->route('billing.plans')->with(['swal_error' , 'اشتراک فعالی وجود ندارد.']);
         }
 
         $plan = $subscription->plan;

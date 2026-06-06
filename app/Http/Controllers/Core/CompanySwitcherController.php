@@ -27,6 +27,6 @@ class CompanySwitcherController extends Controller
         session(['current_company_id' => $company->id]);
         $manager->setCompany($company);
 
-        return redirect()->back()->with('success', 'سازمان به ' . $company->name . ' تغییر کرد.');
+        return redirect()->back()->with('swal_success', 'سازمان به ' . $company->name . ' تغییر کرد.');
     }
 }

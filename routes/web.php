@@ -19,7 +19,9 @@ use App\Http\Controllers\Core\{
     BillingController,
     FiscalYearController,
     CompanyController,
-    ActivityLogController
+    ActivityLogController,
+    RoleController,
+    PermissionController
 };
 
 use App\Http\Controllers\Auth\{
@@ -52,7 +54,7 @@ Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superad
 });
 
 //Authentication-----------------
-Route::middleware(['guest','throttle:6,1'])->group(function () {
+Route::middleware(['guest', 'throttle:6,1'])->group(function () {
 
     //Login-----------------
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -92,6 +94,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     // خروج
     Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    //سطوح دسترسی
+    Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
 });
 
 // همهٔ مسیرهایی که نیاز به tenant دارند
@@ -121,4 +126,7 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
+
+    //سطوح دسترسی
+    Route::resource('roles', RoleController::class)->except(['show', 'create', 'edit']);
 });

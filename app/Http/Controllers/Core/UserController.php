@@ -93,7 +93,7 @@ class UserController extends Controller
             $companyUser->roles()->sync($request->roles);
         }
 
-        return redirect()->route('core.users.index')->with('success', 'کاربر با موفقیت ایجاد شد.');
+        return redirect()->route('users.index')->with('swal_success', 'کاربر با موفقیت ایجاد شد.');
     }
 
     /**
@@ -143,7 +143,7 @@ class UserController extends Controller
             $companyUser->roles()->sync($request->roles ?? []);
         }
 
-        return redirect()->route('core.users.index')->with('success', 'کاربر با موفقیت ویرایش شد.');
+        return redirect()->route('users.index')->with('swal_success', 'کاربر با موفقیت ویرایش شد.');
     }
 
     /**
@@ -156,7 +156,7 @@ class UserController extends Controller
         $user = User::where('tenant_id', $this->manager->getTenantId())->findOrFail($id);
         $user->delete();
 
-        return redirect()->route('core.users.index')->with('success', 'کاربر غیرفعال شد.');
+        return redirect()->route('users.index')->with('swal_success', 'کاربر غیرفعال شد.');
     }
 
     /**
@@ -174,7 +174,7 @@ class UserController extends Controller
         // $request->file('file')->store('imports');
         // (Logic: خواندن فایل، اعتبارسنجی سطری، رعایت محدودیت max_users و ایجاد کاربران)
 
-        return redirect()->route('core.users.index')->with('success', 'عملیات ایمپورت با موفقیت آغاز شد.');
+        return redirect()->route('users.index')->with('swal_success', 'عملیات ایمپورت با موفقیت آغاز شد.');
     }
 
     /**

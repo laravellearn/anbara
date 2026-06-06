@@ -603,7 +603,9 @@
     </li>
 
     {{-- ==================== کاربران و دسترسی ==================== --}}
+    @canany('access',['users.view'.'roles.view','permissions.view'])
     <li class="menu-header small text-uppercase"><span class="menu-header-text">کاربران و دسترسی</span></li>
+    @endcanany
 
     {{-- کاربران --}}
     @can('access', 'users.view')
@@ -623,6 +625,7 @@
     @endcan
 
     {{-- نقش‌ها --}}
+    @can('access', 'roles.view')
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-shield"></i>
@@ -630,14 +633,17 @@
       </a>
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="app-user-list.html" class="menu-link">
+          <a href="{{ route('roles.index') }}" class="menu-link">
             <div>نقش‌ها</div>
           </a>
         </li>
       </ul>
     </li>
+    @endcan
 
     {{-- مجوزها --}}
+    @can('access', 'permissions.view')
+
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-key"></i>
@@ -645,12 +651,13 @@
       </a>
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="app-user-list.html" class="menu-link">
+          <a href="{{ route('permissions.index') }}" class="menu-link">
             <div>سطوح دسترسی</div>
           </a>
         </li>
       </ul>
     </li>
+    @endcan
 
     {{-- ==================== تنظیمات ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">تنظیمات</span></li>

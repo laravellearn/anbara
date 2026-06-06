@@ -27,7 +27,7 @@ class ProfileController extends Controller
 
         $user->update($request->only('name', 'mobile', 'email'));
 
-        return back()->with('success', 'پروفایل با موفقیت به‌روز شد.');
+        return back()->with('swal_error', 'پروفایل با موفقیت به‌روز شد.');
     }
 
     public function changePassword(Request $request)
@@ -41,6 +41,6 @@ class ProfileController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return back()->with('success', 'رمز عبور تغییر کرد.');
+        return back()->with('swal_error', 'رمز عبور تغییر کرد.');
     }
 }

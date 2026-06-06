@@ -15,9 +15,9 @@ return new class extends Migration
 
             $table->id();
 
-            $table->foreignId('tenant_id')
+            $table->foreignId('tenant_id')->nullable()
                 ->constrained()
-                ->cascadeOnDelete()->nullable();
+                ->cascadeOnDelete();
 
             $table->foreignId('company_id')
                 ->nullable()

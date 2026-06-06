@@ -280,7 +280,11 @@ class DatabaseSeeder extends Seeder
             ['name' => 'activity_logs.view', 'title' => 'مشاهده لاگ کاربران'],
             ['name' => 'billing.history', 'title' => 'مشاهده تاریخچه اشتراک ها'],
 
-
+            ['name' => 'roles.view',        'title' => 'مشاهده نقش‌ها'],
+            ['name' => 'roles.create',      'title' => 'ایجاد نقش'],
+            ['name' => 'roles.edit',        'title' => 'ویرایش نقش'],
+            ['name' => 'roles.delete',      'title' => 'حذف نقش'],
+            ['name' => 'permissions.view',  'title' => 'مشاهده سطوح دسترسی'],
 
         ];
 

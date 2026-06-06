@@ -30,4 +30,6 @@
 
     <script src="{{ asset('vendor/js/template-customizer.js') }}"></script>
     <script src="{{ asset('js/config.js') }}"></script>
+        <link rel="stylesheet" href="{{ asset('css/sweetalert2.min.css') }}">
+
     @yield('styles')

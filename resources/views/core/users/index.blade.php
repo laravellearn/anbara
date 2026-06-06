@@ -7,7 +7,7 @@
 
     {{-- کارت‌های آماری --}}
     <div class="row g-4 mb-4">
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-start justify-content-between">
@@ -22,7 +22,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-start justify-content-between">
@@ -37,7 +37,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-start justify-content-between">
@@ -52,6 +52,21 @@
                 </div>
             </div>
         </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span class="fw-medium">ورودهای امروز</span>
+                            <h4 class="mb-0 mt-2">{{ \App\Models\ActivityLog::whereDate('created_at', today())->where('action', 'login')->count() }}</h4>
+                        </div>
+                        <span class="badge bg-label-warning rounded p-2">
+                            <i class="bx bx-log-in-circle bx-sm"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- لیست کاربران --}}
@@ -59,7 +74,6 @@
         <div class="card-header border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
             <h5 class="card-title mb-0">لیست کاربران</h5>
             <div class="d-flex gap-2 flex-wrap">
-                {{-- دکمه‌های خروجی --}}
                 @can('access', 'users.export')
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -72,15 +86,11 @@
                     </ul>
                 </div>
                 @endcan
-
-                {{-- ایمپورت --}}
                 @can('access', 'users.import')
                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importModal">
                     <i class="bx bx-import"></i> ایمپورت
                 </button>
                 @endcan
-
-                {{-- افزودن کاربر --}}
                 @can('access', 'users.create')
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
                     <i class="bx bx-plus"></i> کاربر جدید
@@ -96,9 +106,7 @@
                     <select name="company_id" class="form-select select2">
                         <option value="">همه شرکت‌ها</option>
                         @foreach($companies as $company)
-                        <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>
-                            {{ $company->name }}
-                        </option>
+                        <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -106,9 +114,7 @@
                     <select name="role_id" class="form-select select2">
                         <option value="">همه نقش‌ها</option>
                         @foreach($roles as $role)
-                        <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>
-                            {{ $role->title }}
-                        </option>
+                        <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>{{ $role->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -120,14 +126,12 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-outline-secondary w-100">
-                        <i class="bx bx-filter-alt"></i> فیلتر
-                    </button>
+                    <button type="submit" class="btn btn-outline-secondary w-100"><i class="bx bx-filter-alt"></i> فیلتر</button>
                 </div>
             </form>
         </div>
 
-        {{-- جدول --}}
+        {{-- جدول کاربران --}}
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead class="table-light">
@@ -168,14 +172,9 @@
                         </td>
                         <td>
                             @php
-                            // company_user پیش‌فرض کاربر را پیدا می‌کنیم (مستقیماً از ستون is_default)
-                            $defaultCompanyUser = $user->companyUsers()
-                            ->where('is_default', true)
-                            ->first();
+                            $defaultCompanyUser = $user->companyUsers()->where('is_default', true)->first();
                             $userRoles = $defaultCompanyUser ? $defaultCompanyUser->roles : collect();
-
                             @endphp
-
                             @foreach($userRoles as $role)
                             <span class="badge bg-label-info me-1">{{ $role->title }}</span>
                             @endforeach
@@ -190,7 +189,7 @@
                         <td>
                             <div class="d-flex gap-1">
                                 @can('access', 'users.edit')
-                                <button class="btn btn-sm btn-icon btn-outline-warning edit-user-btn"
+                                <button class="btn btn-sm btn-outline-warning edit-user-btn"
                                     data-id="{{ $user->id }}"
                                     data-name="{{ $user->name }}"
                                     data-mobile="{{ $user->mobile }}"
@@ -202,28 +201,23 @@
                                 </button>
                                 @endcan
                                 @can('access', 'users.delete')
-                                <form action="{{ route('users.destroy', $user) }}" method="POST" class="delete-form d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-icon btn-outline-danger">
-                                        <i class="bx bx-trash"></i>
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-user-btn"
+                                    data-url="{{ route('users.destroy', $user) }}"
+                                    data-name="{{ $user->name }}">
+                                    <i class="bx bx-trash"></i>
+                                </button>
                                 @endcan
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center py-5">
-                            <div class="text-muted">هیچ کاربری یافت نشد.</div>
-                        </td>
+                        <td colspan="8" class="text-center text-muted py-5">هیچ کاربری یافت نشد.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-
         <div class="card-footer">
             {{ $users->appends(request()->query())->links() }}
         </div>
@@ -238,7 +232,7 @@
                 <h5 class="modal-title">ایجاد کاربر جدید</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('users.store') }}" method="POST">
+            <form action="{{ route('users.store') }}" method="POST" id="createUserForm">
                 @csrf
                 <div class="modal-body">
                     <div class="row g-3">
@@ -271,9 +265,7 @@
                                 <div class="col-md-4">
                                     <div class="form-check">
                                         <input class="form-check-input company-checkbox" type="checkbox" name="companies[]" value="{{ $company->id }}" id="create_company_{{ $company->id }}">
-                                        <label class="form-check-label" for="create_company_{{ $company->id }}">
-                                            {{ $company->name }}
-                                        </label>
+                                        <label class="form-check-label" for="create_company_{{ $company->id }}">{{ $company->name }}</label>
                                     </div>
                                 </div>
                                 @endforeach
@@ -281,7 +273,7 @@
                             <small class="text-muted">می‌توانید چندین شرکت انتخاب کنید.</small>
                         </div>
 
-                        {{-- انتخاب شرکت پیش‌فرض --}}
+                        {{-- شرکت پیش‌فرض --}}
                         <div class="col-12">
                             <label class="form-label">شرکت پیش‌فرض <span class="text-danger">*</span></label>
                             <select name="default_company" class="form-select" required id="create_default_company">
@@ -289,7 +281,7 @@
                             </select>
                         </div>
 
-                        {{-- انتخاب نقش‌ها --}}
+                        {{-- نقش‌ها --}}
                         <div class="col-12">
                             <label class="form-label">نقش‌ها</label>
                             <div class="row">
@@ -297,9 +289,7 @@
                                 <div class="col-md-4">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $role->id }}" id="create_role_{{ $role->id }}">
-                                        <label class="form-check-label" for="create_role_{{ $role->id }}">
-                                            {{ $role->title }}
-                                        </label>
+                                        <label class="form-check-label" for="create_role_{{ $role->id }}">{{ $role->title }}</label>
                                     </div>
                                 </div>
                                 @endforeach
@@ -358,9 +348,7 @@
                                 <div class="col-md-4">
                                     <div class="form-check">
                                         <input class="form-check-input edit-company-checkbox" type="checkbox" name="companies[]" value="{{ $company->id }}" id="edit_company_{{ $company->id }}">
-                                        <label class="form-check-label" for="edit_company_{{ $company->id }}">
-                                            {{ $company->name }}
-                                        </label>
+                                        <label class="form-check-label" for="edit_company_{{ $company->id }}">{{ $company->name }}</label>
                                     </div>
                                 </div>
                                 @endforeach
@@ -381,9 +369,7 @@
                                 <div class="col-md-4">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $role->id }}" id="edit_role_{{ $role->id }}">
-                                        <label class="form-check-label" for="edit_role_{{ $role->id }}">
-                                            {{ $role->title }}
-                                        </label>
+                                        <label class="form-check-label" for="edit_role_{{ $role->id }}">{{ $role->title }}</label>
                                     </div>
                                 </div>
                                 @endforeach
@@ -425,36 +411,49 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
 <script>
     $(function() {
+        // ========== تابع کمکی برای به‌روزرسانی select شرکت پیش‌فرض ==========
+        function updateDefaultSelect(checkboxesSelector, selectElement) {
+            const $select = $(selectElement);
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+            }
 
-        // ========== مدیریت پویای شرکت پیش‌فرض در مودال ایجاد ==========
-        const createCompanyCheckboxes = $('.company-checkbox');
-        const createDefaultSelect = $('#create_default_company');
+            $select.find('option:gt(0)').remove();
 
-        function updateDefaultSelect(checkboxes, select) {
-            select.find('option:gt(0)').remove();
-            checkboxes.filter(':checked').each(function() {
+            $(checkboxesSelector + ':checked').each(function () {
                 const companyId = $(this).val();
                 const companyName = $(this).next('label').text().trim();
-                if (!select.find(`option[value="${companyId}"]`).length) {
-                    select.append(`<option value="${companyId}">${companyName}</option>`);
+                if (!$select.find(`option[value="${companyId}"]`).length) {
+                    $select.append(`<option value="${companyId}">${companyName}</option>`);
                 }
             });
-            if (select.find('option').length === 1) { // فقط گزینه placeholder
-                select.val('');
+
+            if ($select.find('option').length <= 1) {
+                $select.val('');
+            }
+
+            if ($select.hasClass('select2')) {
+                $select.select2({ width: '100%', dir: 'rtl' });
             }
         }
 
-        createCompanyCheckboxes.on('change', function() {
-            updateDefaultSelect(createCompanyCheckboxes, createDefaultSelect);
+        // ========== مودال ایجاد ==========
+        $(document).on('change', '.company-checkbox', function () {
+            updateDefaultSelect('.company-checkbox', '#create_default_company');
         });
 
         // ========== مودال ویرایش ==========
-        $('.edit-user-btn').on('click', function() {
+        $(document).on('change', '.edit-company-checkbox', function () {
+            updateDefaultSelect('.edit-company-checkbox', '#edit_default_company');
+        });
+
+        $('.edit-user-btn').on('click', function () {
             const btn = $(this);
             const userId = btn.data('id');
             const url = `{{ route('users.update', ':id') }}`.replace(':id', userId);
@@ -464,42 +463,35 @@
             $('#edit_mobile').val(btn.data('mobile'));
             $('#edit_email').val(btn.data('email'));
 
-            // ریست شرکت‌ها
             $('.edit-company-checkbox').prop('checked', false);
             const userCompanies = btn.data('companies') || [];
-            userCompanies.forEach(id => {
-                $(`#edit_company_${id}`).prop('checked', true);
-            });
+            userCompanies.forEach(id => $(`#edit_company_${id}`).prop('checked', true));
 
-            // آپدیت شرکت پیش‌فرض
+            updateDefaultSelect('.edit-company-checkbox', '#edit_default_company');
             const defaultCompanyId = btn.data('default-company');
-            updateDefaultSelect($('.edit-company-checkbox'), $('#edit_default_company'));
             if (defaultCompanyId) {
                 $('#edit_default_company').val(defaultCompanyId);
             }
+            if ($('#edit_default_company').hasClass('select2-hidden-accessible')) {
+                $('#edit_default_company').trigger('change.select2');
+            }
 
-            // ریست نقش‌ها
             $('input[name="roles[]"]', '#edit_roles_wrapper').prop('checked', false);
             const userRoles = btn.data('roles') || [];
-            userRoles.forEach(id => {
-                $(`#edit_role_${id}`).prop('checked', true);
-            });
+            userRoles.forEach(id => $(`#edit_role_${id}`).prop('checked', true));
 
             $('#editUserModal').modal('show');
         });
 
-        // آپدیت شرکت پیش‌فرض هنگام تغییر چک‌باکس‌های ویرایش
-        $('.edit-company-checkbox').on('change', function() {
-            updateDefaultSelect($('.edit-company-checkbox'), $('#edit_default_company'));
-        });
+        // ========== حذف با SweetAlert (روش مقاوم) ==========
+        $(document).on('click', '.delete-user-btn', function () {
+            const btn = $(this);
+            const url = btn.data('url');
+            const name = btn.data('name');
 
-        // ========== حذف با تأیید ==========
-        $('.delete-form').on('submit', function(e) {
-            e.preventDefault();
-            const form = this;
             Swal.fire({
                 title: 'آیا مطمئن هستید؟',
-                text: "این کاربر غیرفعال خواهد شد!",
+                text: `کاربر "${name}" غیرفعال خواهد شد.`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'بله، حذف کن',
@@ -511,35 +503,39 @@
                 buttonsStyling: false
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // ایجاد یک فرم مخفی و ارسال درخواست DELETE
+                    const form = $('<form>', {
+                        method: 'POST',
+                        action: url
+                    }).append(
+                        $('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }),
+                        $('<input>', { type: 'hidden', name: '_method', value: 'DELETE' })
+                    );
+                    $('body').append(form);
                     form.submit();
                 }
             });
         });
 
-        // ========== نمایش خطاهای اعتبارسنجی ==========
+        // ========== نمایش خطاها و موفقیت‌ها (بدون خطای syntax) ==========
         @if($errors->any())
-        Swal.fire({
-            icon: 'error',
-            title: 'خطا',
-            text: '{{ $errors->first() }}',
-            customClass: {
-                confirmButton: 'btn btn-danger'
-            }
-        });
+            Swal.fire({
+                icon: 'error',
+                title: 'خطا',
+                text: '{!! addslashes($errors->first()) !!}',
+                customClass: { confirmButton: 'btn btn-danger' }
+            });
         @endif
 
-        @if(session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'موفق',
-            text: '{{ session('
-            success ') }}',
-            customClass: {
-                confirmButton: 'btn btn-success'
-            },
-            timer: 3000,
-            showConfirmButton: false
-        });
+        @if(session('swal_success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'موفق',
+                text: '{!! addslashes(session('swal_success')) !!}',
+                customClass: { confirmButton: 'btn btn-success' },
+                timer: 3000,
+                showConfirmButton: false
+            });
         @endif
     });
 </script>

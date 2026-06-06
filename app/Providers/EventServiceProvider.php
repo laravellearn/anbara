@@ -27,7 +27,7 @@ class EventServiceProvider extends ServiceProvider
 
         \Event::listen(Login::class, function ($event) {
             ActivityLog::create([
-                'tenant_id'   => $event->user->tenant_id ? : '',
+                'tenant_id'   => $event->user->tenant_id ? : NULL,
                 'user_id'     => $event->user->id,
                 'action'      => 'login',
                 'subject_type'=> 'User',
@@ -39,7 +39,7 @@ class EventServiceProvider extends ServiceProvider
 
         \Event::listen(Logout::class, function ($event) {
             ActivityLog::create([
-                'tenant_id'   => $event->user->tenant_id ? : '',
+                'tenant_id'   => $event->user->tenant_id ? : NULL,
                 'user_id'     => $event->user->id,
                 'action'      => 'logout',
                 'subject_type'=> 'User',

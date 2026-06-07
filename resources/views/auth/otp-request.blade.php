@@ -74,13 +74,16 @@
                     <form id="formAuthentication" class="mb-3" action="{{ route('login.otp.send') }}" method="POST">
                       @CSRF
                       @include('errors.error')
-              
                         <div class="mb-3">
                             <label for="mobile" class="form-label">شماره موبایل:</label>
                             <input type="text" class="form-control text-start" id="mobile" name="mobile"
                                 autofocus dir="ltr">
                         </div>
                         <button class="btn btn-primary d-grid w-100">ارسال کد</button>
+                        <a href="{{ route('login') }}" class="btn btn-label-secondary w-100 mt-2">
+                            بازگشت به صفحه ورود
+                        </a>
+
                     </form>
 
 

@@ -39,9 +39,9 @@
         // آیا پلن قابل ارتقا وجود دارد؟
         $hasUpgradable = false;
         if ($currentPlan && $currentPlan->slug !== 'enterprise') {
-            $hasUpgradable = \App\Models\Plan::where('is_active', true)
-                ->whereRaw('monthly_price > ?', [$currentPlan->monthly_price])
-                ->exists();
+        $hasUpgradable = \App\Models\Plan::where('is_active', true)
+        ->whereRaw('monthly_price > ?', [$currentPlan->monthly_price])
+        ->exists();
         }
         @endphp
         <li class="nav-item d-flex align-items-center me-3">
@@ -50,10 +50,10 @@
           $remainingDays = 0;
           $remainingHours = 0;
           if ($activeSubscription->ends_at) {
-              $now = \Verta::now();
-              $end = \Verta::instance($activeSubscription->ends_at);
-              $remainingDays = $now->diffDays($end, false);
-              $remainingHours = $now->toCarbon()->diffInHours($end->toCarbon(), false);
+          $now = \Verta::now();
+          $end = \Verta::instance($activeSubscription->ends_at);
+          $remainingDays = $now->diffDays($end, false);
+          $remainingHours = $now->toCarbon()->diffInHours($end->toCarbon(), false);
           }
           @endphp
           <span class="badge bg-label-success me-1">
@@ -94,8 +94,8 @@
         @php
         $currentFiscalYear = app(\App\Services\TenantManager::class)->getFiscalYear();
         $allFiscalYears = $currentFiscalYear
-            ? \App\Models\FiscalYear::where('tenant_id', $currentFiscalYear->tenant_id)->get()
-            : collect();
+        ? \App\Models\FiscalYear::where('tenant_id', $currentFiscalYear->tenant_id)->get()
+        : collect();
         @endphp
         <li class="nav-item dropdown me-2">
           <a class="nav-link dropdown-toggle hide-arrow d-flex align-items-center" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -469,7 +469,11 @@
                   </div>
                   <div class="flex-grow-1">
                     <span class="fw-semibold d-block">{{ $userLogin->name }}</span>
-                    <small>مدیر</small>
+                    <small>
+                        @foreach ($user->roles as $role)
+                            <span class="badge bg-label-info me-1">{{ $role->title }}</span>
+                        @endforeach
+                    </small>
                   </div>
                 </div>
               </a>

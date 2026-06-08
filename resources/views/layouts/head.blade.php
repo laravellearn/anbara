@@ -39,7 +39,7 @@
     :root {
         --navbar-height: 62px;
         /* ارتفاع واقعی navbar را با Inspect اندازه بگیرید */
-        --sidebar-width: 261px;
+        --sidebar-width: 270px;
         /* عرض سایدبار */
     }
 
@@ -47,7 +47,6 @@
     .layout-navbar.fixed-top {
         position: fixed;
         top: 0;
-        right: var(--sidebar-width);
         left: 0;
         z-index: 1030;
         height: var(--navbar-height);
@@ -67,6 +66,10 @@
         display: flex;
         height: 100%;
         width: 100%;
+    }
+
+    li{
+        font-size: 13px;
     }
 
     .layout-menu {

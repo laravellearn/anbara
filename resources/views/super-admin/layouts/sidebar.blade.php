@@ -1,7 +1,15 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
-        <a href="{{ route('super-admin.dashboard') }}" class="app-brand-link">
-            <span class="app-brand-text demo menu-text fw-bold ms-2">پنل مدیریت مرکزی</span>
+        <a href="{{ route('dashboard') }}" class="app-brand-link">
+            <span class="app-brand-logo demo">
+                <img src="logo-light.png" alt="Anbara Logo" style="max-width: 100px;height:auto;"
+                    data-app-light-img="logo-light.png" data-app-dark-img="logo-dark.png">
+            </span>
+        </a>
+
+        <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
+            <i class="bx menu-toggle-icon d-none d-xl-block fs-4 align-middle"></i>
+            <i class="bx bx-x d-block d-xl-none bx-sm align-middle"></i>
         </a>
     </div>
     <div class="menu-inner-shadow"></div>

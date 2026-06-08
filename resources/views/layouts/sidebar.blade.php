@@ -1,5 +1,5 @@
 {{-- اصلاح‌شده: افزودن استایل اینلاین برای اسکرول مستقل --}}
-<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme" style="overflow-y: auto; height: 100%;">
+<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme" style="overflow-y: auto; height: 90%;">
   <div class="app-brand demo">
     <a href="{{ route('dashboard') }}" class="app-brand-link">
       <span class="app-brand-logo demo">
@@ -604,7 +604,7 @@
     </li>
 
     {{-- ==================== کاربران و دسترسی ==================== --}}
-    @canany('access',['users.view'.'roles.view','permissions.view'])
+    @canany('access',['users.view','roles.view','permissions.view'])
     <li class="menu-header small text-uppercase"><span class="menu-header-text">کاربران و دسترسی</span></li>
     @endcanany
 

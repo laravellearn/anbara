@@ -133,4 +133,14 @@ class User extends Authenticatable
             })
             ->exists();
     }
+
+    /**
+     * دسترسی‌های مستقیم کاربر (بدون نقش)
+     */
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_user', 'user_id', 'permission_id')
+            ->withPivot('tenant_id')
+            ->withTimestamps();
+    }
 }

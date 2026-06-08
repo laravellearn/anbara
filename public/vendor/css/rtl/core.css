@@ -17548,6 +17548,10 @@ html:not(.layout-menu-fixed) .menu-inner-shadow {
 .menu-link > :not(.menu-icon) {
   flex: 0 1 auto;
   opacity: 1;
+  font-size: 13px !important;
+}
+.navbar-nav-right{
+  border-bottom: 1px solid #ccc;
 }
 
 .menu-sub {
@@ -18120,7 +18124,7 @@ html:not([dir=rtl]) .menu-horizontal .menu-sub .menu-sub .menu-item .menu-link {
   justify-content: space-between;
 }
 .content-wrapper .container-p-y:not([class^=pt-]):not([class*=" pt-"]) {
-  padding-top: 1.15rem !important;
+  padding-top: 5rem !important;
 }
 
 .content-backdrop {

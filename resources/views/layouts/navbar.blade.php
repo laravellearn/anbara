@@ -1,4 +1,5 @@
-<nav class="layout-navbar navbar navbar-expand-xl align-items-center bg-navbar-theme" id="layout-navbar">
+{{-- اصلاح‌شده: افزودن کلاس fixed-top --}}
+<nav class="layout-navbar navbar navbar-expand-xl align-items-center bg-navbar-theme fixed-top" id="layout-navbar">
   <div class="container-fluid">
     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
       <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
@@ -38,9 +39,9 @@
         // آیا پلن قابل ارتقا وجود دارد؟
         $hasUpgradable = false;
         if ($currentPlan && $currentPlan->slug !== 'enterprise') {
-        $hasUpgradable = \App\Models\Plan::where('is_active', true)
-        ->whereRaw('monthly_price > ?', [$currentPlan->monthly_price])
-        ->exists();
+            $hasUpgradable = \App\Models\Plan::where('is_active', true)
+                ->whereRaw('monthly_price > ?', [$currentPlan->monthly_price])
+                ->exists();
         }
         @endphp
         <li class="nav-item d-flex align-items-center me-3">
@@ -49,10 +50,10 @@
           $remainingDays = 0;
           $remainingHours = 0;
           if ($activeSubscription->ends_at) {
-          $now = \Verta::now();
-          $end = \Verta::instance($activeSubscription->ends_at);
-          $remainingDays = $now->diffDays($end, false);
-          $remainingHours = $now->toCarbon()->diffInHours($end->toCarbon(), false);
+              $now = \Verta::now();
+              $end = \Verta::instance($activeSubscription->ends_at);
+              $remainingDays = $now->diffDays($end, false);
+              $remainingHours = $now->toCarbon()->diffInHours($end->toCarbon(), false);
           }
           @endphp
           <span class="badge bg-label-success me-1">
@@ -93,8 +94,8 @@
         @php
         $currentFiscalYear = app(\App\Services\TenantManager::class)->getFiscalYear();
         $allFiscalYears = $currentFiscalYear
-        ? \App\Models\FiscalYear::where('tenant_id', $currentFiscalYear->tenant_id)->get()
-        : collect();
+            ? \App\Models\FiscalYear::where('tenant_id', $currentFiscalYear->tenant_id)->get()
+            : collect();
         @endphp
         <li class="nav-item dropdown me-2">
           <a class="nav-link dropdown-toggle hide-arrow d-flex align-items-center" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -488,7 +489,7 @@
                 <span class="align-middle">تنظیمات</span>
               </a>
             </li>
-            <li>
+            {{-- <li>
               <a class="dropdown-item" href="pages-account-settings-billing.html">
                 <span class="d-flex align-items-center align-middle">
                   <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
@@ -496,26 +497,26 @@
                   <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
                 </span>
               </a>
-            </li>
+            </li> --}}
             <li>
               <div class="dropdown-divider"></div>
             </li>
             <li>
               <a class="dropdown-item" href="pages-help-center-landing.html">
                 <i class="bx bx-support me-2"></i>
-                <span class="align-middle">راهنمایی</span>
+                <span class="align-middle">پشتیبانی</span>
               </a>
             </li>
             <li>
               <a class="dropdown-item" href="pages-faq.html">
                 <i class="bx bx-help-circle me-2"></i>
-                <span class="align-middle">سوالات متداول</span>
+                <span class="align-middle">مدیریت لایسنس</span>
               </a>
             </li>
             <li>
               <a class="dropdown-item" href="pages-pricing.html">
                 <i class="bx bx-dollar me-2"></i>
-                <span class="align-middle">قیمت گذاری</span>
+                <span class="align-middle">خرید یا ارتقا اشتراک</span>
               </a>
             </li>
             <li>

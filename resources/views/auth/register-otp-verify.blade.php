@@ -56,8 +56,6 @@
                         کد ارسال شده به شماره
                         <strong dir="ltr">{{ $user->mobile }}</strong>
                         را وارد کنید.
-                        <br>
-                        <a href="{{ route('register') }}" style="text-align: center">ویرایش شماره</a>
                     </p>
                     <form action="{{ route('register.otp.verify') }}" method="POST">
                         @csrf
@@ -75,6 +73,7 @@
                             <input type="hidden" name="code" id="code">
                         </div>
                         <button type="submit" class="btn btn-primary w-100">تایید و ورود</button>
+
                     </form>
                     <div class="text-center mt-4">
                         زمان باقیمانده:

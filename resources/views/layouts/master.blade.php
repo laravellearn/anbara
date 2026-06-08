@@ -1,44 +1,37 @@
 <!DOCTYPE html>
 <html lang="fa" class="light-style customizer-hide" dir="rtl" data-theme="theme-default" data-assets-path="/"
     data-template="vertical-menu-template">
-      <head>
+    @include('layouts.head')
 
-      @include('layouts.head')
-  </head>
+</head>
 
-  <body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
+<body>
+  {{-- ==================== NAVBAR ==================== --}}
+  @include('layouts.navbar')
+
+  {{-- ==================== WRAPPER اصلی (سایدبار + محتوا) ==================== --}}
+  <div class="layout-wrapper layout-content-navbar">
       <div class="layout-container">
-        <!-- Menu -->
-        @include('layouts.sidebar')
-        <!-- / Menu -->
+          <!-- Menu -->
+          @include('layouts.sidebar')
+          <!-- / Menu -->
 
-        <!-- Layout container -->
-        <div class="layout-page">
-          <!-- Navbar -->
+          <!-- Layout container -->
+          <div class="layout-page">
+              <!-- Content wrapper (اسکرول‌شونده) -->
+              <div class="content-wrapper">
+                  <!-- Content -->
+                  @yield('content')
+                  <!-- / Content -->
 
-          @include('layouts.navbar')
+                  <div class="content-backdrop fade"></div>
+              </div>
+              <!-- / Content wrapper -->
 
-          <!-- / Navbar -->
-
-          <!-- Content wrapper -->
-          <div class="content-wrapper">
-            <!-- Content -->
-
-            @yield('content')
-
-            <!-- / Content -->
-
-            <!-- Footer -->
-            @include('layouts.footer')
-            <!-- / Footer -->
-
-            <div class="content-backdrop fade"></div>
+              <!-- Footer (ثابت در پایین) -->
+              @include('layouts.footer')
           </div>
-          <!-- Content wrapper -->
-        </div>
-        <!-- / Layout page -->
+          <!-- / Layout page -->
       </div>
 
       <!-- Overlay -->
@@ -46,12 +39,10 @@
 
       <!-- Drag Target Area To SlideIn Menu On Small Screens -->
       <div class="drag-target"></div>
-    </div>
-    <!-- / Layout wrapper -->
+  </div>
+  <!-- / Layout wrapper -->
 
-    <!-- Core JS -->
-    <!-- build:js assets/vendor/js/core.js -->
-
-    @include('layouts.script')
-  </body>
+  <!-- Core JS -->
+  @include('layouts.script')
+</body>
 </html>

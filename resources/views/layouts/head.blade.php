@@ -30,6 +30,81 @@
 
     <script src="{{ asset('vendor/js/template-customizer.js') }}"></script>
     <script src="{{ asset('js/config.js') }}"></script>
-        <link rel="stylesheet" href="{{ asset('css/sweetalert2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sweetalert2.min.css') }}">
+
+    
+
+<style>
+    :root {
+        --navbar-height: 62px;
+        /* ارتفاع واقعی navbar را با Inspect اندازه بگیرید */
+        --sidebar-width: 261px;
+        /* عرض سایدبار */
+    }
+
+    /* navbar فیکس؛ فقط محدودهٔ محتوای اصلی را می‌پوشاند */
+    .layout-navbar.fixed-top {
+        position: fixed;
+        top: 0;
+        right: var(--sidebar-width);
+        left: 0;
+        z-index: 1030;
+        height: var(--navbar-height);
+    }
+
+    body {
+        overflow: hidden;
+    }
+
+    .layout-wrapper {
+        height: calc(100vh - var(--navbar-height));
+        display: flex;
+    }
+
+    .layout-container {
+        display: flex;
+        height: 100%;
+        width: 100%;
+    }
+
+    .layout-menu {
+        flex-shrink: 0;
+        /* اسکرول سایدبار با استایل اینلاین خودش */
+    }
+
+    /* محتوای اصلی: flex column */
+    .layout-page {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+        /* خود صفحه اسکرول نمی‌شود */
+    }
+
+    /* بخش بالایی (محتوا) با قابلیت اسکرول */
+    .content-wrapper {
+        flex-grow: 1;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+
+    /* اسکرول‌بار webkit */
+    .content-wrapper::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .content-wrapper::-webkit-scrollbar-thumb {
+        background-color: #c1c1c1;
+        border-radius: 3px;
+    }
+
+    /* فوتر همواره پایین صفحه قرار دارد */
+    .layout-footer {
+        flex-shrink: 0;
+        /* ارتفاع آن کم و زیاد نشود */
+        /* می‌توانید height مشخص کنید یا خودکار باشد */
+    }
+</style>
 
     @yield('styles')

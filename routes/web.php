@@ -7,7 +7,10 @@ use App\Http\Controllers\superAdmin\{
     SuperTenantController,
     SuperPlanController,
     SuperSubscriptionController,
-    SuperActivityLogController
+    SuperActivityLogController,
+    SuperAdminRoleController,
+    ToolController,
+    SuperUserController
 };
 
 
@@ -40,6 +43,7 @@ Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superad
 
     // مدیریت Tenantها
     Route::resource('tenants', SuperTenantController::class)->except(['show']);
+    Route::resource('users', SuperUserController::class)->except(['show']);
 
     // مدیریت پلن‌ها
     Route::resource('plans', SuperPlanController::class)->except(['show']);
@@ -49,8 +53,16 @@ Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superad
     Route::post('subscriptions/{subscription}/cancel', [SuperSubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
     Route::post('subscriptions/{subscription}/renew', [SuperSubscriptionController::class, 'renew'])->name('subscriptions.renew');
 
-    // لاگ‌های سیستمی
+    Route::get('/subscriptions', fn() => view('super-admin.placeholder'))->name('subscriptions.index');
+    Route::get('/payments', fn() => view('super-admin.placeholder'))->name('payments.index');
+    Route::get('/licenses', fn() => view('super-admin.placeholder'))->name('licenses.index');
     Route::get('activity-logs', [SuperActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::resource('roles', SuperAdminRoleController::class)->except('show');
+    Route::get('/tickets', fn() => view('super-admin.placeholder'))->name('tickets.index');
+    Route::get('/notifications', fn() => view('super-admin.placeholder'))->name('notifications.index');
+    Route::get('/settings', fn() => view('super-admin.placeholder'))->name('settings.index');
+    Route::post('/tools/sync-permissions', [ToolController::class, 'syncPermissions'])->name('tools.sync-permissions');
+    Route::post('/tools/clear-cache', [ToolController::class, 'clearCache'])->name('tools.clear-cache');
 });
 
 //Authentication-----------------

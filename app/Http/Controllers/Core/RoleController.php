@@ -53,7 +53,7 @@ class RoleController extends Controller
 
         $role->permissions()->sync($request->permissions ?? []);
 
-        return redirect()->route('roles.index')->with('swal_error', 'نقش جدید ایجاد شد.');
+        return redirect()->route('roles.index')->with('swal_success', 'نقش جدید ایجاد شد.');
     }
 
     public function update(Request $request, $id)
@@ -73,7 +73,7 @@ class RoleController extends Controller
         $role->update($request->only('code', 'title', 'description'));
         $role->permissions()->sync($request->permissions ?? []);
 
-        return redirect()->route('roles.index')->with('swal_error', 'نقش ویرایش شد.');
+        return redirect()->route('roles.index')->with('swal_success', 'نقش ویرایش شد.');
     }
 
     public function destroy($id)
@@ -83,6 +83,6 @@ class RoleController extends Controller
         $role = Role::where('tenant_id', $this->manager->getTenantId())->findOrFail($id);
         $role->delete();
 
-        return redirect()->route('roles.index')->with('swal_error', 'نقش حذف شد.');
+        return redirect()->route('roles.index')->with('swal_success', 'نقش حذف شد.');
     }
 }

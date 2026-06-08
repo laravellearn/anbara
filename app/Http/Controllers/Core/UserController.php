@@ -93,6 +93,7 @@ class UserController extends Controller
             $companyUser->roles()->sync($request->roles);
         }
 
+        
         return redirect()->route('users.index')->with('swal_success', 'کاربر با موفقیت ایجاد شد.');
     }
 

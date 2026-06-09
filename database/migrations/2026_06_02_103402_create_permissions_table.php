@@ -19,7 +19,7 @@ return new class extends Migration
 
             $table->string('name')->unique();
             // warehouse.create
-
+            $table->string('group')->nullable();
             $table->string('title');
             // ایجاد انبار
 

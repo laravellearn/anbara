@@ -29,11 +29,11 @@ class DatabaseSeeder extends Seeder
         }
 
         User::create([
-            'name'              => 'مدیر کل',
-            'mobile'             => $mobile,
-            'mobile_verified_at'             => now(),
-            'password'          => Hash::make($password),
-            'is_active'    => true,  // اگر از فیلد boolean استفاده می‌کنی
+            'name' => 'مدیر کل',
+            'mobile' => $mobile,
+            'mobile_verified_at' => now(),
+            'password' => Hash::make($password),
+            'is_active' => true,  // اگر از فیلد boolean استفاده می‌کنی
             // 'role' => 'super_admin',   // اگر از فیلد رشته‌ای استفاده می‌کنی
         ]);
 
@@ -256,35 +256,41 @@ class DatabaseSeeder extends Seeder
         //Permissions
 
         $permissions = [
-            ['name' => 'users.view',         'title' => 'مشاهده لیست کاربران'],
-            ['name' => 'users.create',       'title' => 'ایجاد کاربر جدید'],
-            ['name' => 'users.edit',         'title' => 'ویرایش کاربر'],
-            ['name' => 'users.delete',       'title' => 'حذف کاربر'],
-            ['name' => 'users.assign_role',  'title' => 'تخصیص نقش به کاربر'],
-            ['name' => 'users.import',       'title' => 'ایمپورت کاربران'],
-            ['name' => 'users.export',       'title' => 'خروجی کاربران'],
 
+            // ==================== ۱. مدیریت سازمان‌ها ====================
+            ['name' => 'companies.view', 'title' => 'مشاهده لیست سازمان‌ها', 'group' => 'سازمان‌ها'],
+            ['name' => 'companies.create', 'title' => 'ایجاد سازمان جدید', 'group' => 'سازمان‌ها'],
+            ['name' => 'companies.edit', 'title' => 'ویرایش سازمان', 'group' => 'سازمان‌ها'],
+            ['name' => 'companies.delete', 'title' => 'حذف سازمان', 'group' => 'سازمان‌ها'],
 
-            ['name' => 'companies.view',        'title' => 'مشاهده لیست سازمان‌ها'],
-            ['name' => 'companies.create',      'title' => 'ایجاد سازمان جدید'],
-            ['name' => 'companies.edit',        'title' => 'ویرایش سازمان'],
-            ['name' => 'companies.delete',      'title' => 'حذف سازمان'],
-            ['name' => 'fiscal_years.view',     'title' => 'مشاهده سال‌های مالی'],
-            ['name' => 'fiscal_years.create',   'title' => 'ایجاد سال مالی'],
-            ['name' => 'fiscal_years.edit',     'title' => 'ویرایش سال مالی'],
-            ['name' => 'fiscal_years.delete',   'title' => 'حذف سال مالی'],
-            ['name' => 'activity_logs.view',    'title' => 'مشاهده لاگ فعالیت‌ها'],
-            ['name' => 'subscriptions.history', 'title' => 'مشاهده تاریخچه اشتراک'],
+            // ==================== ۲. مدیریت سال‌های مالی ====================
+            ['name' => 'fiscal_years.view', 'title' => 'مشاهده سال‌های مالی', 'group' => 'سال‌های مالی'],
+            ['name' => 'fiscal_years.create', 'title' => 'ایجاد سال مالی', 'group' => 'سال‌های مالی'],
+            ['name' => 'fiscal_years.edit', 'title' => 'ویرایش سال مالی', 'group' => 'سال‌های مالی'],
+            ['name' => 'fiscal_years.delete', 'title' => 'حذف سال مالی', 'group' => 'سال‌های مالی'],
 
+            // ==================== ۳. گزارشات و لاگ‌ها ====================
+            ['name' => 'activity_logs.view', 'title' => 'مشاهده لاگ فعالیت‌ها', 'group' => 'گزارشات'],
 
-            ['name' => 'activity_logs.view', 'title' => 'مشاهده لاگ کاربران'],
-            ['name' => 'billing.history', 'title' => 'مشاهده تاریخچه اشتراک ها'],
+            // ==================== ۴. اشتراک و صورتحساب ====================
+            ['name' => 'subscriptions.history', 'title' => 'مشاهده تاریخچه اشتراک', 'group' => 'اشتراک و صورتحساب'],
+            ['name' => 'billing.history', 'title' => 'مشاهده تاریخچه اشتراک‌ها', 'group' => 'اشتراک و صورتحساب'],
 
-            ['name' => 'roles.view',        'title' => 'مشاهده نقش‌ها'],
-            ['name' => 'roles.create',      'title' => 'ایجاد نقش'],
-            ['name' => 'roles.edit',        'title' => 'ویرایش نقش'],
-            ['name' => 'roles.delete',      'title' => 'حذف نقش'],
-            ['name' => 'permissions.view',  'title' => 'مشاهده سطوح دسترسی'],
+            // ==================== ۵. مدیریت کاربران (پیشنهادی) ====================
+            ['name' => 'users.view', 'title' => 'مشاهده لیست کاربران', 'group' => 'مدیریت کاربران'],
+            ['name' => 'users.create', 'title' => 'ایجاد کاربر جدید', 'group' => 'مدیریت کاربران'],
+            ['name' => 'users.edit', 'title' => 'ویرایش کاربر', 'group' => 'مدیریت کاربران'],
+            ['name' => 'users.delete', 'title' => 'حذف کاربر', 'group' => 'مدیریت کاربران'],
+            ['name' => 'users.assign_role', 'title' => 'تخصیص نقش به کاربر', 'group' => 'مدیریت کاربران'],
+            ['name' => 'users.import', 'title' => 'ایمپورت کاربران', 'group' => 'مدیریت کاربران'],
+            ['name' => 'users.export', 'title' => 'خروجی کاربران', 'group' => 'مدیریت کاربران'],
+
+            // ==================== ۶. مدیریت نقش‌ها (پیشنهادی) ====================
+            ['name' => 'roles.view', 'title' => 'مشاهده نقش‌ها', 'group' => 'سطوح دسترسی'],
+            ['name' => 'roles.create', 'title' => 'ایجاد نقش', 'group' => 'سطوح دسترسی'],
+            ['name' => 'roles.edit', 'title' => 'ویرایش نقش', 'group' => 'سطوح دسترسی'],
+            ['name' => 'roles.delete', 'title' => 'حذف نقش', 'group' => 'سطوح دسترسی'],
+            ['name' => 'permissions.view', 'title' => 'مشاهده سطوح دسترسی', 'group' => 'سطوح دسترسی'],
 
         ];
 
@@ -292,8 +298,9 @@ class DatabaseSeeder extends Seeder
             Permission::firstOrCreate(
                 ['name' => $perm['name']],
                 [
-                    'title'       => $perm['title'],
-                    'is_active'   => true,
+                    'title' => $perm['title'],
+                    'group' => $perm['group'],
+                    'is_active' => true,
                 ]
             );
         }

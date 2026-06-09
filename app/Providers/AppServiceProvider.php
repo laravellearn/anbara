@@ -32,11 +32,33 @@ class AppServiceProvider extends ServiceProvider
             $view->with('userLogin', Auth::user());
         });
 
+
+        View::composer('*', function ($view) {
+            if (Auth::check()) {
+                $user = Auth::user();
+
+                $view->with([
+                    'currentRole' => $user->getCurrentRole(),
+                    'currentRoleName' => $user->getCurrentRoleName(),
+                    'allRoles' => $user->getRolesWithCompanies(),
+                    'isSuperAdmin' => $user->isSuperAdmin(),
+                ]);
+            } else {
+                $view->with([
+                    'currentRole' => null,
+                    'currentRoleName' => 'مهمان',
+                    'allRoles' => collect(),
+                    'isSuperAdmin' => false,
+                ]);
+            }
+        });
+
+
         User::observe(UserObserver::class);
 
         //Permission
         Gate::define('access', function (?User $user, string $permissionName) {
-            if (! $user) {
+            if (!$user) {
                 return false;
             }
 
@@ -54,7 +76,7 @@ class AppServiceProvider extends ServiceProvider
             $tenantId = $manager->getTenantId();
             $companyId = $manager->getCompanyId();
 
-            if (! $tenantId || ! $companyId) {
+            if (!$tenantId || !$companyId) {
                 return false;
             }
 
@@ -73,7 +95,7 @@ class AppServiceProvider extends ServiceProvider
                 ->where('company_id', $companyId)
                 ->first();
 
-            if (! $companyUser) {
+            if (!$companyUser) {
                 return false;
             }
 

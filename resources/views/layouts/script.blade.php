@@ -14,52 +14,9 @@
 <script src="{{ asset('js/dashboards-analytics.js') }}"></script>
 
 <!-- SweetAlert2 JS -->
-<script src="{{ asset('js/sweetalert2.js') }}"></script>  {{-- مطمئن شوید فایل موجود است یا از CDN استفاده کنید --}}
+<script src="{{ asset('js/sweetalert2.js') }}"></script>
+  {{-- مطمئن شوید فایل موجود است یا از CDN استفاده کنید --}}
 
-<!-- نمایش خودکار پیغام‌های Flash -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        @if(session('swal_success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'موفق',
-                text: @json(session('swal_success')),   // ← امن و بدون مشکل نقل‌قول
-                confirmButtonText: 'باشه',
-                customClass: { confirmButton: 'btn btn-success' }
-            });
-        @endif
 
-        @if(session('swal_error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'خطا',
-                text: @json(session('swal_error')),
-                confirmButtonText: 'متوجه شدم',
-                customClass: { confirmButton: 'btn btn-danger' }
-            });
-        @endif
 
-        @if(session('swal_warning'))
-            Swal.fire({
-                icon: 'warning',
-                title: 'توجه',
-                text: @json(session('swal_warning')),
-                confirmButtonText: 'باشه',
-                customClass: { confirmButton: 'btn btn-warning' }
-            });
-        @endif
-
-        @if(session('swal_info'))
-            Swal.fire({
-                icon: 'info',
-                title: 'اطلاعات',
-                text: @json(session('swal_info')),
-                confirmButtonText: 'باشه',
-                customClass: { confirmButton: 'btn btn-info' }
-            });
-        @endif
-    });
-</script>
-
-{{-- بارگذاری اسکریپت‌های اضافی ویوها --}}
 @stack('scripts')

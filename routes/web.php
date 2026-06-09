@@ -130,7 +130,7 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
     Route::get('/fiscal-years/manage', [FiscalYearController::class, 'index'])->name('fiscal-years.index');
 
     // مدیریت کاربران
-    Route::resource('users', UserController::class)->except(['show']);
+    Route::resource('users', UserController::class);
     Route::post('users/import', [UserController::class, 'import'])->name('users.import');
     Route::get('users/export', [UserController::class, 'export'])->name('users.export');
 
@@ -142,3 +142,38 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
     //سطوح دسترسی
     Route::resource('roles', RoleController::class)->except(['show', 'create', 'edit']);
 });
+
+
+Route::get('/debug/roles-structure', function () {
+    $columns = \DB::select('SHOW COLUMNS FROM roles');
+    $sampleRoles = \DB::table('roles')->take(5)->get();
+    $user = auth()->user();
+    
+    // نقش کاربر جاری
+    $companyId = app(\App\Services\TenantManager::class)->getCompanyId();
+    $role = null;
+    
+    if ($companyId) {
+        $companyUser = \DB::table('company_user')
+            ->where('user_id', $user->id)
+            ->where('company_id', $companyId)
+            ->first();
+        
+        if ($companyUser) {
+            $roleId = \DB::table('company_user_role')
+                ->where('company_user_id', $companyUser->id)
+                ->value('role_id');
+            
+            if ($roleId) {
+                $role = \DB::table('roles')->find($roleId);
+            }
+        }
+    }
+    
+    return response()->json([
+        'columns' => $columns,
+        'sample_roles' => $sampleRoles,
+        'current_user_role' => $role,
+        'current_company_id' => $companyId,
+    ]);
+})->middleware('auth');

@@ -26,8 +26,9 @@ class RoleController extends Controller
             ->with('permissions')
             ->latest()
             ->paginate(20);
+        $groupedPermissions = Permission::getGroupedPermissions(); // اضافه کنید
 
-        return view('core.roles.index', compact('roles'));
+        return view('core.roles.index', compact('roles', 'groupedPermissions'));
     }
 
     public function store(Request $request)
@@ -35,20 +36,20 @@ class RoleController extends Controller
         Gate::authorize('access', 'roles.create');
 
         $request->validate([
-            'code'        => 'required|string|unique:roles,code,NULL,id,tenant_id,' . $this->manager->getTenantId(),
-            'title'       => 'required|string|max:255',
+            'code' => 'required|string|unique:roles,code,NULL,id,tenant_id,' . $this->manager->getTenantId(),
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'permissions' => 'nullable|array',
-            'permissions.*'=> 'exists:permissions,id',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role = Role::create([
-            'tenant_id'   => $this->manager->getTenantId(),
-            'code'        => $request->code,
-            'title'       => $request->title,
+            'tenant_id' => $this->manager->getTenantId(),
+            'code' => $request->code,
+            'title' => $request->title,
             'description' => $request->description,
-            'is_system'   => false,
-            'is_active'   => true,
+            'is_system' => false,
+            'is_active' => true,
         ]);
 
         $role->permissions()->sync($request->permissions ?? []);
@@ -63,11 +64,11 @@ class RoleController extends Controller
         $role = Role::where('tenant_id', $this->manager->getTenantId())->findOrFail($id);
 
         $request->validate([
-            'code'        => 'required|string|unique:roles,code,'.$role->id.',id,tenant_id,' . $this->manager->getTenantId(),
-            'title'       => 'required|string|max:255',
+            'code' => 'required|string|unique:roles,code,' . $role->id . ',id,tenant_id,' . $this->manager->getTenantId(),
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'permissions' => 'nullable|array',
-            'permissions.*'=> 'exists:permissions,id',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role->update($request->only('code', 'title', 'description'));

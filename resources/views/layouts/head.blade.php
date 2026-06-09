@@ -29,9 +29,10 @@
 <!-- Helpers -->
 <script src="{{ asset('vendor/js/helpers.js') }}"></script>
 
-    <script src="{{ asset('vendor/js/template-customizer.js') }}"></script>
-    <script src="{{ asset('js/config.js') }}"></script>
-        <link rel="stylesheet" href="{{ asset('css/sweetalert2.min.css') }}">
+<script src="{{ asset('vendor/js/template-customizer.js') }}"></script>
+<script src="{{ asset('js/config.js') }}"></script>
+
+<link rel="stylesheet" href="{{ asset('css/sweetalert2.min.css') }}">
 
 
 
@@ -39,7 +40,7 @@
     :root {
         --navbar-height: 62px;
         /* ارتفاع واقعی navbar را با Inspect اندازه بگیرید */
-        --sidebar-width: 270px;
+        --sidebar-width: 250px;
         /* عرض سایدبار */
     }
 
@@ -57,7 +58,6 @@
     }
 
     .layout-wrapper {
-        margin-top: var(--navbar-height);
         height: calc(100vh - var(--navbar-height));
         display: flex;
     }
@@ -66,10 +66,6 @@
         display: flex;
         height: 100%;
         width: 100%;
-    }
-
-    li{
-        font-size: 13px;
     }
 
     .layout-menu {
@@ -109,6 +105,27 @@
         flex-shrink: 0;
         /* ارتفاع آن کم و زیاد نشود */
         /* می‌توانید height مشخص کنید یا خودکار باشد */
+    }
+
+    /* #liveSearch {
+        margin-top: -2px;
+        transform: translateY(-1px);
+    } */
+
+    .accordion-button .badge {
+        transition: all 0.2s ease;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .select-group-btn, .deselect-group-btn {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+    }
+    
+    .permission-checkbox:checked + label {
+        color: #696cff;
+        font-weight: 500;
     }
 </style>
 

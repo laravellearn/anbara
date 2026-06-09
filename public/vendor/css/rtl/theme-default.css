@@ -1324,8 +1324,8 @@ li.ui-timepicker-selected,
   color: #9fa9b3 !important;
 }
 .bg-menu-theme .menu-item.active > .menu-link:not(.menu-toggle) {
-  color: #5a8dee;
-  background-color: #dbe4f3;
+  background-color: #E4EDF8;
+  color: #0A2A4A;
 }
 .bg-menu-theme.menu-horizontal .menu-inner > .menu-item.active > .menu-link {
   background-color: #dbe4f3 !important;
@@ -1407,7 +1407,7 @@ html:not(.layout-menu-collapsed) .bg-menu-theme .menu-inner > .menu-item.open:no
   background-color: #a8b1bb !important;
 }
 .bg-menu-theme .menu-sub > .menu-item.active > .menu-link:not(.menu-toggle):before {
-  background-color: #5a8dee !important;
+  background-color: #B58A4A !important;
 }
 .bg-menu-theme .menu-inner > .menu-header::before {
   background-color: #a8b1bb;

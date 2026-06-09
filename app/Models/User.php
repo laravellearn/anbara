@@ -65,7 +65,8 @@ class User extends Authenticatable
     {
         $manager = app(TenantManager::class);
         $companyId = $manager->getCompanyId();
-        if (! $companyId) return new Collection();
+        if (!$companyId)
+            return new Collection();
 
         $companyUser = $this->companyUsers()->where('company_id', $companyId)->first();
         return $companyUser ? $companyUser->roles : new Collection();
@@ -107,30 +108,33 @@ class User extends Authenticatable
             ->first();
     }
 
-    // App\Models\User.php
+
+    /**
+     * بررسی سوپر ادمین بودن
+     * کاربری که tenant_id نال دارد = سوپر ادمین
+     */
     public function isSuperAdmin(): bool
     {
         return is_null($this->tenant_id);
     }
 
     /**
-     * آیا کاربر در شرکت جاری (Current Company) نقش مدیر سازمان (tenant_admin) دارد؟
+     * بررسی ادمین سازمان بودن
      */
     public function isTenantAdmin(): bool
     {
-        /** @var \App\Services\TenantManager $manager */
-        $manager = app(\App\Services\TenantManager::class);
-        $companyId = $manager->getCompanyId();
+        $companyId = app(\App\Services\TenantManager::class)->getCompanyId();
 
-        if (! $companyId) {
+        if (!$companyId) {
             return false;
         }
 
-        return $this->companyUsers()
-            ->where('company_id', $companyId)
-            ->whereHas('roles', function ($query) {
-                $query->where('code', 'tenant_admin');
-            })
+        return \DB::table('company_user_role')
+            ->join('company_user', 'company_user_role.company_user_id', '=', 'company_user.id')
+            ->join('roles', 'company_user_role.role_id', '=', 'roles.id')
+            ->where('company_user.user_id', $this->id)
+            ->where('company_user.company_id', $companyId)
+            ->where('roles.code', 'tenant_admin')
             ->exists();
     }
 
@@ -143,4 +147,107 @@ class User extends Authenticatable
             ->withPivot('tenant_id')
             ->withTimestamps();
     }
+
+    /**
+     * دریافت نام نقش کاربر
+     */
+    public function getCurrentRoleName()
+    {
+        // ۱. سوپر ادمین (tenant_id نال)
+        if ($this->isSuperAdmin()) {
+            return 'مدیر کل سامانه';
+        }
+
+        $companyId = app(\App\Services\TenantManager::class)->getCompanyId();
+
+        if (!$companyId) {
+            return 'سازمان انتخاب نشده';
+        }
+
+        // ۲. کاربر عادی - خواندن نقش از دیتابیس
+        $role = \DB::table('company_user_role')
+            ->join('company_user', 'company_user_role.company_user_id', '=', 'company_user.id')
+            ->join('roles', 'company_user_role.role_id', '=', 'roles.id')
+            ->where('company_user.user_id', $this->id)
+            ->where('company_user.company_id', $companyId)
+            ->select('roles.*')
+            ->first();
+
+        if ($role) {
+            return $role->title;
+        }
+
+        return 'نقش تخصیص نیافته';
+    }
+
+    /**
+     * دریافت آبجکت نقش کاربر
+     */
+    public function getCurrentRole()
+    {
+        // سوپر ادمین - نقش مجازی
+        if ($this->isSuperAdmin()) {
+            return (object) [
+                'id' => 0,
+                'code' => 'super_admin',
+                'title' => 'مدیر کل سامانه',
+                'is_system' => true,
+            ];
+        }
+
+        $companyId = app(\App\Services\TenantManager::class)->getCompanyId();
+
+        if (!$companyId) {
+            return null;
+        }
+
+        return \DB::table('company_user_role')
+            ->join('company_user', 'company_user_role.company_user_id', '=', 'company_user.id')
+            ->join('roles', 'company_user_role.role_id', '=', 'roles.id')
+            ->where('company_user.user_id', $this->id)
+            ->where('company_user.company_id', $companyId)
+            ->select('roles.*')
+            ->first();
+    }
+
+    /**
+     * دریافت همه نقش‌های کاربر با سازمان‌های مربوطه
+     */
+    public function getRolesWithCompanies()
+    {
+        // سوپر ادمین همه نقش‌ها را نمی‌بینیم
+        if ($this->isSuperAdmin()) {
+            return collect([
+                0 => collect([
+                    (object) [
+                        'id' => 0,
+                        'code' => 'super_admin',
+                        'title' => 'مدیر کل سامانه',
+                    ]
+                ])
+            ]);
+        }
+
+        $companyUsers = \DB::table('company_user')
+            ->where('user_id', $this->id)
+            ->get();
+
+        $result = collect();
+
+        foreach ($companyUsers as $cu) {
+            $roles = \DB::table('company_user_role')
+                ->join('roles', 'company_user_role.role_id', '=', 'roles.id')
+                ->where('company_user_role.company_user_id', $cu->id)
+                ->select('roles.*')
+                ->get();
+
+            if ($roles->isNotEmpty()) {
+                $result[$cu->company_id] = $roles;
+            }
+        }
+
+        return $result;
+    }
+
+
 }

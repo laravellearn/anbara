@@ -14,8 +14,27 @@ class Permission extends Model
         'title',
         'description',
         'is_active',
+        'group'
     ];
 
+    // متد برای گروه‌بندی خودکار
+    public static function getGroupedPermissions()
+    {
+        $permissions = self::all();
+        $grouped = [];
+
+        foreach ($permissions as $permission) {
+            $group = $permission->group ?? 'سایر';
+            if (!isset($grouped[$group])) {
+                $grouped[$group] = [];
+            }
+            $grouped[$group][] = $permission;
+        }
+
+        return $grouped;
+    }
+
+    
     public function roles()
     {
         return $this->belongsToMany(

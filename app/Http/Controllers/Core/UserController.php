@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -93,9 +94,25 @@ class UserController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'mobile' => 'required|string|size:11|unique:users,mobile',
-                'email' => 'nullable|email|unique:users,email',
-                'password' => 'required|string|min:8|confirmed',
+                'mobile' => [
+                    'required',
+                    Rule::unique('users')
+                        ->whereNotNull('mobile_verified_at'),
+                    'regex:/^09[0-9]{9}$/',
+                ],
+
+                'email' => [
+                    'nullable',
+                    'email',
+                    'unique:users,email'
+                ],
+                'password' => [
+                    'required',
+                    'confirmed',
+                    Password::min(8)
+                        ->mixedCase()
+                        ->numbers()
+                ],
                 'companies' => 'required|array|min:1',
                 'companies.*' => 'exists:companies,id',
                 'default_company' => 'required|in:' . implode(',', $request->companies),
@@ -142,7 +159,6 @@ class UserController extends Controller
                 'type' => 'success',
                 'title' => 'ایجاد کاربر'
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             // برگرداندن خطاها به صفحه قبل با حفظ داده‌های فرم
             return redirect()->back()
@@ -214,9 +230,25 @@ class UserController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'mobile' => ['required', 'string', 'size:11', Rule::unique('users')->ignore($user->id)],
-                'email' => ['nullable', 'email', Rule::unique('users')->ignore($user->id)],
-                'password' => 'nullable|string|min:8|confirmed',
+                'mobile' => [
+                    'required',
+                    Rule::unique('users')
+                        ->whereNotNull('mobile_verified_at'),
+                    'regex:/^09[0-9]{9}$/',
+                ],
+
+                'email' => [
+                    'nullable',
+                    'email',
+                    'unique:users,email'
+                ],
+                'password' => [
+                    'required',
+                    'confirmed',
+                    Password::min(8)
+                        ->mixedCase()
+                        ->numbers()
+                ],
                 'companies' => 'required|array|min:1',
                 'companies.*' => 'exists:companies,id',
                 'default_company' => 'required|in:' . implode(',', $request->companies),
@@ -274,7 +306,6 @@ class UserController extends Controller
                 'type' => 'success',
                 'title' => 'ویرایش کاربر'
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             // برگرداندن خطاهای اعتبارسنجی
             return redirect()->back()

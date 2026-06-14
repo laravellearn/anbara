@@ -72,12 +72,6 @@ class User extends Authenticatable
         return $companyUser ? $companyUser->roles : new Collection();
     }
 
-    // رابطه‌ها
-    public function companyUsers()
-    {
-        return $this->hasMany(CompanyUser::class);
-    }
-
     public function companies()
     {
         return $this->belongsToMany(Company::class, 'company_user', 'user_id', 'company_id')
@@ -249,5 +243,35 @@ class User extends Authenticatable
         return $result;
     }
 
+    /**
+     * بررسی می‌کند که آیا کاربر مالک (Owner) مستأجر است یا خیر.
+     * مالک کسی است که در سازمان ریشه (parent_id = null) نقش admin داشته باشد.
+     */
+    // app/Models/User.php
+    // app/Models/User.php
 
+    public function companyUsers()
+    {
+        return $this->hasMany(CompanyUser::class);
+    }
+
+
+    public function isOwner(): bool
+    {
+        $tenant = $this->tenant;
+        if (!$tenant) return false;
+
+        $rootCompany = $tenant->rootCompany;
+        if (!$rootCompany) return false;
+
+        $companyUser = $this->companyUsers()
+            ->where('company_id', $rootCompany->id)
+            ->first();
+
+        if (!$companyUser) return false;
+
+        return $companyUser->roles()
+            ->where('code', 'tenant_admin') // ← تغییر به code
+            ->exists();
+    }
 }

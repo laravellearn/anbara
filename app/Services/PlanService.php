@@ -24,9 +24,9 @@ class PlanService
         $tenant = $this->manager->getTenant();
         if (!$tenant) return null;
 
-        return $tenant->activeSubscription();
+        // استفاده از property (بدون پرانتز) – مدل Subscription را برمی‌گرداند
+        return $tenant->activeSubscription;
     }
-
     /**
      * پلن‌های قابل ارتقا را برمی‌گرداند.
      * (همهٔ پلن‌های فعال که از پلن فعلی بالاتر هستند)

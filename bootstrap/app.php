@@ -25,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'require.tenant' => \App\Http\Middleware\RequireTenant::class,
             'can' => \App\Http\Middleware\CheckPermission::class,
             'superadmin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+            'owner' => \App\Http\Middleware\IsOwner::class,
+            'check.subscription' => \App\Http\Middleware\CheckSubscription::class,
 
 
         ]);

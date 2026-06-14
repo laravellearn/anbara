@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Tenant extends Model
 {
@@ -58,27 +59,71 @@ class Tenant extends Model
         return $this->hasMany(Company::class);
     }
 
-    public function subscriptions(): HasMany
-    {
-        return $this->hasMany(Subscription::class);
-    }
 
     public function roles()
     {
         return $this->hasMany(Role::class);
     }
 
+
     // app/Models/Tenant.php
-    public function activeSubscription(): ?Subscription
+    public function fiscalYears()
     {
-        return $this->subscriptions()
-            ->where('status', 'active')
-            ->where('starts_at', '<=', now())
-            ->where(function ($q) {
-                $q->whereNull('ends_at')
-                    ->orWhere('ends_at', '>=', now());
-            })
-            ->orderByDesc('starts_at')
-            ->first(); // → یک نمونه برمی‌گرداند، نه hasOne
+        return $this->hasMany(FiscalYear::class);
+    }
+
+    /**
+     * سال مالی فعال جاری (بر اساس is_active = true)
+     */
+    public function activeFiscalYear()
+    {
+        return $this->hasOne(FiscalYear::class)->where('is_active', true);
+    }
+
+    // app/Models/Tenant.php
+    public function rootCompany()
+    {
+        return $this->hasOne(Company::class)->whereNull('parent_id');
+    }
+
+    /**
+     * رابطهٔ یک به چند با اشتراک‌ها
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * آخرین اشتراک فعال یا آزمایشی (رابطه)
+     */
+    public function activeSubscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class)
+            ->whereIn('status', ['active', 'trial'])
+            ->orderByDesc('id');
+    }
+
+    /**
+     * بررسی وجود اشتراک فعال
+     */
+    public function hasActiveSubscription(): bool
+    {
+        // فراخوانی رابطه به‌صورت property (بدون پرانتز)
+        $subscription = $this->activeSubscription;
+
+        if (!$subscription) {
+            return false;
+        }
+
+        if ($subscription->status === 'active') {
+            return $subscription->ends_at === null || now()->lt($subscription->ends_at);
+        }
+
+        if ($subscription->status === 'trial') {
+            return $subscription->trial_ends_at !== null && now()->lt($subscription->trial_ends_at);
+        }
+
+        return false;
     }
 }

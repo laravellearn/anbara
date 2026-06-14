@@ -3,23 +3,52 @@
 namespace App\Models;
 
 use App\Concerns\BelongsToTenant;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class FiscalYear extends Model
 {
-    use BelongsToTenant;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'name', 'start_date', 'end_date', 'is_closed'];
+    protected $fillable = [
+        'name',
+        'start_date',
+        'end_date',
+        'is_active',
+        'is_closed',
+        'tenant_id',
+    ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date'   => 'date',
+        'is_active'  => 'boolean',
         'is_closed'  => 'boolean',
     ];
 
+    /**
+     * مستأجر مرتبط
+     */
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * فعال‌سازی این سال مالی (فقط یک سال فعال در هر زمان)
+     */
+    public function activate(): void
+    {
+        $this->tenant->fiscalYears()->update(['is_active' => false]);
+        $this->update(['is_active' => true]);
+    }
+
+    /**
+     * بستن سال مالی
+     */
+    public function close(): void
+    {
+        $this->update(['is_closed' => true, 'is_active' => false]);
     }
 
     /**

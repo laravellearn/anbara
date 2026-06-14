@@ -19,6 +19,8 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->boolean('is_closed')->default(false); // بسته شده؟
+            $table->boolean('is_active')->default(false); // آیا سال جاری است؟
+
             $table->timestamps();
 
             $table->unique(['tenant_id', 'start_date', 'end_date']);

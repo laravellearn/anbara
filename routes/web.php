@@ -106,28 +106,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     // خروج
     Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
-
-    //سطوح دسترسی
-    Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
 });
 
 // همهٔ مسیرهایی که نیاز به tenant دارند
 Route::middleware(['auth', 'require.tenant'])->group(function () {
     Route::post('/switch-company', [CompanySwitcherController::class, 'switch'])->name('company.switch');
     Route::post('/switch-fiscal-year', [FiscalYearSwitcherController::class, 'switch'])->name('fiscal-year.switch');
-    //مدیریت اشتراک ها
-    Route::get('/billing/plans', [BillingController::class, 'plans'])->name('billing.plans');
-    Route::post('/billing/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
-    Route::get('/billing/license', [BillingController::class, 'license'])->name('billing.license');
-    Route::get('/billing/history', [BillingController::class, 'history'])->name('billing.history');
-
-    //لاگ های سیستمی
-    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
-
-    //سال مالی و سازمان
-    // در routes/web.php (گروه admin)
-    Route::get('/companies/manage', [CompanyController::class, 'index'])->name('companies.index');
-    Route::get('/fiscal-years/manage', [FiscalYearController::class, 'index'])->name('fiscal-years.index');
 
     // مدیریت کاربران
     Route::resource('users', UserController::class);
@@ -141,39 +125,38 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
 
     //سطوح دسترسی
     Route::resource('roles', RoleController::class)->except(['show', 'create', 'edit']);
+
+    //سال مالی
+    Route::resource('fiscal-years', FiscalYearController::class)->except('show');
+    Route::post('fiscal-years/{fiscal_year}/activate', [FiscalYearController::class, 'activate'])->name('fiscal-years.activate');
+    Route::post('fiscal-years/{fiscal_year}/close', [FiscalYearController::class, 'close'])->name('fiscal-years.close');
 });
 
 
-Route::get('/debug/roles-structure', function () {
-    $columns = \DB::select('SHOW COLUMNS FROM roles');
-    $sampleRoles = \DB::table('roles')->take(5)->get();
+//مسیرهایی که مالک فقط باید دسترسی داشته باشد
+Route::middleware(['auth', 'require.tenant', 'owner', 'check.subscription'])->group(function () {
+    //مدیریت اشتراک ها
+    Route::get('/billing/plans', [BillingController::class, 'plans'])->name('billing.plans');
+    Route::post('/billing/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
+    Route::get('/billing/license', [BillingController::class, 'license'])->name('billing.license');
+    Route::get('/billing/history', [BillingController::class, 'history'])->name('billing.history');
+
+    //لاگ های سیستمی
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+    //مدیریت سازمان
+    Route::resource('companies', CompanyController::class)->except('show');
+});
+
+
+Route::get('/test-owner', function () {
     $user = auth()->user();
-    
-    // نقش کاربر جاری
-    $companyId = app(\App\Services\TenantManager::class)->getCompanyId();
-    $role = null;
-    
-    if ($companyId) {
-        $companyUser = \DB::table('company_user')
-            ->where('user_id', $user->id)
-            ->where('company_id', $companyId)
-            ->first();
-        
-        if ($companyUser) {
-            $roleId = \DB::table('company_user_role')
-                ->where('company_user_id', $companyUser->id)
-                ->value('role_id');
-            
-            if ($roleId) {
-                $role = \DB::table('roles')->find($roleId);
-            }
-        }
-    }
-    
-    return response()->json([
-        'columns' => $columns,
-        'sample_roles' => $sampleRoles,
-        'current_user_role' => $role,
-        'current_company_id' => $companyId,
+    dd([
+        'isOwner'        => $user->isOwner(),
+        'tenant_id'      => $user->tenant_id,
+        'root_company'   => $user->tenant?->rootCompany?->id,
+        'root_company_name' => $user->tenant?->rootCompany?->name,
+        'company_user_id'=> $user->companyUsers()->where('company_id', $user->tenant?->rootCompany?->id)->first()?->id,
+        'role'           => $user->companyUsers()->where('company_id', $user->tenant?->rootCompany?->id)->first()?->roles()->first()?->title,
     ]);
-})->middleware('auth');
+});

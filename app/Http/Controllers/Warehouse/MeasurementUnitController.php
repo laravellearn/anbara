@@ -8,18 +8,43 @@ use Illuminate\Support\Facades\Gate;
 
 class MeasurementUnitController extends BaseController
 {
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('access', 'measurement-units.view');
+        $tenantId = $this->manager->getTenantId();
+        $allUnits = MeasurementUnit::where('tenant_id', $tenantId)->get();
 
-        $units = MeasurementUnit::with('parent')
-            ->where('tenant_id', $this->manager->getTenantId())
-            ->latest()
-            ->paginate(20);
+        $query = MeasurementUnit::with('parent')->where('tenant_id', $tenantId);
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', "%{$request->search}%")
+                    ->orWhere('symbol', 'like', "%{$request->search}%");
+            });
+        }
+        if ($request->filled('parent_id')) {
+            $query->where('parent_id', $request->parent_id);
+        }
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+        $query->latest();
+        $units = $query->paginate($request->per_page ?? 20);
 
-        $allUnits = MeasurementUnit::where('tenant_id', $this->manager->getTenantId())->get();
+        $stats = [
+            'total'    => MeasurementUnit::where('tenant_id', $tenantId)->count(),
+            'active'   => MeasurementUnit::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'inactive' => MeasurementUnit::where('tenant_id', $tenantId)->where('is_active', false)->count(),
+        ];
 
-        return view('warehouse.measurement-units.index', compact('units', 'allUnits'));
+        if ($request->ajax() || $request->input('ajax')) {
+            return response()->json([
+                'html'      => view('warehouse.measurement-units._table', compact('units'))->render(),
+                'statsHtml' => view('warehouse.measurement-units._stats', compact('stats'))->render(),
+                'total'     => $units->total(),
+            ]);
+        }
+
+        return view('warehouse.measurement-units.index', compact('units', 'allUnits', 'stats'));
     }
 
     public function store(Request $request)

@@ -21,6 +21,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['tenant_id', 'title']);
         });
 
@@ -34,6 +36,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['tenant_id', 'title']);
         });
 
@@ -46,6 +50,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['tenant_id', 'title']);
         });
 
@@ -58,6 +64,8 @@ return new class extends Migration
             $table->json('options')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['tenant_id', 'company_id', 'name']);
         });
 
@@ -73,6 +81,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['tenant_id', 'code']);
             $table->unique(['tenant_id', 'title']);
             $table->index('tenant_id');
@@ -92,6 +102,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['warehouse_id', 'code']);
             $table->unique(['warehouse_id', 'title']);
             $table->index(['tenant_id', 'warehouse_id']);
@@ -105,6 +117,7 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->foreignId('brand_id')->nullable()->constrained('brands')->nullOnDelete();
             $table->foreignId('measurement_unit_id')->nullable()->constrained('measurement_units')->nullOnDelete();
+            $table->foreignId('product_type_id')->nullable()->constrained('product_types')->nullOnDelete()->after('measurement_unit_id');
             $table->string('sku')->nullable();
             $table->string('barcode')->nullable();
             $table->string('title');
@@ -117,6 +130,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['tenant_id', 'sku']);
         });
 
@@ -130,6 +145,8 @@ return new class extends Migration
             $table->decimal('conversion_factor', 18, 6)->default(1);
             $table->boolean('is_default')->default(false);
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['product_id', 'measurement_unit_id']);
         });
 
@@ -141,6 +158,8 @@ return new class extends Migration
             $table->foreignId('attribute_id')->constrained('product_attributes')->cascadeOnDelete();
             $table->text('value')->nullable();
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['product_id', 'attribute_id']);
         });
 
@@ -151,6 +170,8 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('alternative_product_id')->constrained('products')->cascadeOnDelete();
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['product_id', 'alternative_product_id']);
         });
 
@@ -162,13 +183,42 @@ return new class extends Migration
             $table->boolean('is_default')->default(false);
             $table->softDeletes();
             $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['warehouse_id', 'user_id']);
             $table->index('tenant_id');
+        });
+
+        Schema::create('product_types', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
+            $table->unique(['tenant_id', 'title']);
+        });
+
+        Schema::create('product_type_attribute', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_type_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_attribute_id')->constrained()->cascadeOnDelete();
+            $table->boolean('is_required')->default(false);
+            $table->integer('sort_order')->default(0);
+            $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
+            $table->unique(['product_type_id', 'product_attribute_id']);
         });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('product_type_attribute');
+        Schema::dropIfExists('product_types');
         Schema::dropIfExists('warehouse_user');
         Schema::dropIfExists('product_alternatives');
         Schema::dropIfExists('product_attribute_values');

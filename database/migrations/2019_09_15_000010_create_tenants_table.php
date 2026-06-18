@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('tenants', function (Blueprint $table) {
             $table->id();
-    
+
             // فیلدهای ضروری برای stancl/tenancy
             $table->string('name');                    // نام تننت
             $table->string('domain')->nullable()->unique();
@@ -25,9 +25,9 @@ return new class extends Migration
             $table->string('logo_path')->nullable();
             $table->string('favicon_path')->nullable();
             $table->string('theme_color')->nullable();
-            
+
             $table->timestamp('trial_ends_at')->nullable();
-            
+
             $table->json('settings')->nullable();
 
             $table->unsignedTinyInteger('fiscal_year_start_month')->default(1);
@@ -37,6 +37,8 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
         });
     }
 

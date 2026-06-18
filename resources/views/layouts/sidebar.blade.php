@@ -26,16 +26,9 @@
     <li class="menu-header small text-uppercase"><span class="menu-header-text">اطلاعات پایه</span></li>
 
     {{-- ==================== کالاها و اقلام ==================== --}}
-    @php
-    $productPermissions = [
-    'products.view', 'product-categories.view', 'measurement-units.view',
-    'brands.view', 'product-attributes.view', 'product-barcodes.view',
-    'product-alternatives.view', 'product-packaging.view',
-    ];
-    $showProductMenu = auth()->user()->canAny($productPermissions);
-    @endphp
 
-    @if($showProductMenu)
+    @canany(['products.view', 'product-categories.view', 'measurement-units.view',
+    'brands.view', 'product-attributes.view'])
     <li class="menu-item {{ request()->routeIs('warehouse.products.*', 'warehouse.categories.*', 'warehouse.measurement-units.*', 'warehouse.brands.*', 'warehouse.product-attributes.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-package"></i>
@@ -83,42 +76,13 @@
         </li>
         @endcan
 
-        @can('product-barcodes.view')
-        <li class="menu-item">
-          <a href="#" class="menu-link">
-            <div>بارکد و لیبل</div>
-          </a>
-        </li>
-        @endcan
-
-        @can('product-alternatives.view')
-        <li class="menu-item">
-          <a href="#" class="menu-link">
-            <div>کالاهای جایگزین / معادل</div>
-          </a>
-        </li>
-        @endcan
-
-        @can('product-packaging.view')
-        <li class="menu-item">
-          <a href="#" class="menu-link">
-            <div>واحدهای بسته‌بندی (پالت / کارتن)</div>
-          </a>
-        </li>
-        @endcan
-
       </ul>
     </li>
-    @endif
+    @endcanany
 
 
     {{-- ==================== انبار و مکان‌ها ==================== --}}
-    @php
-    $warehousePermissions = ['warehouses.view', 'warehouse-locations.view'];
-    $showWarehouseMenu = auth()->user()->canAny($warehousePermissions);
-    @endphp
-
-    @if($showWarehouseMenu)
+    @canAny(['warehouses.view', 'warehouse-locations.view'])
     <li class="menu-item {{ request()->routeIs('warehouse.warehouses.*', 'warehouse.warehouse-locations.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-buildings"></i>
@@ -144,34 +108,25 @@
 
       </ul>
     </li>
-    @endif
+    @endcanany
 
 
     {{-- ==================== طرف حساب‌ها ==================== --}}
-    @php
-    $partyPermissions = ['contacts.view', 'organizational-units.view', 'employees.view'];
-    $showPartyMenu = auth()->user()->canAny($partyPermissions);
-    @endphp
-
-    @if($showPartyMenu)
-
+    @canany(['contacts.view', 'organizational-units.view', 'employees.view','warehouse.cost-centers.view'])
     {{-- ==================== طرف‌های حساب ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">طرف‌های حساب</span></li>
 
-    <li class="menu-item {{ request()->routeIs('suppliers.*') ? 'active open' : '' }}">
+    <li class="menu-item {{ request()->routeIs('contacts.*', 'organizational-units.*', 'employees.*','warehouse.cost-centers.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons bx bx-user-pin"></i>
+        <div>طرف‌های حساب</div>
+      </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>قراردادها</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>ارزیابی و امتیازدهی</div>
-          </a></li>
-
 
         @can('contacts.view')
         <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
           <a href="{{ route('contacts.index') }}" class="menu-link">
-            <div>طرف تجاری ها</div>
+            <div>طرف تجاری‌ها</div>
           </a>
         </li>
         @endcan
@@ -192,39 +147,20 @@
         </li>
         @endcan
 
-      </ul>
-    </li>
-    @endif
 
-    <li class="menu-item {{ request()->routeIs('customers.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-user-circle"></i>
-        <div>مشتریان / دریافت‌کنندگان</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>لیست مشتریان</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>تحویل‌گیرندگان مجاز</div>
-          </a></li>
-      </ul>
-    </li>
-
-    <li class="menu-item {{ request()->routeIs('departments.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-building"></i>
-        <div>واحدهای سازمانی</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>دپارتمان‌ها</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
+        @can('cost-centers.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.cost-centers.*') ? 'active open' : '' }}">
+          <a href="{{ route('warehouse.cost-centers.index') }}" class="menu-link">
             <div>مراکز هزینه</div>
-          </a></li>
+          </a>
+        </li>
+        @endcan
+
       </ul>
     </li>
+    @endcanany
+
+
 
     {{-- ==================== تدارکات و خرید ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">تدارکات و خرید</span></li>

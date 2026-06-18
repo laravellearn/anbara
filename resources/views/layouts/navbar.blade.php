@@ -18,7 +18,15 @@
                 </div>
             </div>
             <!-- /Search -->
-
+            @if(session('impersonator_id'))
+            <div class="alert alert-warning mb-0 text-center">
+                شما با حساب کاربری {{ auth()->user()->name }} وارد شده‌اید.
+                <form action="{{ route('super-admin.impersonate.destroy') }}" method="POST" class="d-inline">
+                    @csrf @method('DELETE')
+                    <button class="btn btn-sm btn-danger ms-2">بازگشت به حساب اصلی</button>
+                </form>
+            </div>
+            @endif
             <ul class="navbar-nav flex-row align-items-center ms-auto">
                 {{-- تاریخ امروز --}}
                 <li class="nav-item d-flex align-items-center me-3">
@@ -30,74 +38,74 @@
 
                 {{-- وضعیت اشتراک (فقط برای مدیر سازمان) --}}
                 @if (auth()->user() && auth()->user()->isTenantAdmin())
+                @php
+                $tenant = app(\App\Services\TenantManager::class)->getTenant();
+                $planService = app(\App\Services\PlanService::class);
+                $activeSubscription = $planService->getActiveSubscription();
+                $currentPlan = $activeSubscription ? $activeSubscription->plan : null;
+
+                // آیا پلن قابل ارتقا وجود دارد؟
+                $hasUpgradable = false;
+                if ($currentPlan && $currentPlan->slug !== 'enterprise') {
+                $hasUpgradable = \App\Models\Plan::where('is_active', true)
+                ->whereRaw('monthly_price > ?', [$currentPlan->monthly_price])
+                ->exists();
+                }
+                @endphp
+                <li class="nav-item d-flex align-items-center me-3">
+                    @if ($activeSubscription && $currentPlan)
                     @php
-                        $tenant = app(\App\Services\TenantManager::class)->getTenant();
-                        $planService = app(\App\Services\PlanService::class);
-                        $activeSubscription = $planService->getActiveSubscription();
-                        $currentPlan = $activeSubscription ? $activeSubscription->plan : null;
-
-                        // آیا پلن قابل ارتقا وجود دارد؟
-                        $hasUpgradable = false;
-                        if ($currentPlan && $currentPlan->slug !== 'enterprise') {
-                            $hasUpgradable = \App\Models\Plan::where('is_active', true)
-                                ->whereRaw('monthly_price > ?', [$currentPlan->monthly_price])
-                                ->exists();
-                        }
+                    $remainingDays = 0;
+                    $remainingHours = 0;
+                    if ($activeSubscription->ends_at) {
+                    $now = \Verta::now();
+                    $end = \Verta::instance($activeSubscription->ends_at);
+                    $remainingDays = $now->diffDays($end, false);
+                    $remainingHours = $now->toCarbon()->diffInHours($end->toCarbon(), false);
+                    }
                     @endphp
-                    <li class="nav-item d-flex align-items-center me-3">
-                        @if ($activeSubscription && $currentPlan)
-                            @php
-                                $remainingDays = 0;
-                                $remainingHours = 0;
-                                if ($activeSubscription->ends_at) {
-                                    $now = \Verta::now();
-                                    $end = \Verta::instance($activeSubscription->ends_at);
-                                    $remainingDays = $now->diffDays($end, false);
-                                    $remainingHours = $now->toCarbon()->diffInHours($end->toCarbon(), false);
-                                }
-                            @endphp
-                            <span class="badge bg-label-success me-1">
-                                <i class="bx bx-package me-1"></i>
-                                {{ $currentPlan->name }}
-                                @if ($activeSubscription->ends_at)
-                                    @if ($remainingDays > 0)
-                                        | {{ $remainingDays }} روز
-                                    @elseif($remainingDays == 0)
-                                        | {{ max(0, $remainingHours) }} ساعت
-                                    @else
-                                        | منقضی
-                                    @endif
-                                @else
-                                    | نامحدود
-                                @endif
-                            </span>
-
-                            {{-- دکمه ارتقا (اگر پلن فعلی enterprise نباشد و پلن گران‌تر وجود داشته باشد) --}}
-                            @if ($hasUpgradable)
-                                <a href="{{ route('billing.plans') }}"
-                                    class="btn btn-xs btn-outline-primary rounded-pill ms-1">
-                                    <i class="bx bx-up-arrow-alt"></i> ارتقا
-                                </a>
-                            @endif
+                    <span class="badge bg-label-success me-1">
+                        <i class="bx bx-package me-1"></i>
+                        {{ $currentPlan->name }}
+                        @if ($activeSubscription->ends_at)
+                        @if ($remainingDays > 0)
+                        | {{ $remainingDays }} روز
+                        @elseif($remainingDays == 0)
+                        | {{ max(0, $remainingHours) }} ساعت
                         @else
-                            <span class="badge bg-label-danger me-1">
-                                <i class="bx bx-x-circle me-1"></i>
-                                بدون اشتراک
-                            </span>
-                            <a href="{{ route('billing.plans') }}"
-                                class="btn btn-xs btn-outline-success rounded-pill ms-1">
-                                <i class="bx bx-cart"></i> خرید اشتراک
-                            </a>
+                        | منقضی
                         @endif
-                    </li>
+                        @else
+                        | نامحدود
+                        @endif
+                    </span>
+
+                    {{-- دکمه ارتقا (اگر پلن فعلی enterprise نباشد و پلن گران‌تر وجود داشته باشد) --}}
+                    @if ($hasUpgradable)
+                    <a href="{{ route('billing.plans') }}"
+                        class="btn btn-xs btn-outline-primary rounded-pill ms-1">
+                        <i class="bx bx-up-arrow-alt"></i> ارتقا
+                    </a>
+                    @endif
+                    @else
+                    <span class="badge bg-label-danger me-1">
+                        <i class="bx bx-x-circle me-1"></i>
+                        بدون اشتراک
+                    </span>
+                    <a href="{{ route('billing.plans') }}"
+                        class="btn btn-xs btn-outline-success rounded-pill ms-1">
+                        <i class="bx bx-cart"></i> خرید اشتراک
+                    </a>
+                    @endif
+                </li>
                 @endif
 
 
                 @php
-                    $currentFiscalYear = app(\App\Services\TenantManager::class)->getFiscalYear();
-                    $allFiscalYears = $currentFiscalYear
-                        ? \App\Models\FiscalYear::where('tenant_id', $currentFiscalYear->tenant_id)->get()
-                        : collect();
+                $currentFiscalYear = app(\App\Services\TenantManager::class)->getFiscalYear();
+                $allFiscalYears = $currentFiscalYear
+                ? \App\Models\FiscalYear::where('tenant_id', $currentFiscalYear->tenant_id)->get()
+                : collect();
                 @endphp
                 <li class="nav-item dropdown me-2">
                     <a class="nav-link dropdown-toggle hide-arrow d-flex align-items-center" href="javascript:void(0);"
@@ -109,75 +117,75 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         @foreach ($allFiscalYears as $fy)
-                            <li>
-                                <form action="{{ route('fiscal-year.switch') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="fiscal_year_id" value="{{ $fy->id }}">
-                                    <button type="submit"
-                                        class="dropdown-item {{ $currentFiscalYear?->id == $fy->id ? 'active' : '' }}">
-                                        <i
-                                            class="bx bx-check me-1 {{ $currentFiscalYear?->id == $fy->id ? '' : 'd-none' }}"></i>
-                                        {{ $fy->name }}
-                                    </button>
-                                </form>
-                            </li>
+                        <li>
+                            <form action="{{ route('fiscal-year.switch') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="fiscal_year_id" value="{{ $fy->id }}">
+                                <button type="submit"
+                                    class="dropdown-item {{ $currentFiscalYear?->id == $fy->id ? 'active' : '' }}">
+                                    <i
+                                        class="bx bx-check me-1 {{ $currentFiscalYear?->id == $fy->id ? '' : 'd-none' }}"></i>
+                                    {{ $fy->name }}
+                                </button>
+                            </form>
+                        </li>
                         @endforeach
                         {{-- فقط مدیر سازمان گزینهٔ مدیریت را می‌بیند --}}
                         @if (auth()->user()->isTenantAdmin())
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <a href="{{ route('fiscal-years.index') }}" class="dropdown-item">
-                                    <i class="bx bx-cog me-1"></i> مدیریت سال‌های مالی
-                                </a>
-                            </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a href="{{ route('fiscal-years.index') }}" class="dropdown-item">
+                                <i class="bx bx-cog me-1"></i> مدیریت سال‌های مالی
+                            </a>
+                        </li>
                         @endif
                     </ul>
                 </li>
 
 
                 @if (auth()->user() && app(\App\Services\TenantManager::class)->getTenantId())
-                    @php
-                        $currentCompany = app(\App\Services\TenantManager::class)->getCompany();
-                        $tenantCompanies = auth()->user()->companies;
-                    @endphp
-                    <li class="nav-item dropdown me-2">
-                        <a class="nav-link dropdown-toggle hide-arrow d-flex align-items-center"
-                            href="javascript:void(0);" data-bs-toggle="dropdown">
-                            <i class="bx bx-buildings me-1"></i>
-                            <span class="text-muted small me-1">سازمان:</span>
-                            <span class="fw-medium">{{ $currentCompany->name ?? '---' }}</span>
-                            <i class="bx bx-chevron-down ms-1"></i>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            @foreach ($tenantCompanies as $company)
-                                <li>
-                                    <form action="{{ route('company.switch') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="company_id" value="{{ $company->id }}">
-                                        <button type="submit"
-                                            class="dropdown-item {{ $currentCompany?->id == $company->id ? 'active' : '' }}">
-                                            <i
-                                                class="bx bx-check me-1 {{ $currentCompany?->id == $company->id ? '' : 'd-none' }}"></i>
-                                            {{ $company->name }}
-                                        </button>
-                                    </form>
-                                </li>
-                            @endforeach
-                            {{-- فقط مدیر سازمان گزینهٔ مدیریت را می‌بیند --}}
-                            @if (auth()->user()->isTenantAdmin())
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <a href="{{ route('companies.index') }}" class="dropdown-item">
-                                        <i class="bx bx-cog me-1"></i> مدیریت سازمان‌ها
-                                    </a>
-                                </li>
-                            @endif
-                        </ul>
-                    </li>
+                @php
+                $currentCompany = app(\App\Services\TenantManager::class)->getCompany();
+                $tenantCompanies = auth()->user()->companies;
+                @endphp
+                <li class="nav-item dropdown me-2">
+                    <a class="nav-link dropdown-toggle hide-arrow d-flex align-items-center"
+                        href="javascript:void(0);" data-bs-toggle="dropdown">
+                        <i class="bx bx-buildings me-1"></i>
+                        <span class="text-muted small me-1">سازمان:</span>
+                        <span class="fw-medium">{{ $currentCompany->name ?? '---' }}</span>
+                        <i class="bx bx-chevron-down ms-1"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        @foreach ($tenantCompanies as $company)
+                        <li>
+                            <form action="{{ route('company.switch') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="company_id" value="{{ $company->id }}">
+                                <button type="submit"
+                                    class="dropdown-item {{ $currentCompany?->id == $company->id ? 'active' : '' }}">
+                                    <i
+                                        class="bx bx-check me-1 {{ $currentCompany?->id == $company->id ? '' : 'd-none' }}"></i>
+                                    {{ $company->name }}
+                                </button>
+                            </form>
+                        </li>
+                        @endforeach
+                        {{-- فقط مدیر سازمان گزینهٔ مدیریت را می‌بیند --}}
+                        @if (auth()->user()->isTenantAdmin())
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a href="{{ route('companies.index') }}" class="dropdown-item">
+                                <i class="bx bx-cog me-1"></i> مدیریت سازمان‌ها
+                            </a>
+                        </li>
+                        @endif
+                    </ul>
+                </li>
                 @endif
 
 
@@ -516,16 +524,16 @@
                                     <div class="flex-grow-1">
                                         <span class="fw-semibold d-block">{{ $userLogin->name }}</span>
                                         @php
-                                            $roleName = $currentRoleName ?? 'کاربر';
+                                        $roleName = $currentRoleName ?? 'کاربر';
 
-                                            $badgeClass = match ($roleName) {
-                                                'مدیر کل سامانه' => 'bg-label-danger',
-                                                'مدیر سازمان' => 'bg-label-warning',
-                                                'مدیر انبار' => 'bg-label-info',
-                                                'انباردار' => 'bg-label-primary',
-                                                'سازمان انتخاب نشده' => 'bg-label-secondary',
-                                                default => 'bg-label-secondary',
-                                            };
+                                        $badgeClass = match ($roleName) {
+                                        'مدیر کل سامانه' => 'bg-label-danger',
+                                        'مدیر سازمان' => 'bg-label-warning',
+                                        'مدیر انبار' => 'bg-label-info',
+                                        'انباردار' => 'bg-label-primary',
+                                        'سازمان انتخاب نشده' => 'bg-label-secondary',
+                                        default => 'bg-label-secondary',
+                                        };
                                         @endphp
 
                                         <span class="badge {{ $badgeClass }} rounded-pill"
@@ -604,4 +612,3 @@
         </div>
     </div>
 </nav>
-

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class ProductMeasurementUnit extends Pivot
 {
+    use Auditable;
     protected $table = 'product_measurement_units';
 
     protected $fillable = [

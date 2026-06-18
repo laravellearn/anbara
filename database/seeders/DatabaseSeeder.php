@@ -319,16 +319,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'product-attributes.edit',   'title' => 'ویرایش ویژگی',         'group' => 'کالا و اقلام'],
             ['name' => 'product-attributes.delete', 'title' => 'حذف ویژگی',            'group' => 'کالا و اقلام'],
 
-            ['name' => 'product-barcodes.view',   'title' => 'مشاهده بارکدها',         'group' => 'کالا و اقلام'],
-            ['name' => 'product-barcodes.create', 'title' => 'ایجاد بارکد',             'group' => 'کالا و اقلام'],
-            ['name' => 'product-barcodes.edit',   'title' => 'ویرایش بارکد',            'group' => 'کالا و اقلام'],
-            ['name' => 'product-barcodes.delete', 'title' => 'حذف بارکد',               'group' => 'کالا و اقلام'],
-
-            ['name' => 'product-alternatives.view',   'title' => 'مشاهده کالاهای جایگزین',   'group' => 'کالا و اقلام'],
-            ['name' => 'product-alternatives.create', 'title' => 'ایجاد جایگزین',            'group' => 'کالا و اقلام'],
-            ['name' => 'product-alternatives.edit',   'title' => 'ویرایش جایگزین',           'group' => 'کالا و اقلام'],
-            ['name' => 'product-alternatives.delete', 'title' => 'حذف جایگزین',              'group' => 'کالا و اقلام'],
-
             // ==================== ۸. انبار و مکان‌ها ====================
             ['name' => 'warehouses.view',   'title' => 'مشاهده انبارها',            'group' => 'انبار و مکان‌ها'],
             ['name' => 'warehouses.create', 'title' => 'ایجاد انبار',               'group' => 'انبار و مکان‌ها'],
@@ -356,10 +346,19 @@ class DatabaseSeeder extends Seeder
             ['name' => 'employees.edit',   'title' => 'ویرایش کارمند',       'group' => 'طرف حساب‌ها'],
             ['name' => 'employees.delete', 'title' => 'حذف کارمند',         'group' => 'طرف حساب‌ها'],
 
+            ['name' => 'cost-centers.view',   'title' => 'مشاهده مراکز هزینه',   'group' => 'مراکز هزینه'],
+            ['name' => 'cost-centers.create', 'title' => 'ایجاد مرکز هزینه',     'group' => 'مراکز هزینه'],
+            ['name' => 'cost-centers.edit',   'title' => 'ویرایش مرکز هزینه',    'group' => 'مراکز هزینه'],
+            ['name' => 'cost-centers.delete', 'title' => 'حذف مرکز هزینه',      'group' => 'مراکز هزینه'],
 
+
+            ['name' => 'product-types.view',   'title' => 'مشاهده انواع کالا',   'group' => 'کالا و اقلام'],
+            ['name' => 'product-types.create', 'title' => 'ایجاد نوع کالا',     'group' => 'کالا و اقلام'],
+            ['name' => 'product-types.edit',   'title' => 'ویرایش نوع کالا',    'group' => 'کالا و اقلام'],
+            ['name' => 'product-types.delete', 'title' => 'حذف نوع کالا',      'group' => 'کالا و اقلام'],
         ];
 
-        
+
         foreach ($permissions as $perm) {
             Permission::firstOrCreate(
                 ['name' => $perm['name']],

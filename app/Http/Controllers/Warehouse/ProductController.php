@@ -7,21 +7,80 @@ use App\Models\Category;
 use App\Models\Brand;
 use App\Models\MeasurementUnit;
 use App\Models\ProductAttribute;
+use App\Models\ProductType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class ProductController extends BaseController
 {
-    public function index()
+
+    public function index(Request $request)
     {
         Gate::authorize('access', 'products.view');
 
-        $products = Product::with(['category', 'brand', 'baseMeasurementUnit'])
-            ->where('tenant_id', $this->manager->getTenantId())
-            ->latest()
-            ->paginate(20);
+        $tenantId = $this->manager->getTenantId();
+        $companyId = $this->manager->getCompanyId();
 
-        return view('warehouse.products.index', compact('products'));
+        // داده‌های مورد نیاز فیلترها
+        $categories = Category::where('tenant_id', $tenantId)->get();
+        $brands     = Brand::where('tenant_id', $tenantId)->get();
+
+        // پایهٔ query
+        $query = Product::with(['category', 'brand', 'baseMeasurementUnit'])
+            ->where('tenant_id', $tenantId);
+
+        // اعمال فیلترها
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
+        if ($request->filled('brand_id')) {
+            $query->where('brand_id', $request->input('brand_id'));
+        }
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->input('status') === 'active');
+        }
+
+        // مرتب‌سازی
+        $sort = $request->input('sort', 'created_at');
+        $direction = $request->input('direction', 'desc');
+        $allowedSorts = ['title', 'created_at', 'minimum_stock'];
+        if (in_array($sort, $allowedSorts)) {
+            $query->orderBy($sort, $direction === 'asc' ? 'asc' : 'desc');
+        } else {
+            $query->latest();
+        }
+
+        $products = $query->paginate($request->input('per_page', 20));
+
+        // محاسبهٔ کارت‌های آماری
+        $stats = [
+            'total'        => $products->total(),
+            'active'       => Product::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'inactive'     => Product::where('tenant_id', $tenantId)->where('is_active', false)->count(),
+            'low_stock'    => Product::where('tenant_id', $tenantId)
+                ->whereColumn('minimum_stock', '>', 'maximum_stock') // مثال ساده: موجودی صفر یا کمتر از حداقل
+                ->count(), // می‌توانید دقیق‌تر کنید
+        ];
+
+        // درخواست AJAX
+        if ($request->ajax() || $request->input('ajax')) {
+            $tableHtml = view('warehouse.products._table', compact('products'))->render();
+            return response()->json([
+                'html'  => $tableHtml,
+                'total' => $products->total(),
+                'stats' => $stats,
+            ]);
+        }
+
+        return view('warehouse.products.index', compact('products', 'categories', 'brands', 'stats'));
     }
 
     public function create()
@@ -32,8 +91,9 @@ class ProductController extends BaseController
         $brands           = Brand::where('tenant_id', $this->manager->getTenantId())->get();
         $measurementUnits = MeasurementUnit::where('tenant_id', $this->manager->getTenantId())->get();
         $attributes       = ProductAttribute::where('tenant_id', $this->manager->getTenantId())->get();
+        $productTypes     = ProductType::where('tenant_id', $this->manager->getTenantId())->where('is_active', true)->get(); // اضافه
 
-        return view('warehouse.products.create', compact('categories', 'brands', 'measurementUnits', 'attributes'));
+        return view('warehouse.products.create', compact('productTypes', 'categories', 'brands', 'measurementUnits', 'attributes'));
     }
 
     public function store(Request $request)
@@ -109,10 +169,11 @@ class ProductController extends BaseController
         $brands           = Brand::where('tenant_id', $this->manager->getTenantId())->get();
         $measurementUnits = MeasurementUnit::where('tenant_id', $this->manager->getTenantId())->get();
         $attributes       = ProductAttribute::where('tenant_id', $this->manager->getTenantId())->get();
+        $productTypes     = ProductType::where('tenant_id', $this->manager->getTenantId())->where('is_active', true)->get(); // اضافه
 
         $product->load('measurementUnits', 'attributeValues');
 
-        return view('warehouse.products.edit', compact('product', 'categories', 'brands', 'measurementUnits', 'attributes'));
+        return view('warehouse.products.edit', compact('productTypes','product', 'categories', 'brands', 'measurementUnits', 'attributes'));
     }
 
     public function update(Request $request, Product $product)

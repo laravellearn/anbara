@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Concerns\BelongsToTenant;
@@ -10,7 +11,7 @@ use App\Scopes\CompanyScope; // اگه ساختی
 class OrganizationalUnit extends Model
 {
     use SoftDeletes;
-    use BelongsToTenant;
+    use BelongsToTenant,Auditable;
 
     protected $fillable = [
         'tenant_id',

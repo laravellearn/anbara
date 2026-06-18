@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use App\Concerns\BelongsToTenant;
 use App\Concerns\BelongsToCompany;
 use App\Concerns\AutoFillTenantAndCompany;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WarehouseLocation extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes, Auditable;
 
     protected $fillable = [
         'tenant_id', 'company_id', 'warehouse_id', 'parent_id',

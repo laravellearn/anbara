@@ -8,15 +8,49 @@ use Illuminate\Support\Facades\Gate;
 
 class ContactController extends BaseController
 {
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('access', 'contacts.view');
+        $tenantId = $this->manager->getTenantId();
 
-        $contacts = Contact::where('tenant_id', $this->manager->getTenantId())
-            ->latest()
-            ->paginate(20);
+        $query = Contact::where('tenant_id', $tenantId);
 
-        return view('core.contacts.index', compact('contacts'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('company_name', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        $query->latest();
+        $contacts = $query->paginate($request->per_page ?? 20);
+
+        $stats = [
+            'total'    => Contact::where('tenant_id', $tenantId)->count(),
+            'customer' => Contact::where('tenant_id', $tenantId)->where('type', 'customer')->count(),
+            'supplier' => Contact::where('tenant_id', $tenantId)->where('type', 'supplier')->count(),
+            'both'     => Contact::where('tenant_id', $tenantId)->where('type', 'both')->count(),
+            'active'   => Contact::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+        ];
+
+        if ($request->ajax() || $request->input('ajax')) {
+            return response()->json([
+                'html'      => view('core.contacts._table', compact('contacts'))->render(),
+                'statsHtml' => view('core.contacts._stats', compact('stats'))->render(),
+                'total'     => $contacts->total(),
+            ]);
+        }
+
+        return view('core.contacts.index', compact('contacts', 'stats'));
     }
 
     public function store(Request $request)

@@ -44,7 +44,8 @@ return new class extends Migration {
             $table->timestamps();
         
             $table->softDeletes();
-        
+                    $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->index('tenant_id');
         
             $table->index('parent_id');
@@ -81,7 +82,8 @@ return new class extends Migration {
             $table->timestamps();
         
             $table->softDeletes();
-        
+                    $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->index('tenant_id');
             $table->index('company_id');
         });
@@ -112,7 +114,8 @@ return new class extends Migration {
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
-
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->index('tenant_id');
         });
 
@@ -136,7 +139,8 @@ return new class extends Migration {
                 ->default(false);
         
             $table->timestamps();
-        
+                    $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique([
                 'company_id',
                 'user_id'
@@ -160,7 +164,8 @@ return new class extends Migration {
                 ->cascadeOnDelete();
         
             $table->timestamps();
-        
+                    $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique([
                 'organizational_unit_id',
                 'user_id'

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class WarehouseUser extends Pivot
 {
+    use Auditable;
     protected $table = 'warehouse_user';
 
     protected $fillable = [

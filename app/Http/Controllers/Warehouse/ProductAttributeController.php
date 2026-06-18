@@ -8,15 +8,39 @@ use Illuminate\Support\Facades\Gate;
 
 class ProductAttributeController extends BaseController
 {
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('access', 'product-attributes.view');
+        $tenantId = $this->manager->getTenantId();
 
-        $attributes = ProductAttribute::where('tenant_id', $this->manager->getTenantId())
-            ->latest()
-            ->paginate(20);
+        $query = ProductAttribute::where('tenant_id', $tenantId);
+        if ($request->filled('search')) {
+            $query->where('name', 'like', "%{$request->search}%");
+        }
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+        $query->latest();
+        $attributes = $query->paginate($request->per_page ?? 20);
 
-        return view('warehouse.product-attributes.index', compact('attributes'));
+        $stats = [
+            'total'    => ProductAttribute::where('tenant_id', $tenantId)->count(),
+            'active'   => ProductAttribute::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'inactive' => ProductAttribute::where('tenant_id', $tenantId)->where('is_active', false)->count(),
+        ];
+
+        if ($request->ajax() || $request->input('ajax')) {
+            return response()->json([
+                'html'      => view('warehouse.product-attributes._table', compact('attributes'))->render(),
+                'statsHtml' => view('warehouse.product-attributes._stats', compact('stats'))->render(),
+                'total'     => $attributes->total(),
+            ]);
+        }
+
+        return view('warehouse.product-attributes.index', compact('attributes', 'stats'));
     }
 
     public function store(Request $request)

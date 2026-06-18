@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use App\Concerns\BelongsToTenant;
 use App\Concerns\BelongsToCompany;
 use App\Concerns\AutoFillTenantAndCompany;
@@ -10,13 +11,24 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes, Auditable;
 
     protected $fillable = [
-        'tenant_id', 'company_id', 'category_id', 'brand_id',
-        'measurement_unit_id', 'sku', 'barcode', 'title', 'model',
-        'part_number', 'description', 'minimum_stock', 'maximum_stock',
-        'is_asset', 'is_active',
+        'tenant_id',
+        'company_id',
+        'category_id',
+        'brand_id',
+        'measurement_unit_id',
+        'sku',
+        'barcode',
+        'title',
+        'model',
+        'part_number',
+        'description',
+        'minimum_stock',
+        'maximum_stock',
+        'is_asset',
+        'is_active',
     ];
 
     protected $casts = [
@@ -49,8 +61,8 @@ class Product extends Model
     public function measurementUnits()
     {
         return $this->belongsToMany(MeasurementUnit::class, 'product_measurement_units')
-                    ->withPivot('conversion_factor', 'is_default', 'company_id')
-                    ->withTimestamps();
+            ->withPivot('conversion_factor', 'is_default', 'company_id')
+            ->withTimestamps();
     }
 
     public function attributeValues()
@@ -61,14 +73,19 @@ class Product extends Model
     public function alternatives()
     {
         return $this->belongsToMany(Product::class, 'product_alternatives', 'product_id', 'alternative_product_id')
-                    ->withPivot('company_id')
-                    ->withTimestamps();
+            ->withPivot('company_id')
+            ->withTimestamps();
     }
 
     public function alternativeOf()
     {
         return $this->belongsToMany(Product::class, 'product_alternatives', 'alternative_product_id', 'product_id')
-                    ->withPivot('company_id')
-                    ->withTimestamps();
+            ->withPivot('company_id')
+            ->withTimestamps();
+    }
+
+    public function productType()
+    {
+        return $this->belongsTo(ProductType::class);
     }
 }

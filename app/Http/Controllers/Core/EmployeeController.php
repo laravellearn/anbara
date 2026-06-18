@@ -9,18 +9,48 @@ use Illuminate\Support\Facades\Gate;
 
 class EmployeeController extends BaseController
 {
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('access', 'employees.view');
+        $tenantId = $this->manager->getTenantId();
 
-        $employees = Employee::with('unit')
-            ->where('tenant_id', $this->manager->getTenantId())
-            ->latest()
-            ->paginate(20);
+        $units = Unit::where('tenant_id', $tenantId)->get();
 
-        $units = Unit::where('tenant_id', $this->manager->getTenantId())->get();
+        $query = Employee::with('unit')->where('tenant_id', $tenantId);
 
-        return view('core.employees.index', compact('employees', 'units'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('employee_code', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('unit_id')) {
+            $query->where('unit_id', $request->unit_id);
+        }
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        $query->latest();
+        $employees = $query->paginate($request->per_page ?? 20);
+
+        $stats = [
+            'total'  => Employee::where('tenant_id', $tenantId)->count(),
+            'active' => Employee::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'inactive' => Employee::where('tenant_id', $tenantId)->where('is_active', false)->count(),
+        ];
+
+        if ($request->ajax() || $request->input('ajax')) {
+            return response()->json([
+                'html'      => view('core.employees._table', compact('employees'))->render(),
+                'statsHtml' => view('core.employees._stats', compact('stats'))->render(),
+                'total'     => $employees->total(),
+            ]);
+        }
+
+        return view('core.employees.index', compact('employees', 'units', 'stats'));
     }
 
     public function store(Request $request)

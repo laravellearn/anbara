@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class SubscriptionUsage extends Model
 {
+    use Auditable;
     protected $fillable = [
         'subscription_id',
         'feature_key',

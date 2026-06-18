@@ -9,18 +9,50 @@ use Illuminate\Support\Facades\Gate;
 
 class WarehouseLocationController extends BaseController
 {
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('access', 'warehouse-locations.view');
+        $tenantId = $this->manager->getTenantId();
 
-        $locations = WarehouseLocation::with('warehouse')
-            ->where('tenant_id', $this->manager->getTenantId())
-            ->latest()
-            ->paginate(20);
+        $warehouses = Warehouse::where('tenant_id', $tenantId)->get();
 
-        $warehouses = Warehouse::where('tenant_id', $this->manager->getTenantId())->get();
+        $query = WarehouseLocation::with('warehouse')->where('tenant_id', $tenantId);
 
-        return view('warehouse.warehouse-locations.index', compact('locations', 'warehouses'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhere('title', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('warehouse_id')) {
+            $query->where('warehouse_id', $request->warehouse_id);
+        }
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        $query->latest();
+        $locations = $query->paginate($request->per_page ?? 20);
+
+        $stats = [
+            'total'    => WarehouseLocation::where('tenant_id', $tenantId)->count(),
+            'active'   => WarehouseLocation::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'inactive' => WarehouseLocation::where('tenant_id', $tenantId)->where('is_active', false)->count(),
+        ];
+
+        if ($request->ajax() || $request->input('ajax')) {
+            return response()->json([
+                'html'      => view('warehouse.warehouse-locations._table', compact('locations'))->render(),
+                'statsHtml' => view('warehouse.warehouse-locations._stats', compact('stats'))->render(),
+                'total'     => $locations->total(),
+            ]);
+        }
+
+        return view('warehouse.warehouse-locations.index', compact('locations', 'warehouses', 'stats'));
     }
 
     public function create()
@@ -62,8 +94,8 @@ class WarehouseLocationController extends BaseController
 
         $warehouses = Warehouse::where('tenant_id', $this->manager->getTenantId())->get();
         $locations  = WarehouseLocation::where('tenant_id', $this->manager->getTenantId())
-                        ->where('id', '!=', $warehouseLocation->id)
-                        ->get();
+            ->where('id', '!=', $warehouseLocation->id)
+            ->get();
 
         return view('warehouse.warehouse-locations.edit', compact('warehouseLocation', 'warehouses', 'locations'));
     }

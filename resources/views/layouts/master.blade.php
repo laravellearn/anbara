@@ -18,7 +18,7 @@
 
             <!-- Layout container -->
             <div class="layout-page">
-                <!-- Content wrapper (اسکرول‌شونده) -->
+                <!-- Content wrapper (اسکرول‌شونده) -->                 
                 <div class="content-wrapper">
                     <!-- Content -->
                     @yield('content')

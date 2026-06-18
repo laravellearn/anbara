@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\User;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Services\TenantManager;
 
@@ -19,7 +24,23 @@ class DashboardController extends Controller
             return redirect()->route('super-admin.dashboard');
         }
 
-        return view('dashboard', compact('user', 'companyId'));
-    }
+        $tenant = $manager->getTenant();
 
+        $activeSubscription = $tenant ? $tenant->subscriptions()->with('plan')->where('status', 'active')->where('starts_at', '<=', now())->where(function ($q) {
+            $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+        })->first() : null;
+
+        $data = [
+            'productsCount'    => Product::where('tenant_id', $tenant->id)->count(),
+            'warehousesCount'  => Warehouse::where('tenant_id', $tenant->id)->count(),
+            'usersCount'       => User::where('tenant_id', $tenant->id)->count(),
+            'categoriesCount'  => Category::where('tenant_id', $tenant->id)->count(),
+            'activeSubscription' => $activeSubscription,
+            'recentActivities' => ActivityLog::where('tenant_id', $tenant->id)->latest()->take(10)->get(),
+            'user' => $user,
+            'companyId' => $companyId
+        ];
+
+        return view('dashboard', $data);
+    }
 }

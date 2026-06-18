@@ -39,10 +39,17 @@
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-icon btn-outline-danger"><i class="bx bx-trash"></i></button>
                         </form>
+                        <form action="{{ route('super-admin.impersonate.store') }}" method="POST" class="d-inline">
+                            @csrf
+                            <input type="hidden" name="user_id" value="{{ $tenant->id }}">
+                            <button class="btn btn-sm btn-outline-info"><i class="bx bx-log-in-circle"></i> ورود</button>
+                        </form>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="5" class="text-center">هیچ سازمانی یافت نشد.</td></tr>
+                <tr>
+                    <td colspan="5" class="text-center">هیچ سازمانی یافت نشد.</td>
+                </tr>
                 @endforelse
             </tbody>
         </table>

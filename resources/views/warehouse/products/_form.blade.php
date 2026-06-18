@@ -17,7 +17,7 @@
             <select name="category_id" class="form-select">
                 <option value="">انتخاب کنید</option>
                 @foreach($categories as $cat)
-                    <option value="{{ $cat->id }}" {{ old('category_id', $product->category_id ?? '') == $cat->id ? 'selected' : '' }}>{{ $cat->title }}</option>
+                <option value="{{ $cat->id }}" {{ old('category_id', $product->category_id ?? '') == $cat->id ? 'selected' : '' }}>{{ $cat->title }}</option>
                 @endforeach
             </select>
         </div>
@@ -26,7 +26,7 @@
             <select name="brand_id" class="form-select">
                 <option value="">انتخاب کنید</option>
                 @foreach($brands as $brand)
-                    <option value="{{ $brand->id }}" {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>{{ $brand->title }}</option>
+                <option value="{{ $brand->id }}" {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>{{ $brand->title }}</option>
                 @endforeach
             </select>
         </div>
@@ -35,10 +35,55 @@
             <select name="measurement_unit_id" class="form-select">
                 <option value="">انتخاب کنید</option>
                 @foreach($measurementUnits as $unit)
-                    <option value="{{ $unit->id }}" {{ old('measurement_unit_id', $product->measurement_unit_id ?? '') == $unit->id ? 'selected' : '' }}>{{ $unit->title }} ({{ $unit->symbol }})</option>
+                <option value="{{ $unit->id }}" {{ old('measurement_unit_id', $product->measurement_unit_id ?? '') == $unit->id ? 'selected' : '' }}>{{ $unit->title }} ({{ $unit->symbol }})</option>
                 @endforeach
             </select>
         </div>
+
+        <div class="col-12">
+            <hr>
+            <h6>واحدهای شمارشی دیگر</h6>
+        </div>
+        <div class="col-12" id="additional-units">
+            @if(isset($product))
+            @foreach($product->measurementUnits as $index => $unit)
+            <div class="row mb-2 unit-row">
+                <div class="col-5">
+                    <select name="measurement_units[{{ $index }}][id]" class="form-select">
+                        <option value="">انتخاب واحد</option>
+                        @foreach($measurementUnits as $mu)
+                        <option value="{{ $mu->id }}" {{ $unit->id == $mu->id ? 'selected' : '' }}>{{ $mu->title }} ({{ $mu->symbol }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-4">
+                    <input type="number" step="any" name="measurement_units[{{ $index }}][conversion_factor]" class="form-control" value="{{ $unit->pivot->conversion_factor ?? 1 }}" placeholder="ضریب تبدیل">
+                </div>
+                <div class="col-2">
+                    <div class="form-check mt-2">
+                        <input type="checkbox" name="measurement_units[{{ $index }}][is_default]" value="1" class="form-check-input" {{ $unit->pivot->is_default ? 'checked' : '' }}>
+                        <label class="form-check-label">پیش‌فرض</label>
+                    </div>
+                </div>
+                <div class="col-1">
+                    <button type="button" class="btn btn-sm btn-danger remove-unit"><i class="bx bx-x"></i></button>
+                </div>
+            </div>
+            @endforeach
+            @endif
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-primary" id="add-unit"><i class="bx bx-plus"></i> افزودن واحد</button>
+
+        <div class="col-md-4">
+            <label class="form-label">نوع کالا</label>
+            <select name="product_type_id" id="product_type_id" class="form-select select2">
+                <option value="">انتخاب کنید</option>
+                @foreach($productTypes as $type)
+                <option value="{{ $type->id }}" {{ old('product_type_id', $product->product_type_id ?? '') == $type->id ? 'selected' : '' }}>{{ $type->title }}</option>
+                @endforeach
+            </select>
+        </div>
+
         <div class="col-md-4">
             <label class="form-label">حداقل موجودی</label>
             <input type="number" step="any" name="minimum_stock" class="form-control" value="{{ old('minimum_stock', $product->minimum_stock ?? 0) }}">
@@ -57,6 +102,10 @@
                 <label class="form-check-label" for="prod_active">فعال</label>
             </div>
         </div>
-        {{-- بخش اضافی برای واحدهای شمارشی دیگر و ویژگی‌های دینامیک در صورت نیاز --}}
+        <div class="col-12">
+            <hr>
+            <h6>ویژگی‌های دینامیک</h6>
+        </div>
+        <div class="col-12" id="dynamic-attributes"></div>
     </div>
 </div>

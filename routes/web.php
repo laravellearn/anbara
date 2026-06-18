@@ -10,13 +10,13 @@ use App\Http\Controllers\superAdmin\{
     SuperActivityLogController,
     SuperAdminRoleController,
     ToolController,
-    SuperUserController
+    SuperUserController,
+    ImpersonateController
 };
 
 
 use App\Http\Controllers\Core\{
     UserController,
-    ProfileController,
     CompanySwitcherController,
     FiscalYearSwitcherController,
     BillingController,
@@ -38,6 +38,8 @@ use App\Http\Controllers\Warehouse\{
     MeasurementUnitController,
     BrandController,
     CategoryController,
+    CostCenterController,
+    ProductTypeController,
 };
 
 
@@ -48,7 +50,8 @@ use App\Http\Controllers\Auth\{
     ForgotPasswordController
 };
 use App\Http\Controllers\{
-    DashboardController
+    DashboardController,
+    ProfileController
 };
 
 
@@ -78,6 +81,9 @@ Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superad
     Route::get('/settings', fn() => view('super-admin.placeholder'))->name('settings.index');
     Route::post('/tools/sync-permissions', [ToolController::class, 'syncPermissions'])->name('tools.sync-permissions');
     Route::post('/tools/clear-cache', [ToolController::class, 'clearCache'])->name('tools.clear-cache');
+
+    Route::post('/impersonate', [ImpersonateController::class, 'store'])->name('impersonate.store');
+    Route::delete('/impersonate', [ImpersonateController::class, 'destroy'])->name('impersonate.destroy');
 });
 
 //Authentication-----------------
@@ -119,6 +125,9 @@ Route::middleware(['guest', 'throttle:6,1'])->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
     // خروج
     Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 });
@@ -139,7 +148,7 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
 
     //سطوح دسترسی
-    Route::resource('roles', RoleController::class)->except(['show', 'create', 'edit']);
+    Route::resource('roles', RoleController::class)->except(['show']);
 
     //سال مالی
     Route::resource('fiscal-years', FiscalYearController::class)->except('show');
@@ -173,6 +182,11 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
     // موقعیت‌های انبار (با صفحه Create/Edit مجزا)
     Route::resource('warehouse-locations', WarehouseLocationController::class);
 
+    //مراکز هزینه
+    Route::resource('cost-centers', CostCenterController::class)->except(['show', 'create', 'edit']);
+    // در گروه warehouse
+    Route::resource('product-types', ProductTypeController::class)->except(['show']);
+    Route::get('product-types/{productType}/attributes', [ProductTypeController::class, 'attributes'])->name('product-types.attributes');
 });
 
 

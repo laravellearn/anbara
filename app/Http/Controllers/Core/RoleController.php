@@ -86,4 +86,19 @@ class RoleController extends Controller
 
         return redirect()->route('roles.index')->with('swal_success', 'نقش حذف شد.');
     }
+
+    public function create()
+    {
+        Gate::authorize('access', 'roles.create');
+        $permissions = \App\Models\Permission::all()->groupBy('group');
+        return view('roles.create', compact('permissions'));
+    }
+
+    public function edit(Role $role)
+    {
+        Gate::authorize('access', 'roles.edit');
+        $permissions = \App\Models\Permission::all()->groupBy('group');
+        $rolePermissions = $role->permissions->pluck('id')->toArray();
+        return view('roles.edit', compact('role', 'permissions', 'rolePermissions'));
+    }
 }

@@ -8,18 +8,46 @@ use Illuminate\Support\Facades\Gate;
 
 class OrganizationalUnitController extends BaseController
 {
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('access', 'organizational-units.view');
+        $tenantId = $this->manager->getTenantId();
 
-        $units = Unit::with('parent')
-            ->where('tenant_id', $this->manager->getTenantId())
-            ->latest()
-            ->paginate(20);
+        $allUnits = Unit::where('tenant_id', $tenantId)->get();
 
-        $allUnits = Unit::where('tenant_id', $this->manager->getTenantId())->get();
+        $query = Unit::with('parent')->where('tenant_id', $tenantId);
 
-        return view('core.organizational-units.index', compact('units', 'allUnits'));
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', "%{$request->search}%")
+                    ->orWhere('description', 'like', "%{$request->search}%");
+            });
+        }
+        if ($request->filled('parent_id')) {
+            $query->where('parent_id', $request->parent_id);
+        }
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        $query->latest();
+        $units = $query->paginate($request->per_page ?? 20);
+
+        $stats = [
+            'total'    => Unit::where('tenant_id', $tenantId)->count(),
+            'active'   => Unit::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'inactive' => Unit::where('tenant_id', $tenantId)->where('is_active', false)->count(),
+        ];
+
+        if ($request->ajax() || $request->input('ajax')) {
+            return response()->json([
+                'html'      => view('core.organizational-units._table', compact('units'))->render(),
+                'statsHtml' => view('core.organizational-units._stats', compact('stats'))->render(),
+                'total'     => $units->total(),
+            ]);
+        }
+
+        return view('core.organizational-units.index', compact('units', 'allUnits', 'stats'));
     }
 
     public function store(Request $request)

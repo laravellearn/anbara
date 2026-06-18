@@ -9,16 +9,42 @@ use Illuminate\Support\Facades\Gate;
 
 class WarehouseController extends BaseController
 {
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('access', 'warehouses.view');
+        $tenantId = $this->manager->getTenantId();
 
-        $warehouses = Warehouse::with('company')
-            ->where('tenant_id', $this->manager->getTenantId())
-            ->latest()
-            ->paginate(20);
+        $query = Warehouse::with('company')->where('tenant_id', $tenantId);
 
-        return view('warehouse.warehouses.index', compact('warehouses'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        $query->latest();
+        $warehouses = $query->paginate($request->per_page ?? 20);
+
+        $stats = [
+            'total'    => Warehouse::where('tenant_id', $tenantId)->count(),
+            'active'   => Warehouse::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'inactive' => Warehouse::where('tenant_id', $tenantId)->where('is_active', false)->count(),
+        ];
+
+        if ($request->ajax() || $request->input('ajax')) {
+            return response()->json([
+                'html'      => view('warehouse.warehouses._table', compact('warehouses'))->render(),
+                'statsHtml' => view('warehouse.warehouses._stats', compact('stats'))->render(),
+                'total'     => $warehouses->total(),
+            ]);
+        }
+
+        return view('warehouse.warehouses.index', compact('warehouses', 'stats'));
     }
 
     public function create()

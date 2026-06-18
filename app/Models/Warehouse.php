@@ -2,19 +2,37 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToTenant;
+use App\Concerns\BelongsToTenant;
+use App\Concerns\BelongsToCompany;
+use App\Concerns\AutoFillTenantAndCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Warehouse extends Model
 {
-    use BelongsToTenant, SoftDeletes;
-    protected $fillable = ['tenant_id', 'company_id', 'name', 'code', 'address', 'manager_user_id', 'capacity', 'is_active'];
-    protected $casts = ['is_active' => 'boolean'];
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes;
+
+    protected $fillable = [
+        'tenant_id', 'company_id', 'code', 'title', 'description',
+        'address', 'allow_negative_stock', 'is_active',
+    ];
+
+    protected $casts = [
+        'allow_negative_stock' => 'boolean',
+        'is_active' => 'boolean',
+    ];
 
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'warehouse_user')
+                    ->using(WarehouseUser::class)
+                    ->withPivot('is_default')
+                    ->withTimestamps();
     }
 
     public function locations()

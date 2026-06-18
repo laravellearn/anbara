@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\CompanyUser;
+use App\Models\Permission;
 use App\Services\TenantManager;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Auth;
@@ -105,5 +106,17 @@ class AppServiceProvider extends ServiceProvider
                 })
                 ->exists();
         });
+
+        // تعریف یک Gate اختصاصی به ازای هر Permission موجود
+        try {
+            $permissions = Permission::all()->pluck('name');
+            foreach ($permissions as $permission) {
+                Gate::define($permission, function (User $user) use ($permission) {
+                    return Gate::allows('access', $permission);
+                });
+            }
+        } catch (\Exception $e) {
+            // اگر جدول permissions هنوز وجود نداشته باشد (مثلاً هنگام migrate)
+        }
     }
 }

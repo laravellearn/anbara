@@ -2,31 +2,32 @@
 
 namespace App\Http\Controllers\Warehouse;
 
-use App\Http\Controllers\Controller;
 use App\Models\Warehouse;
-use App\Services\TenantManager;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
-class WarehouseController extends Controller
+class WarehouseController extends BaseController
 {
-    protected $manager;
-
-    public function __construct(TenantManager $manager)
-    {
-        $this->manager = $manager;
-    }
-
     public function index()
     {
         Gate::authorize('access', 'warehouses.view');
 
-        $warehouses = Warehouse::where('tenant_id', $this->manager->getTenantId())
-            ->with('company')
+        $warehouses = Warehouse::with('company')
+            ->where('tenant_id', $this->manager->getTenantId())
             ->latest()
             ->paginate(20);
 
         return view('warehouse.warehouses.index', compact('warehouses'));
+    }
+
+    public function create()
+    {
+        Gate::authorize('access', 'warehouses.create');
+
+        $users = User::where('tenant_id', $this->manager->getTenantId())->get();
+
+        return view('warehouse.warehouses.create', compact('users'));
     }
 
     public function store(Request $request)
@@ -34,35 +35,59 @@ class WarehouseController extends Controller
         Gate::authorize('access', 'warehouses.create');
 
         $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'code'         => 'nullable|string|max:50',
-            'address'      => 'nullable|string',
-            'manager_user_id'=> 'nullable|exists:users,id',
-            'capacity'     => 'nullable|numeric|min:0',
-            'is_active'    => 'boolean',
+            'code'                 => 'required|string|max:50|unique:warehouses,code',
+            'title'                => 'required|string|max:255',
+            'description'          => 'nullable|string',
+            'address'              => 'nullable|string',
+            'allow_negative_stock' => 'boolean',
+            'is_active'            => 'boolean',
+            'users'                => 'nullable|array',
+            'users.*'              => 'exists:users,id',
         ]);
 
         $data['tenant_id']  = $this->manager->getTenantId();
         $data['company_id'] = $this->manager->getCompanyId();
 
-        Warehouse::create($data);
+        $warehouse = Warehouse::create($data);
 
-        flash()->success('انبار جدید ایجاد شد.');
+        if ($request->has('users')) {
+            $warehouse->users()->sync($request->users);
+        }
+
+        flash()->success('انبار ایجاد شد.');
         return redirect()->route('warehouse.warehouses.index');
+    }
+
+    public function edit(Warehouse $warehouse)
+    {
+        Gate::authorize('access', 'warehouses.edit');
+
+        $users = User::where('tenant_id', $this->manager->getTenantId())->get();
+        $warehouse->load('users');
+
+        return view('warehouse.warehouses.edit', compact('warehouse', 'users'));
     }
 
     public function update(Request $request, Warehouse $warehouse)
     {
         Gate::authorize('access', 'warehouses.edit');
 
-        $warehouse->update($request->validate([
-            'name'         => 'required|string|max:255',
-            'code'         => 'nullable|string|max:50',
-            'address'      => 'nullable|string',
-            'manager_user_id'=> 'nullable|exists:users,id',
-            'capacity'     => 'nullable|numeric|min:0',
-            'is_active'    => 'boolean',
-        ]));
+        $data = $request->validate([
+            'code'                 => 'required|string|max:50|unique:warehouses,code,' . $warehouse->id,
+            'title'                => 'required|string|max:255',
+            'description'          => 'nullable|string',
+            'address'              => 'nullable|string',
+            'allow_negative_stock' => 'boolean',
+            'is_active'            => 'boolean',
+            'users'                => 'nullable|array',
+            'users.*'              => 'exists:users,id',
+        ]);
+
+        $warehouse->update($data);
+
+        if ($request->has('users')) {
+            $warehouse->users()->sync($request->users);
+        }
 
         flash()->success('انبار ویرایش شد.');
         return redirect()->route('warehouse.warehouses.index');
@@ -73,6 +98,7 @@ class WarehouseController extends Controller
         Gate::authorize('access', 'warehouses.delete');
 
         $warehouse->delete();
+
         flash()->success('انبار حذف شد.');
         return back();
     }

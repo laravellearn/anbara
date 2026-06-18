@@ -2,21 +2,12 @@
 
 namespace App\Http\Controllers\Warehouse;
 
-use App\Http\Controllers\Controller;
 use App\Models\ProductAttribute;
-use App\Services\TenantManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
-class ProductAttributeController extends Controller
+class ProductAttributeController extends BaseController
 {
-    protected $manager;
-
-    public function __construct(TenantManager $manager)
-    {
-        $this->manager = $manager;
-    }
-
     public function index()
     {
         Gate::authorize('access', 'product-attributes.view');
@@ -39,17 +30,18 @@ class ProductAttributeController extends Controller
         ]);
 
         $data['tenant_id'] = $this->manager->getTenantId();
+
         ProductAttribute::create($data);
 
-        flash()->success('ویژگی جدید ایجاد شد.');
+        flash()->success('ویژگی ایجاد شد.');
         return redirect()->route('warehouse.product-attributes.index');
     }
 
-    public function update(Request $request, ProductAttribute $attribute)
+    public function update(Request $request, ProductAttribute $productAttribute)
     {
         Gate::authorize('access', 'product-attributes.edit');
 
-        $attribute->update($request->validate([
+        $productAttribute->update($request->validate([
             'name'    => 'required|string|max:255',
             'type'    => 'required|in:text,number,select',
             'options' => 'nullable|json',
@@ -59,11 +51,12 @@ class ProductAttributeController extends Controller
         return redirect()->route('warehouse.product-attributes.index');
     }
 
-    public function destroy(ProductAttribute $attribute)
+    public function destroy(ProductAttribute $productAttribute)
     {
         Gate::authorize('access', 'product-attributes.delete');
 
-        $attribute->delete();
+        $productAttribute->delete();
+
         flash()->success('ویژگی حذف شد.');
         return back();
     }

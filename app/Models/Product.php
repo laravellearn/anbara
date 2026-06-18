@@ -2,19 +2,29 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToTenant;
+use App\Concerns\BelongsToTenant;
+use App\Concerns\BelongsToCompany;
+use App\Concerns\AutoFillTenantAndCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Item extends Model
+class Product extends Model
 {
-    use BelongsToTenant, SoftDeletes;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes;
 
     protected $fillable = [
-        'tenant_id', 'company_id', 'category_id', 'unit_id', 'name', 'sku',
-        'barcode', 'description', 'min_stock', 'max_stock', 'image', 'attributes', 'is_active'
+        'tenant_id', 'company_id', 'category_id', 'brand_id',
+        'measurement_unit_id', 'sku', 'barcode', 'title', 'model',
+        'part_number', 'description', 'minimum_stock', 'maximum_stock',
+        'is_asset', 'is_active',
     ];
-    protected $casts = ['attributes' => 'array', 'is_active' => 'boolean'];
+
+    protected $casts = [
+        'minimum_stock' => 'decimal:4',
+        'maximum_stock' => 'decimal:4',
+        'is_asset' => 'boolean',
+        'is_active' => 'boolean',
+    ];
 
     public function company()
     {
@@ -23,27 +33,42 @@ class Item extends Model
 
     public function category()
     {
-        return $this->belongsTo(ProductCategory::class);
+        return $this->belongsTo(Category::class);
     }
 
-    public function unit()
+    public function brand()
     {
-        return $this->belongsTo(Unit::class);
+        return $this->belongsTo(Brand::class);
     }
 
-    public function barcodes()
+    public function baseMeasurementUnit()
     {
-        return $this->hasMany(ProductBarcode::class);
+        return $this->belongsTo(MeasurementUnit::class, 'measurement_unit_id');
+    }
+
+    public function measurementUnits()
+    {
+        return $this->belongsToMany(MeasurementUnit::class, 'product_measurement_units')
+                    ->withPivot('conversion_factor', 'is_default', 'company_id')
+                    ->withTimestamps();
+    }
+
+    public function attributeValues()
+    {
+        return $this->hasMany(ProductAttributeValue::class);
     }
 
     public function alternatives()
     {
-        return $this->belongsToMany(Item::class, 'item_alternatives', 'item_id', 'alternative_item_id')
-                    ->withPivot('tenant_id');
+        return $this->belongsToMany(Product::class, 'product_alternatives', 'product_id', 'alternative_product_id')
+                    ->withPivot('company_id')
+                    ->withTimestamps();
     }
 
-    public function packagings()
+    public function alternativeOf()
     {
-        return $this->hasMany(ProductPackaging::class);
+        return $this->belongsToMany(Product::class, 'product_alternatives', 'alternative_product_id', 'product_id')
+                    ->withPivot('company_id')
+                    ->withTimestamps();
     }
 }

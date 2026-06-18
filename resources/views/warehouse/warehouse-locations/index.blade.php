@@ -29,46 +29,15 @@
                 <small class="text-muted ms-2">({{ $locations->total() }})</small>
             </h5>
             @can('access', 'warehouse-locations.create')
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+            <a href="{{ route('warehouse.warehouse-locations.create') }}" class="btn btn-primary btn-sm">
                 <i class="bx bx-plus"></i> موقعیت جدید
-            </button>
+            </a>
             @endcan
         </div>
 
         <div class="table-responsive">
-            @include('admin.locations._table', ['locations' => $locations])
+            @include('warehouse.warehouse-locations._table', ['locations' => $locations])
         </div>
     </div>
 </div>
-
-@include('admin.locations._modal', ['warehouses' => $warehouses])
 @endsection
-
-@push('scripts')
-<script>
-    $(function(){
-        $('.edit-loc-btn').on('click', function(){
-            const btn = $(this);
-            $('#locForm').attr('action', `{{ route('admin.warehouse-locations.update', ':id') }}`.replace(':id', btn.data('id')));
-            if (!$('input[name="_method"]').length) $('#locForm').prepend('<input type="hidden" name="_method" value="PUT">');
-            $('#loc_warehouse').val(btn.data('warehouse'));
-            $('#loc_parent').val(btn.data('parent'));
-            $('#loc_code').val(btn.data('code'));
-            $('#loc_name').val(btn.data('name'));
-            $('#loc_type').val(btn.data('type'));
-            $('#loc_capacity').val(btn.data('capacity'));
-            $('#loc_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
-            $('#createModal').modal('show');
-        });
-        $('#createModal').on('hidden.bs.modal', function(){
-            $('#locForm').attr('action', `{{ route('admin.warehouse-locations.store') }}`);
-            $('input[name="_method"]').remove();
-            $('#locForm')[0].reset();
-        });
-        $('.delete-form').on('submit', function(e){
-            e.preventDefault(); const f=this;
-            Swal.fire({title:'مطمئن هستید؟',text:'این موقعیت حذف خواهد شد.',icon:'warning',showCancelButton:true,confirmButtonText:'بله',cancelButtonText:'لغو'}).then(r=>{if(r.isConfirmed)f.submit();});
-        });
-    });
-</script>
-@endpush

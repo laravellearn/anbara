@@ -293,8 +293,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'permissions.view', 'title' => 'مشاهده سطوح دسترسی', 'group' => 'سطوح دسترسی'],
 
 
-
-
             // ==================== ۷. کالا و اقلام ====================
             ['name' => 'products.view',    'title' => 'مشاهده لیست کالاها',            'group' => 'کالا و اقلام'],
             ['name' => 'products.create',  'title' => 'ایجاد کالا',                    'group' => 'کالا و اقلام'],
@@ -306,30 +304,30 @@ class DatabaseSeeder extends Seeder
             ['name' => 'product-categories.edit',   'title' => 'ویرایش دسته‌بندی',     'group' => 'کالا و اقلام'],
             ['name' => 'product-categories.delete', 'title' => 'حذف دسته‌بندی',        'group' => 'کالا و اقلام'],
 
-            ['name' => 'units.view',   'title' => 'مشاهده واحدهای اندازه‌گیری',     'group' => 'کالا و اقلام'],
-            ['name' => 'units.create', 'title' => 'ایجاد واحد',                     'group' => 'کالا و اقلام'],
-            ['name' => 'units.edit',   'title' => 'ویرایش واحد',                    'group' => 'کالا و اقلام'],
-            ['name' => 'units.delete', 'title' => 'حذف واحد',                       'group' => 'کالا و اقلام'],
+            ['name' => 'measurement-units.view',   'title' => 'مشاهده واحدهای اندازه‌گیری', 'group' => 'کالا و اقلام'],
+            ['name' => 'measurement-units.create', 'title' => 'ایجاد واحد',                'group' => 'کالا و اقلام'],
+            ['name' => 'measurement-units.edit',   'title' => 'ویرایش واحد',                'group' => 'کالا و اقلام'],
+            ['name' => 'measurement-units.delete', 'title' => 'حذف واحد',                  'group' => 'کالا و اقلام'],
+
+            ['name' => 'brands.view',   'title' => 'مشاهده برندها',   'group' => 'کالا و اقلام'],
+            ['name' => 'brands.create', 'title' => 'ایجاد برند',      'group' => 'کالا و اقلام'],
+            ['name' => 'brands.edit',   'title' => 'ویرایش برند',     'group' => 'کالا و اقلام'],
+            ['name' => 'brands.delete', 'title' => 'حذف برند',        'group' => 'کالا و اقلام'],
 
             ['name' => 'product-attributes.view',   'title' => 'مشاهده ویژگی‌ها',      'group' => 'کالا و اقلام'],
             ['name' => 'product-attributes.create', 'title' => 'ایجاد ویژگی',          'group' => 'کالا و اقلام'],
             ['name' => 'product-attributes.edit',   'title' => 'ویرایش ویژگی',         'group' => 'کالا و اقلام'],
             ['name' => 'product-attributes.delete', 'title' => 'حذف ویژگی',            'group' => 'کالا و اقلام'],
 
-            ['name' => 'barcodes.view',   'title' => 'مشاهده بارکدها',             'group' => 'کالا و اقلام'],
-            ['name' => 'barcodes.create', 'title' => 'ایجاد بارکد',                 'group' => 'کالا و اقلام'],
-            ['name' => 'barcodes.edit',   'title' => 'ویرایش بارکد',                'group' => 'کالا و اقلام'],
-            ['name' => 'barcodes.delete', 'title' => 'حذف بارکد',                   'group' => 'کالا و اقلام'],
+            ['name' => 'product-barcodes.view',   'title' => 'مشاهده بارکدها',         'group' => 'کالا و اقلام'],
+            ['name' => 'product-barcodes.create', 'title' => 'ایجاد بارکد',             'group' => 'کالا و اقلام'],
+            ['name' => 'product-barcodes.edit',   'title' => 'ویرایش بارکد',            'group' => 'کالا و اقلام'],
+            ['name' => 'product-barcodes.delete', 'title' => 'حذف بارکد',               'group' => 'کالا و اقلام'],
 
             ['name' => 'product-alternatives.view',   'title' => 'مشاهده کالاهای جایگزین',   'group' => 'کالا و اقلام'],
             ['name' => 'product-alternatives.create', 'title' => 'ایجاد جایگزین',            'group' => 'کالا و اقلام'],
             ['name' => 'product-alternatives.edit',   'title' => 'ویرایش جایگزین',           'group' => 'کالا و اقلام'],
             ['name' => 'product-alternatives.delete', 'title' => 'حذف جایگزین',              'group' => 'کالا و اقلام'],
-
-            ['name' => 'product-packaging.view',   'title' => 'مشاهده بسته‌بندی‌ها',  'group' => 'کالا و اقلام'],
-            ['name' => 'product-packaging.create', 'title' => 'ایجاد بسته‌بندی',      'group' => 'کالا و اقلام'],
-            ['name' => 'product-packaging.edit',   'title' => 'ویرایش بسته‌بندی',     'group' => 'کالا و اقلام'],
-            ['name' => 'product-packaging.delete', 'title' => 'حذف بسته‌بندی',        'group' => 'کالا و اقلام'],
 
             // ==================== ۸. انبار و مکان‌ها ====================
             ['name' => 'warehouses.view',   'title' => 'مشاهده انبارها',            'group' => 'انبار و مکان‌ها'],
@@ -342,11 +340,26 @@ class DatabaseSeeder extends Seeder
             ['name' => 'warehouse-locations.edit',   'title' => 'ویرایش موقعیت',        'group' => 'انبار و مکان‌ها'],
             ['name' => 'warehouse-locations.delete', 'title' => 'حذف موقعیت',           'group' => 'انبار و مکان‌ها'],
 
-            ['name' => 'warehouse-capacity.view',    'title' => 'مشاهده ظرفیت و مدیریت فضا', 'group' => 'انبار و مکان‌ها'],
+            // ==================== ۹. طرف حساب‌ها ====================
+            ['name' => 'contacts.view',   'title' => 'مشاهده مخاطبین',     'group' => 'طرف حساب‌ها'],
+            ['name' => 'contacts.create', 'title' => 'ایجاد مخاطب',        'group' => 'طرف حساب‌ها'],
+            ['name' => 'contacts.edit',   'title' => 'ویرایش مخاطب',       'group' => 'طرف حساب‌ها'],
+            ['name' => 'contacts.delete', 'title' => 'حذف مخاطب',         'group' => 'طرف حساب‌ها'],
+
+            ['name' => 'organizational-units.view',   'title' => 'مشاهده واحدهای سازمانی',   'group' => 'طرف حساب‌ها'],
+            ['name' => 'organizational-units.create', 'title' => 'ایجاد واحد سازمانی',        'group' => 'طرف حساب‌ها'],
+            ['name' => 'organizational-units.edit',   'title' => 'ویرایش واحد سازمانی',       'group' => 'طرف حساب‌ها'],
+            ['name' => 'organizational-units.delete', 'title' => 'حذف واحد سازمانی',          'group' => 'طرف حساب‌ها'],
+
+            ['name' => 'employees.view',   'title' => 'مشاهده کارمندان',     'group' => 'طرف حساب‌ها'],
+            ['name' => 'employees.create', 'title' => 'ایجاد کارمند',        'group' => 'طرف حساب‌ها'],
+            ['name' => 'employees.edit',   'title' => 'ویرایش کارمند',       'group' => 'طرف حساب‌ها'],
+            ['name' => 'employees.delete', 'title' => 'حذف کارمند',         'group' => 'طرف حساب‌ها'],
 
 
         ];
 
+        
         foreach ($permissions as $perm) {
             Permission::firstOrCreate(
                 ['name' => $perm['name']],

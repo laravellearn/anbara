@@ -5,6 +5,7 @@
             <th>نام</th>
             <th>نوع</th>
             <th>گزینه‌ها</th>
+            <th>وضعیت</th>
             <th>عملیات</th>
         </tr>
     </thead>
@@ -15,17 +16,18 @@
             <td>{{ $attr->name }}</td>
             <td>{{ $attr->type }}</td>
             <td>{{ is_array($attr->options) ? implode(', ', $attr->options) : $attr->options }}</td>
+            <td>{!! $attr->is_active ? '<span class="badge bg-success">فعال</span>' : '<span class="badge bg-danger">غیرفعال</span>' !!}</td>
             <td>
                 <div class="d-flex gap-1">
-                    @can('access', 'item-attributes.edit')
+                    @can('access', 'product-attributes.edit')
                     <button class="btn btn-sm btn-icon btn-outline-warning edit-attr-btn"
-                        data-id="{{ $attr->id }}" data-name="{{ $attr->name }}"
-                        data-type="{{ $attr->type }}" data-options="{{ json_encode($attr->options) }}">
+                        data-id="{{ $attr->id }}" data-name="{{ $attr->name }}" data-type="{{ $attr->type }}"
+                        data-options="{{ json_encode($attr->options) }}" data-active="{{ $attr->is_active }}">
                         <i class="bx bx-edit"></i>
                     </button>
                     @endcan
-                    @can('access', 'item-attributes.delete')
-                    <form action="{{ route('admin.item-attributes.destroy', $attr) }}" method="POST" class="d-inline delete-form">
+                    @can('access', 'product-attributes.delete')
+                    <form action="{{ route('warehouse.product-attributes.destroy', $attr) }}" method="POST" class="d-inline delete-form">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-icon btn-outline-danger"><i class="bx bx-trash"></i></button>
                     </form>
@@ -34,7 +36,7 @@
             </td>
         </tr>
         @empty
-        <tr><td colspan="5" class="text-center text-muted py-5">ویژگی یافت نشد.</td></tr>
+        <tr><td colspan="6" class="text-center text-muted py-5">ویژگی یافت نشد.</td></tr>
         @endforelse
     </tbody>
 </table>

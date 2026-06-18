@@ -28,7 +28,7 @@
                 <i class="bx bx-list-check me-1"></i> ویژگی‌ها
                 <small class="text-muted ms-2">({{ $attributes->total() }})</small>
             </h5>
-            @can('access', 'item-attributes.create')
+            @can('access', 'product-attributes.create')
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
                 <i class="bx bx-plus"></i> ویژگی جدید
             </button>
@@ -36,12 +36,12 @@
         </div>
 
         <div class="table-responsive">
-            @include('admin.product-attributes._table', ['attributes' => $attributes])
+            @include('warehouse.product-attributes._table', ['attributes' => $attributes])
         </div>
     </div>
 </div>
 
-@include('admin.product-attributes._modal')
+@include('warehouse.product-attributes._modal')
 @endsection
 
 @push('scripts')
@@ -49,7 +49,8 @@
     $(function(){
         $('.edit-attr-btn').on('click', function(){
             const btn = $(this);
-            $('#attrForm').attr('action', `{{ route('admin.item-attributes.update', ':id') }}`.replace(':id', btn.data('id')));
+            const id = btn.data('id');
+            $('#attrForm').attr('action', `{{ route('warehouse.product-attributes.update', ':id') }}`.replace(':id', id));
             if (!$('input[name="_method"]').length) $('#attrForm').prepend('<input type="hidden" name="_method" value="PUT">');
             $('#attr_name').val(btn.data('name'));
             $('#attr_type').val(btn.data('type'));
@@ -59,7 +60,7 @@
             $('#createModal').modal('show');
         });
         $('#createModal').on('hidden.bs.modal', function(){
-            $('#attrForm').attr('action', `{{ route('admin.item-attributes.store') }}`);
+            $('#attrForm').attr('action', `{{ route('warehouse.product-attributes.store') }}`);
             $('input[name="_method"]').remove();
             $('#attrForm')[0].reset();
         });

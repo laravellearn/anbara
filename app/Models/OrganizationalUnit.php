@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Concerns\BelongsToTenant; // خودش tenant_id هم داره پس بیار
+use App\Concerns\BelongsToTenant;
 use App\Scopes\CompanyScope; // اگه ساختی
 
 class OrganizationalUnit extends Model

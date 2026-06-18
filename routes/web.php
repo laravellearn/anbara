@@ -24,19 +24,20 @@ use App\Http\Controllers\Core\{
     CompanyController,
     ActivityLogController,
     RoleController,
-    PermissionController
+    PermissionController,
+    OrganizationalUnitController,
+    ContactController,
+    EmployeeController
 };
 
 use App\Http\Controllers\Warehouse\{
-    UnitController,
-    ProductCategoryController,
     ProductAttributeController,
     ProductController,
-    ProductBarcodeController,
-    ProductAlternativeController,
-    ProductPackagingController,
     WarehouseController,
     WarehouseLocationController,
+    MeasurementUnitController,
+    BrandController,
+    CategoryController,
 };
 
 
@@ -145,16 +146,33 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
     Route::post('fiscal-years/{fiscal_year}/activate', [FiscalYearController::class, 'activate'])->name('fiscal-years.activate');
     Route::post('fiscal-years/{fiscal_year}/close', [FiscalYearController::class, 'close'])->name('fiscal-years.close');
 
-    //بخش انبار و کالا
-    Route::resource('units', UnitController::class)->except(['show', 'create', 'edit']);
-    Route::resource('product-categories', ProductCategoryController::class)->except(['show', 'create', 'edit']);
+    // واحدهای سازمانی (Organizational Units) – در Core
+    Route::resource('organizational-units', OrganizationalUnitController::class)->except(['show', 'create', 'edit']);
+    // مخاطبین (Contacts) – در Core یا طرف تجاری ها
+    Route::resource('contacts', ContactController::class)->except(['show', 'create', 'edit']);
+    // کارمندان (Employees) – در Core
+    Route::resource('employees', EmployeeController::class)->except(['show', 'create', 'edit']);
+});
+
+
+Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.tenant'])->group(function () {
+
+
+    // =	واحدهای اندازه‌گیری (Measurement Units)
+    Route::resource('measurement-units', MeasurementUnitController::class)->except(['show', 'create', 'edit']);
+    // برندها
+    Route::resource('brands', BrandController::class)->except(['show', 'create', 'edit']);
+    // دسته‌بندی کالا
+    Route::resource('categories', CategoryController::class)->except(['show', 'create', 'edit']);
+    // ویژگی‌های کالا
     Route::resource('product-attributes', ProductAttributeController::class)->except(['show', 'create', 'edit']);
-    Route::resource('products', ProductController::class)->except(['show', 'create', 'edit']);
-    Route::resource('barcodes', ProductBarcodeController::class)->except(['show', 'create', 'edit']);
-    Route::resource('product-alternatives', ProductAlternativeController::class)->except(['show', 'create', 'edit']);
-    Route::resource('product-packaging', ProductPackagingController::class)->except(['show', 'create', 'edit']);
-    Route::resource('warehouses', WarehouseController::class)->except(['show', 'create', 'edit']);
-    Route::resource('warehouse-locations', WarehouseLocationController::class)->except(['show', 'create', 'edit']);
+    // کالاها (با صفحه Create/Edit مجزا)
+    Route::resource('products', ProductController::class);
+    // انبارها (با صفحه Create/Edit مجزا)
+    Route::resource('warehouses', WarehouseController::class);
+    // موقعیت‌های انبار (با صفحه Create/Edit مجزا)
+    Route::resource('warehouse-locations', WarehouseLocationController::class);
+
 });
 
 
@@ -172,4 +190,3 @@ Route::middleware(['auth', 'require.tenant', 'owner', 'check.subscription'])->gr
     //مدیریت سازمان
     Route::resource('companies', CompanyController::class)->except('show');
 });
-

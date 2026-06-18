@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToTenant;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class ProductAlternative extends Model
+class ProductAlternative extends Pivot
 {
-    use BelongsToTenant;
-    protected $fillable = ['tenant_id', 'item_id', 'alternative_item_id'];
+    protected $table = 'product_alternatives';
+
+    protected $fillable = [
+        'tenant_id', 'product_id', 'alternative_product_id', 'company_id',
+    ];
 }

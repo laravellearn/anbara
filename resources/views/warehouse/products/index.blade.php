@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'کالاها')
+@section('title', 'لیست کالاها')
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -28,49 +28,16 @@
                 <i class="bx bx-package me-1"></i> لیست کالاها
                 <small class="text-muted ms-2">({{ $products->total() }})</small>
             </h5>
-            @can('access', 'items.create')
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+            @can('access', 'products.create')
+            <a href="{{ route('warehouse.products.create') }}" class="btn btn-primary btn-sm">
                 <i class="bx bx-plus"></i> کالای جدید
-            </button>
+            </a>
             @endcan
         </div>
 
         <div class="table-responsive">
-            @include('admin.products._table', ['products' => $products])
+            @include('warehouse.products._table', ['products' => $products])
         </div>
     </div>
 </div>
-
-@include('admin.products._modal', ['categories' => $categories, 'units' => $units])
 @endsection
-
-@push('scripts')
-<script>
-    $(function(){
-        $('.edit-product-btn').on('click', function(){
-            const btn = $(this);
-            $('#productForm').attr('action', `{{ route('admin.items.update', ':id') }}`.replace(':id', btn.data('id')));
-            if (!$('input[name="_method"]').length) $('#productForm').prepend('<input type="hidden" name="_method" value="PUT">');
-            $('#prod_name').val(btn.data('name'));
-            $('#prod_sku').val(btn.data('sku'));
-            $('#prod_barcode').val(btn.data('barcode'));
-            $('#prod_category').val(btn.data('category'));
-            $('#prod_unit').val(btn.data('unit'));
-            $('#prod_min').val(btn.data('min'));
-            $('#prod_max').val(btn.data('max'));
-            $('#prod_desc').val(btn.data('desc'));
-            $('#prod_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
-            $('#createModal').modal('show');
-        });
-        $('#createModal').on('hidden.bs.modal', function(){
-            $('#productForm').attr('action', `{{ route('admin.items.store') }}`);
-            $('input[name="_method"]').remove();
-            $('#productForm')[0].reset();
-        });
-        $('.delete-form').on('submit', function(e){
-            e.preventDefault(); const f=this;
-            Swal.fire({title:'مطمئن هستید؟',text:'این کالا حذف خواهد شد.',icon:'warning',showCancelButton:true,confirmButtonText:'بله',cancelButtonText:'لغو'}).then(r=>{if(r.isConfirmed)f.submit();});
-        });
-    });
-</script>
-@endpush

@@ -29,45 +29,15 @@
                 <small class="text-muted ms-2">({{ $warehouses->total() }})</small>
             </h5>
             @can('access', 'warehouses.create')
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+            <a href="{{ route('warehouse.warehouses.create') }}" class="btn btn-primary btn-sm">
                 <i class="bx bx-plus"></i> انبار جدید
-            </button>
+            </a>
             @endcan
         </div>
 
         <div class="table-responsive">
-            @include('admin.warehouses._table', ['warehouses' => $warehouses])
+            @include('warehouse.warehouses._table', ['warehouses' => $warehouses])
         </div>
     </div>
 </div>
-
-@include('admin.warehouses._modal')
 @endsection
-
-@push('scripts')
-<script>
-    $(function(){
-        $('.edit-warehouse-btn').on('click', function(){
-            const btn = $(this);
-            $('#warehouseForm').attr('action', `{{ route('admin.warehouses.update', ':id') }}`.replace(':id', btn.data('id')));
-            if (!$('input[name="_method"]').length) $('#warehouseForm').prepend('<input type="hidden" name="_method" value="PUT">');
-            $('#wh_name').val(btn.data('name'));
-            $('#wh_code').val(btn.data('code'));
-            $('#wh_address').val(btn.data('address'));
-            $('#wh_manager').val(btn.data('manager'));
-            $('#wh_capacity').val(btn.data('capacity'));
-            $('#wh_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
-            $('#createModal').modal('show');
-        });
-        $('#createModal').on('hidden.bs.modal', function(){
-            $('#warehouseForm').attr('action', `{{ route('admin.warehouses.store') }}`);
-            $('input[name="_method"]').remove();
-            $('#warehouseForm')[0].reset();
-        });
-        $('.delete-form').on('submit', function(e){
-            e.preventDefault(); const f=this;
-            Swal.fire({title:'مطمئن هستید؟',text:'این انبار حذف خواهد شد.',icon:'warning',showCancelButton:true,confirmButtonText:'بله',cancelButtonText:'لغو'}).then(r=>{if(r.isConfirmed)f.submit();});
-        });
-    });
-</script>
-@endpush

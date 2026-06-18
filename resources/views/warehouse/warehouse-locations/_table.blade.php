@@ -4,10 +4,10 @@
             <th>#</th>
             <th>انبار</th>
             <th>کد</th>
-            <th>نام</th>
+            <th>عنوان</th>
             <th>نوع</th>
             <th>والد</th>
-            <th>ظرفیت</th>
+            <th>ترتیب</th>
             <th>وضعیت</th>
             <th>عملیات</th>
         </tr>
@@ -16,31 +16,22 @@
         @forelse($locations as $loc)
         <tr>
             <td>{{ $loop->iteration }}</td>
-            <td>{{ $loc->warehouse->name ?? '---' }}</td>
+            <td>{{ $loc->warehouse->title ?? '---' }}</td>
             <td>{{ $loc->code }}</td>
-            <td>{{ $loc->name ?? '---' }}</td>
+            <td>{{ $loc->title }}</td>
             <td>{{ $loc->type }}</td>
             <td>{{ $loc->parent->code ?? '---' }}</td>
-            <td>{{ $loc->capacity ?? '---' }}</td>
-            <td>
-                @if($loc->is_active)
-                    <span class="badge bg-success">فعال</span>
-                @else
-                    <span class="badge bg-danger">غیرفعال</span>
-                @endif
-            </td>
+            <td>{{ $loc->sort_order }}</td>
+            <td>{!! $loc->is_active ? '<span class="badge bg-success">فعال</span>' : '<span class="badge bg-danger">غیرفعال</span>' !!}</td>
             <td>
                 <div class="d-flex gap-1">
                     @can('access', 'warehouse-locations.edit')
-                    <button class="btn btn-sm btn-icon btn-outline-warning edit-loc-btn"
-                        data-id="{{ $loc->id }}" data-warehouse="{{ $loc->warehouse_id }}" data-parent="{{ $loc->parent_id }}"
-                        data-code="{{ $loc->code }}" data-name="{{ $loc->name }}" data-type="{{ $loc->type }}"
-                        data-capacity="{{ $loc->capacity }}" data-active="{{ $loc->is_active }}">
+                    <a href="{{ route('warehouse.warehouse-locations.edit', $loc) }}" class="btn btn-sm btn-icon btn-outline-warning">
                         <i class="bx bx-edit"></i>
-                    </button>
+                    </a>
                     @endcan
                     @can('access', 'warehouse-locations.delete')
-                    <form action="{{ route('admin.warehouse-locations.destroy', $loc) }}" method="POST" class="d-inline delete-form">
+                    <form action="{{ route('warehouse.warehouse-locations.destroy', $loc) }}" method="POST" class="d-inline delete-form">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-icon btn-outline-danger"><i class="bx bx-trash"></i></button>
                     </form>

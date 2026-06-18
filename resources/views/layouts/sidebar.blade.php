@@ -22,72 +22,179 @@
         <div>داشبورد</div>
       </a>
     </li>
-
     {{-- ==================== اطلاعات پایه ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">اطلاعات پایه</span></li>
 
-    <li class="menu-item {{ request()->routeIs('items.*') ? 'active open' : '' }}">
+    {{-- ==================== کالاها و اقلام ==================== --}}
+    @php
+    $productPermissions = [
+    'products.view', 'product-categories.view', 'measurement-units.view',
+    'brands.view', 'product-attributes.view', 'product-barcodes.view',
+    'product-alternatives.view', 'product-packaging.view',
+    ];
+    $showProductMenu = auth()->user()->canAny($productPermissions);
+    @endphp
+
+    @if($showProductMenu)
+    <li class="menu-item {{ request()->routeIs('warehouse.products.*', 'warehouse.categories.*', 'warehouse.measurement-units.*', 'warehouse.brands.*', 'warehouse.product-attributes.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-package"></i>
         <div>کالاها و اقلام</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item {{ request()->routeIs('items.index') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>لیست کالاها</div></a>
+
+        @can('products.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.products.index') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.products.index') }}" class="menu-link">
+            <div>لیست کالاها</div>
+          </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('item-categories.*') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>دسته‌بندی‌ها</div></a>
+        @endcan
+
+        @can('product-categories.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.categories.*') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.categories.index') }}" class="menu-link">
+            <div>دسته‌بندی‌ها</div>
+          </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('units.*') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>واحدهای اندازه‌گیری</div></a>
+        @endcan
+
+        @can('measurement-units.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.measurement-units.*') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.measurement-units.index') }}" class="menu-link">
+            <div>واحدهای اندازه‌گیری</div>
+          </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('item-attributes.*') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>ویژگی‌ها و مشخصات فنی</div></a>
+        @endcan
+
+        @can('brands.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.brands.*') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.brands.index') }}" class="menu-link">
+            <div>برندها</div>
+          </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('barcodes.*') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>بارکد و لیبل</div></a>
+        @endcan
+
+        @can('product-attributes.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.product-attributes.*') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.product-attributes.index') }}" class="menu-link">
+            <div>ویژگی‌ها و مشخصات فنی</div>
+          </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('item-alternatives.*') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>کالاهای جایگزین / معادل</div></a>
+        @endcan
+
+        @can('product-barcodes.view')
+        <li class="menu-item">
+          <a href="#" class="menu-link">
+            <div>بارکد و لیبل</div>
+          </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('item-packaging.*') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>واحدهای بسته‌بندی (پالت / کارتن)</div></a>
+        @endcan
+
+        @can('product-alternatives.view')
+        <li class="menu-item">
+          <a href="#" class="menu-link">
+            <div>کالاهای جایگزین / معادل</div>
+          </a>
         </li>
+        @endcan
+
+        @can('product-packaging.view')
+        <li class="menu-item">
+          <a href="#" class="menu-link">
+            <div>واحدهای بسته‌بندی (پالت / کارتن)</div>
+          </a>
+        </li>
+        @endcan
+
       </ul>
     </li>
+    @endif
 
-    <li class="menu-item {{ request()->routeIs('warehouses.*') ? 'active open' : '' }}">
+
+    {{-- ==================== انبار و مکان‌ها ==================== --}}
+    @php
+    $warehousePermissions = ['warehouses.view', 'warehouse-locations.view'];
+    $showWarehouseMenu = auth()->user()->canAny($warehousePermissions);
+    @endphp
+
+    @if($showWarehouseMenu)
+    <li class="menu-item {{ request()->routeIs('warehouse.warehouses.*', 'warehouse.warehouse-locations.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-buildings"></i>
         <div>انبار و مکان‌ها</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item {{ request()->routeIs('warehouses.index') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>انبارها</div></a>
+
+        @can('warehouses.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.warehouses.index') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.warehouses.index') }}" class="menu-link">
+            <div>انبارها</div>
+          </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('warehouse-locations.*') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>بخش‌ها، قفسه‌ها و موقعیت‌ها</div></a>
+        @endcan
+
+        @can('warehouse-locations.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.warehouse-locations.*') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.warehouse-locations.index') }}" class="menu-link">
+            <div>بخش‌ها، قفسه‌ها و موقعیت‌ها</div>
+          </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('warehouse-capacity.*') ? 'active' : '' }}">
-          <a href="#" class="menu-link"><div>ظرفیت و مدیریت فضا</div></a>
-        </li>
+        @endcan
+
       </ul>
     </li>
+    @endif
+
+
+    {{-- ==================== طرف حساب‌ها ==================== --}}
+    @php
+    $partyPermissions = ['contacts.view', 'organizational-units.view', 'employees.view'];
+    $showPartyMenu = auth()->user()->canAny($partyPermissions);
+    @endphp
+
+    @if($showPartyMenu)
 
     {{-- ==================== طرف‌های حساب ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">طرف‌های حساب</span></li>
 
     <li class="menu-item {{ request()->routeIs('suppliers.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-user-pin"></i>
-        <div>تأمین‌کنندگان</div>
-      </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>لیست تأمین‌کنندگان</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>قراردادها</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>ارزیابی و امتیازدهی</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>قراردادها</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>ارزیابی و امتیازدهی</div>
+          </a></li>
+
+
+        @can('contacts.view')
+        <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
+          <a href="{{ route('contacts.index') }}" class="menu-link">
+            <div>طرف تجاری ها</div>
+          </a>
+        </li>
+        @endcan
+
+        @can('organizational-units.view')
+        <li class="menu-item {{ request()->routeIs('organizational-units.*') ? 'active' : '' }}">
+          <a href="{{ route('organizational-units.index') }}" class="menu-link">
+            <div>واحدهای سازمانی</div>
+          </a>
+        </li>
+        @endcan
+
+        @can('employees.view')
+        <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+          <a href="{{ route('employees.index') }}" class="menu-link">
+            <div>کارمندان</div>
+          </a>
+        </li>
+        @endcan
+
       </ul>
     </li>
+    @endif
 
     <li class="menu-item {{ request()->routeIs('customers.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -95,8 +202,12 @@
         <div>مشتریان / دریافت‌کنندگان</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>لیست مشتریان</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>تحویل‌گیرندگان مجاز</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>لیست مشتریان</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>تحویل‌گیرندگان مجاز</div>
+          </a></li>
       </ul>
     </li>
 
@@ -106,8 +217,12 @@
         <div>واحدهای سازمانی</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>دپارتمان‌ها</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>مراکز هزینه</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>دپارتمان‌ها</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>مراکز هزینه</div>
+          </a></li>
       </ul>
     </li>
 
@@ -120,10 +235,18 @@
         <div>درخواست خرید</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>ثبت درخواست خرید</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>درخواست‌های من</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>بررسی و تأیید</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>پیگیری درخواست‌ها</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>ثبت درخواست خرید</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>درخواست‌های من</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>بررسی و تأیید</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>پیگیری درخواست‌ها</div>
+          </a></li>
       </ul>
     </li>
 
@@ -133,9 +256,15 @@
         <div>استعلام قیمت</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>ثبت استعلام جدید</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>استعلام‌های در حال انجام</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>مقایسه قیمت‌ها</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>ثبت استعلام جدید</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>استعلام‌های در حال انجام</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>مقایسه قیمت‌ها</div>
+          </a></li>
       </ul>
     </li>
 
@@ -145,10 +274,18 @@
         <div>سفارش خرید</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>ثبت سفارش خرید</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>سفارش‌های در حال اجرا</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>تأیید و صدور سفارش</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>پیگیری تحویل سفارش</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>ثبت سفارش خرید</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>سفارش‌های در حال اجرا</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>تأیید و صدور سفارش</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>پیگیری تحویل سفارش</div>
+          </a></li>
       </ul>
     </li>
 
@@ -158,9 +295,15 @@
         <div>فاکتور خرید</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>ثبت فاکتور</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>لیست فاکتورها</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>تطبیق با سفارش خرید</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>ثبت فاکتور</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>لیست فاکتورها</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>تطبیق با سفارش خرید</div>
+          </a></li>
       </ul>
     </li>
 
@@ -170,9 +313,15 @@
         <div>کنترل کیفیت</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>بررسی ورود کالا (QC)</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>گزارش‌های کنترل کیفیت</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>کالاهای رد شده</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>بررسی ورود کالا (QC)</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>گزارش‌های کنترل کیفیت</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>کالاهای رد شده</div>
+          </a></li>
       </ul>
     </li>
 
@@ -185,10 +334,18 @@
         <div>درخواست کالا از انبار</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>ثبت درخواست جدید</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>درخواست‌های من</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>تأیید و بررسی</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>پیگیری درخواست‌ها</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>ثبت درخواست جدید</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>درخواست‌های من</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>تأیید و بررسی</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>پیگیری درخواست‌ها</div>
+          </a></li>
       </ul>
     </li>
 
@@ -201,10 +358,18 @@
         <div>ورود کالا</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>رسید خرید</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>رسید امانی</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>رسید انتقالی</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>مرجوعی از مشتری</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>رسید خرید</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>رسید امانی</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>رسید انتقالی</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>مرجوعی از مشتری</div>
+          </a></li>
       </ul>
     </li>
 
@@ -214,11 +379,21 @@
         <div>خروج کالا</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>حواله خروج</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>خروج مصرفی</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>خروج امانی</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>خروج انتقالی</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>مرجوعی به تأمین‌کننده</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>حواله خروج</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>خروج مصرفی</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>خروج امانی</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>خروج انتقالی</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>مرجوعی به تأمین‌کننده</div>
+          </a></li>
       </ul>
     </li>
 
@@ -228,8 +403,12 @@
         <div>انتقال کالا</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>انتقال بین انبارها</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>انتقال داخلی (بین موقعیت‌ها)</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>انتقال بین انبارها</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>انتقال داخلی (بین موقعیت‌ها)</div>
+          </a></li>
       </ul>
     </li>
 
@@ -239,9 +418,15 @@
         <div>اصلاحات و تنظیمات</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>اصلاح موجودی</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>ثبت ضایعات و خسارت</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>انبارگردانی (شمارش فیزیکی)</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>اصلاح موجودی</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>ثبت ضایعات و خسارت</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>انبارگردانی (شمارش فیزیکی)</div>
+          </a></li>
       </ul>
     </li>
 
@@ -254,12 +439,24 @@
         <div>وضعیت موجودی</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>موجودی لحظه‌ای</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>موجودی رزرو شده</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>موجودی در گردش</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>کالاهای راکد / کندگردان</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>کالاهای رو به انقضا</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>نقطه سفارش مجدد (Reorder Point)</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>موجودی لحظه‌ای</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>موجودی رزرو شده</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>موجودی در گردش</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>کالاهای راکد / کندگردان</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>کالاهای رو به انقضا</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>نقطه سفارش مجدد (Reorder Point)</div>
+          </a></li>
       </ul>
     </li>
 
@@ -269,8 +466,12 @@
         <div>ارزش‌گذاری موجودی</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>ارزش موجودی فعلی</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>روش ارزش‌گذاری (FIFO / میانگین)</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>ارزش موجودی فعلی</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>روش ارزش‌گذاری (FIFO / میانگین)</div>
+          </a></li>
       </ul>
     </li>
 
@@ -283,11 +484,21 @@
         <div>مدیریت دارایی</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>لیست دارایی‌ها</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>تخصیص به پرسنل</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>عودت دارایی</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>تعمیر و نگهداری</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>اسقاط و خروج از خدمت</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>لیست دارایی‌ها</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>تخصیص به پرسنل</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>عودت دارایی</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>تعمیر و نگهداری</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>اسقاط و خروج از خدمت</div>
+          </a></li>
       </ul>
     </li>
 
@@ -300,11 +511,21 @@
         <div>گزارشات انبار</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>کاردکس کالا</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>گردش ورود و خروج</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>موجودی انبارها</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>مغایرت انبار</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>ریز تراکنش‌ها</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>کاردکس کالا</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>گردش ورود و خروج</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>موجودی انبارها</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>مغایرت انبار</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>ریز تراکنش‌ها</div>
+          </a></li>
       </ul>
     </li>
 
@@ -314,12 +535,24 @@
         <div>گزارشات مدیریتی</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>تحلیل ABC</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>کالاهای پرمصرف / کم‌مصرف</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>پیش‌بینی تقاضا</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>عملکرد انبار</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>عملکرد تدارکات</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>عملکرد تأمین‌کنندگان</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>تحلیل ABC</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>کالاهای پرمصرف / کم‌مصرف</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>پیش‌بینی تقاضا</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>عملکرد انبار</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>عملکرد تدارکات</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>عملکرد تأمین‌کنندگان</div>
+          </a></li>
       </ul>
     </li>
 
@@ -355,12 +588,24 @@
         <div>تنظیمات سیستم</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link"><div>اطلاعات سازمان</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>تنظیمات انبار</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>گردش کار و تأییدیه‌ها</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>شماره‌گذاری اسناد</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>اعلان‌ها (ایمیل / پیامک)</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>روش ارزش‌گذاری پیش‌فرض</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>اطلاعات سازمان</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>تنظیمات انبار</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>گردش کار و تأییدیه‌ها</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>شماره‌گذاری اسناد</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>اعلان‌ها (ایمیل / پیامک)</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>روش ارزش‌گذاری پیش‌فرض</div>
+          </a></li>
       </ul>
     </li>
 
@@ -371,10 +616,16 @@
       </a>
       <ul class="menu-sub">
         <li class="menu-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
-          <a href="{{ route('activity-logs.index') }}" class="menu-link"><div>فعالیت کاربران</div></a>
+          <a href="{{ route('activity-logs.index') }}" class="menu-link">
+            <div>فعالیت کاربران</div>
+          </a>
         </li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>تاریخچه عملیات انبار</div></a></li>
-        <li class="menu-item"><a href="#" class="menu-link"><div>لاگ سیستم</div></a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>تاریخچه عملیات انبار</div>
+          </a></li>
+        <li class="menu-item"><a href="#" class="menu-link">
+            <div>لاگ سیستم</div>
+          </a></li>
       </ul>
     </li>
 

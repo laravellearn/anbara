@@ -59,7 +59,7 @@ class FiscalYearController extends Controller
             'current' => $tenant->activeFiscalYear?->name ?? '---',
         ];
 
-        return view('fiscal-years.index', compact('fiscalYears', 'stats'));
+        return view('core.fiscal-years.index', compact('fiscalYears', 'stats'));
     }
 
     public function create()
@@ -101,13 +101,13 @@ class FiscalYearController extends Controller
             $fiscalYear->activate();
         }
 
-        return redirect()->route('fiscal-years.index')->with('success', 'سال مالی جدید ایجاد شد.');
+        return redirect()->route('core.fiscal-years.index')->with('success', 'سال مالی جدید ایجاد شد.');
     }
 
     public function edit(FiscalYear $fiscalYear)
     {
         $this->authorize('update', $fiscalYear); // Policy (اختیاری)
-        return view('fiscal-years.edit', compact('fiscalYear'));
+        return view('core.fiscal-years.edit', compact('fiscalYear'));
     }
 
     public function update(Request $request, FiscalYear $fiscalYear)

@@ -116,12 +116,12 @@
         </div>
 
         <div class="table-responsive" id="fiscalYearsTableWrapper">
-            @include('fiscal-years._table', ['fiscalYears' => $fiscalYears])
+            @include('core.fiscal-years._table', ['fiscalYears' => $fiscalYears])
         </div>
     </div>
 </div>
 
-@include('fiscal-years._modals')
+@include('core.fiscal-years._modal')
 
 @endsection
 

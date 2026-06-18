@@ -23,8 +23,8 @@
         <tr>
             <td>{{ $loop->iteration }}</td>
             <td>{{ $fy->name }}</td>
-            <td>{{ jdate($fy->start_date)->format('Y/m/d') }}</td>
-            <td>{{ jdate($fy->end_date)->format('Y/m/d') }}</td>
+            <td>{{ \Verta::instance($fy->start_date)->format('Y/m/d') }}</td>
+            <td>{{ \Verta::instance($fy->end_date)->format('Y/m/d') }}</td>
             <td>
                 @if($fy->is_active)
                     <span class="badge bg-success">فعال</span>

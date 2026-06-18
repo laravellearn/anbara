@@ -27,6 +27,20 @@ use App\Http\Controllers\Core\{
     PermissionController
 };
 
+use App\Http\Controllers\Warehouse\{
+    UnitController,
+    ProductCategoryController,
+    ProductAttributeController,
+    ProductController,
+    ProductBarcodeController,
+    ProductAlternativeController,
+    ProductPackagingController,
+    WarehouseController,
+    WarehouseLocationController,
+};
+
+
+
 use App\Http\Controllers\Auth\{
     LoginController,
     RegisterController,
@@ -130,6 +144,17 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
     Route::resource('fiscal-years', FiscalYearController::class)->except('show');
     Route::post('fiscal-years/{fiscal_year}/activate', [FiscalYearController::class, 'activate'])->name('fiscal-years.activate');
     Route::post('fiscal-years/{fiscal_year}/close', [FiscalYearController::class, 'close'])->name('fiscal-years.close');
+
+    //بخش انبار و کالا
+    Route::resource('units', UnitController::class)->except(['show', 'create', 'edit']);
+    Route::resource('product-categories', ProductCategoryController::class)->except(['show', 'create', 'edit']);
+    Route::resource('product-attributes', ProductAttributeController::class)->except(['show', 'create', 'edit']);
+    Route::resource('products', ProductController::class)->except(['show', 'create', 'edit']);
+    Route::resource('barcodes', ProductBarcodeController::class)->except(['show', 'create', 'edit']);
+    Route::resource('product-alternatives', ProductAlternativeController::class)->except(['show', 'create', 'edit']);
+    Route::resource('product-packaging', ProductPackagingController::class)->except(['show', 'create', 'edit']);
+    Route::resource('warehouses', WarehouseController::class)->except(['show', 'create', 'edit']);
+    Route::resource('warehouse-locations', WarehouseLocationController::class)->except(['show', 'create', 'edit']);
 });
 
 
@@ -148,15 +173,3 @@ Route::middleware(['auth', 'require.tenant', 'owner', 'check.subscription'])->gr
     Route::resource('companies', CompanyController::class)->except('show');
 });
 
-
-Route::get('/test-owner', function () {
-    $user = auth()->user();
-    dd([
-        'isOwner'        => $user->isOwner(),
-        'tenant_id'      => $user->tenant_id,
-        'root_company'   => $user->tenant?->rootCompany?->id,
-        'root_company_name' => $user->tenant?->rootCompany?->name,
-        'company_user_id'=> $user->companyUsers()->where('company_id', $user->tenant?->rootCompany?->id)->first()?->id,
-        'role'           => $user->companyUsers()->where('company_id', $user->tenant?->rootCompany?->id)->first()?->roles()->first()?->title,
-    ]);
-});

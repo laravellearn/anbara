@@ -292,6 +292,59 @@ class DatabaseSeeder extends Seeder
             ['name' => 'roles.delete', 'title' => 'حذف نقش', 'group' => 'سطوح دسترسی'],
             ['name' => 'permissions.view', 'title' => 'مشاهده سطوح دسترسی', 'group' => 'سطوح دسترسی'],
 
+
+
+
+            // ==================== ۷. کالا و اقلام ====================
+            ['name' => 'products.view',    'title' => 'مشاهده لیست کالاها',            'group' => 'کالا و اقلام'],
+            ['name' => 'products.create',  'title' => 'ایجاد کالا',                    'group' => 'کالا و اقلام'],
+            ['name' => 'products.edit',    'title' => 'ویرایش کالا',                   'group' => 'کالا و اقلام'],
+            ['name' => 'products.delete',  'title' => 'حذف کالا',                      'group' => 'کالا و اقلام'],
+
+            ['name' => 'product-categories.view',   'title' => 'مشاهده دسته‌بندی‌ها',  'group' => 'کالا و اقلام'],
+            ['name' => 'product-categories.create', 'title' => 'ایجاد دسته‌بندی',      'group' => 'کالا و اقلام'],
+            ['name' => 'product-categories.edit',   'title' => 'ویرایش دسته‌بندی',     'group' => 'کالا و اقلام'],
+            ['name' => 'product-categories.delete', 'title' => 'حذف دسته‌بندی',        'group' => 'کالا و اقلام'],
+
+            ['name' => 'units.view',   'title' => 'مشاهده واحدهای اندازه‌گیری',     'group' => 'کالا و اقلام'],
+            ['name' => 'units.create', 'title' => 'ایجاد واحد',                     'group' => 'کالا و اقلام'],
+            ['name' => 'units.edit',   'title' => 'ویرایش واحد',                    'group' => 'کالا و اقلام'],
+            ['name' => 'units.delete', 'title' => 'حذف واحد',                       'group' => 'کالا و اقلام'],
+
+            ['name' => 'product-attributes.view',   'title' => 'مشاهده ویژگی‌ها',      'group' => 'کالا و اقلام'],
+            ['name' => 'product-attributes.create', 'title' => 'ایجاد ویژگی',          'group' => 'کالا و اقلام'],
+            ['name' => 'product-attributes.edit',   'title' => 'ویرایش ویژگی',         'group' => 'کالا و اقلام'],
+            ['name' => 'product-attributes.delete', 'title' => 'حذف ویژگی',            'group' => 'کالا و اقلام'],
+
+            ['name' => 'barcodes.view',   'title' => 'مشاهده بارکدها',             'group' => 'کالا و اقلام'],
+            ['name' => 'barcodes.create', 'title' => 'ایجاد بارکد',                 'group' => 'کالا و اقلام'],
+            ['name' => 'barcodes.edit',   'title' => 'ویرایش بارکد',                'group' => 'کالا و اقلام'],
+            ['name' => 'barcodes.delete', 'title' => 'حذف بارکد',                   'group' => 'کالا و اقلام'],
+
+            ['name' => 'product-alternatives.view',   'title' => 'مشاهده کالاهای جایگزین',   'group' => 'کالا و اقلام'],
+            ['name' => 'product-alternatives.create', 'title' => 'ایجاد جایگزین',            'group' => 'کالا و اقلام'],
+            ['name' => 'product-alternatives.edit',   'title' => 'ویرایش جایگزین',           'group' => 'کالا و اقلام'],
+            ['name' => 'product-alternatives.delete', 'title' => 'حذف جایگزین',              'group' => 'کالا و اقلام'],
+
+            ['name' => 'product-packaging.view',   'title' => 'مشاهده بسته‌بندی‌ها',  'group' => 'کالا و اقلام'],
+            ['name' => 'product-packaging.create', 'title' => 'ایجاد بسته‌بندی',      'group' => 'کالا و اقلام'],
+            ['name' => 'product-packaging.edit',   'title' => 'ویرایش بسته‌بندی',     'group' => 'کالا و اقلام'],
+            ['name' => 'product-packaging.delete', 'title' => 'حذف بسته‌بندی',        'group' => 'کالا و اقلام'],
+
+            // ==================== ۸. انبار و مکان‌ها ====================
+            ['name' => 'warehouses.view',   'title' => 'مشاهده انبارها',            'group' => 'انبار و مکان‌ها'],
+            ['name' => 'warehouses.create', 'title' => 'ایجاد انبار',               'group' => 'انبار و مکان‌ها'],
+            ['name' => 'warehouses.edit',   'title' => 'ویرایش انبار',              'group' => 'انبار و مکان‌ها'],
+            ['name' => 'warehouses.delete', 'title' => 'حذف انبار',                 'group' => 'انبار و مکان‌ها'],
+
+            ['name' => 'warehouse-locations.view',   'title' => 'مشاهده موقعیت‌ها',     'group' => 'انبار و مکان‌ها'],
+            ['name' => 'warehouse-locations.create', 'title' => 'ایجاد موقعیت',         'group' => 'انبار و مکان‌ها'],
+            ['name' => 'warehouse-locations.edit',   'title' => 'ویرایش موقعیت',        'group' => 'انبار و مکان‌ها'],
+            ['name' => 'warehouse-locations.delete', 'title' => 'حذف موقعیت',           'group' => 'انبار و مکان‌ها'],
+
+            ['name' => 'warehouse-capacity.view',    'title' => 'مشاهده ظرفیت و مدیریت فضا', 'group' => 'انبار و مکان‌ها'],
+
+
         ];
 
         foreach ($permissions as $perm) {

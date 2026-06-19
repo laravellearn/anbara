@@ -2,7 +2,6 @@
 
 @section('title', 'برندها')
 
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
@@ -44,11 +43,24 @@
                 <i class="bx bx-copyright me-1"></i> برندها
                 <small class="text-muted ms-2" id="filteredCount">({{ $brands->total() }})</small>
             </h5>
-            @can('access', 'brands.create')
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-                <i class="bx bx-plus"></i> برند جدید
-            </button>
-            @endcan
+            <div class="d-flex gap-2 flex-wrap">
+                {{-- Export placeholder --}}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bx bx-export"></i> خروجی
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bx-file me-1"></i> Excel (به‌زودی)</a></li>
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bxs-file-pdf me-1"></i> PDF (به‌زودی)</a></li>
+                    </ul>
+                </div>
+
+                @can('access', 'brands.create')
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <i class="bx bx-plus"></i> برند جدید
+                </button>
+                @endcan
+            </div>
         </div>
 
         <div class="table-responsive" id="tableWrapper">
@@ -91,6 +103,58 @@
             $('#filterStatus').val('');
             performSearch();
         });
+
+        // ========== مودال ویرایش ==========
+        $(document).on('click', '.edit-brand-btn', function() {
+            const btn = $(this);
+            const id = btn.data('id');
+            $('#brandForm').attr('action', `{{ route('warehouse.brands.update', ':id') }}`.replace(':id', id));
+            if (!$('input[name="_method"]').length) $('#brandForm').prepend('<input type="hidden" name="_method" value="PUT">');
+            $('#brand_title').val(btn.data('title'));
+            $('#brand_desc').val(btn.data('desc') || '');
+            $('#brand_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
+            $('#createModal').modal('show');
+        });
+
+        // ========== ریست فرم هنگام بسته شدن مودال ==========
+        $('#createModal').on('hidden.bs.modal', function() {
+            $('#brandForm').attr('action', `{{ route('warehouse.brands.store') }}`);
+            $('input[name="_method"]').remove();
+            $('#brandForm')[0].reset();
+        });
+
+        // ========== حذف با تأیید ==========
+        $('.delete-form').on('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: 'آیا مطمئن هستید؟',
+                text: "این برند حذف خواهد شد.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، حذف کن',
+                cancelButtonText: 'لغو',
+                customClass: {
+                    confirmButton: 'btn btn-danger me-3',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+
+        // ========== نمایش خطاهای اعتبارسنجی در مودال ==========
+        @if($errors->any() && session('show_create_modal'))
+            $('#createModal').modal('show');
+            @foreach ($errors->all() as $error)
+                if (typeof showToast !== 'undefined') {
+                    showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
+                }
+            @endforeach
+        @endif
     });
 </script>
 @endpush

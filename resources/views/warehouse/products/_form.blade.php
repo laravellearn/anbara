@@ -40,10 +40,38 @@
             </select>
         </div>
 
-        <div class="col-12">
-            <hr>
-            <h6>واحدهای شمارشی دیگر</h6>
+        <div class="col-md-4">
+            <label class="form-label">نوع کالا</label>
+            <select name="product_type_id" id="product_type_id" class="form-select">
+                <option value="">انتخاب کنید</option>
+                @foreach($productTypes as $type)
+                <option value="{{ $type->id }}" {{ old('product_type_id', $product->product_type_id ?? '') == $type->id ? 'selected' : '' }}>{{ $type->title }}</option>
+                @endforeach
+            </select>
         </div>
+
+        <div class="col-md-4">
+            <label class="form-label">حداقل موجودی</label>
+            <input type="number" step="any" name="minimum_stock" class="form-control" value="{{ old('minimum_stock', $product->minimum_stock ?? 0) }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">حداکثر موجودی</label>
+            <input type="number" step="any" name="maximum_stock" class="form-control" value="{{ old('maximum_stock', $product->maximum_stock ?? '') }}">
+        </div>
+
+        <div class="col-12">
+            <label class="form-label">توضیحات</label>
+            <textarea name="description" class="form-control" rows="3">{{ old('description', $product->description ?? '') }}</textarea>
+        </div>
+
+        <div class="col-12">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="is_active" value="1" id="prod_active" {{ old('is_active', $product->is_active ?? true) ? 'checked' : '' }}>
+                <label class="form-check-label" for="prod_active">فعال</label>
+            </div>
+        </div>
+
+        <div class="col-12"><hr><h6>واحدهای شمارشی دیگر</h6></div>
         <div class="col-12" id="additional-units">
             @if(isset($product))
             @foreach($product->measurementUnits as $index => $unit)
@@ -72,40 +100,11 @@
             @endforeach
             @endif
         </div>
-        <button type="button" class="btn btn-sm btn-outline-primary" id="add-unit"><i class="bx bx-plus"></i> افزودن واحد</button>
-
-        <div class="col-md-4">
-            <label class="form-label">نوع کالا</label>
-            <select name="product_type_id" id="product_type_id" class="form-select select2">
-                <option value="">انتخاب کنید</option>
-                @foreach($productTypes as $type)
-                <option value="{{ $type->id }}" {{ old('product_type_id', $product->product_type_id ?? '') == $type->id ? 'selected' : '' }}>{{ $type->title }}</option>
-                @endforeach
-            </select>
+        <div class="col-12">
+            <button type="button" class="btn btn-sm btn-outline-primary" id="add-unit"><i class="bx bx-plus"></i> افزودن واحد</button>
         </div>
 
-        <div class="col-md-4">
-            <label class="form-label">حداقل موجودی</label>
-            <input type="number" step="any" name="minimum_stock" class="form-control" value="{{ old('minimum_stock', $product->minimum_stock ?? 0) }}">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">حداکثر موجودی</label>
-            <input type="number" step="any" name="maximum_stock" class="form-control" value="{{ old('maximum_stock', $product->maximum_stock ?? '') }}">
-        </div>
-        <div class="col-12">
-            <label class="form-label">توضیحات</label>
-            <textarea name="description" class="form-control" rows="3">{{ old('description', $product->description ?? '') }}</textarea>
-        </div>
-        <div class="col-12">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="is_active" value="1" id="prod_active" {{ old('is_active', $product->is_active ?? true) ? 'checked' : '' }}>
-                <label class="form-check-label" for="prod_active">فعال</label>
-            </div>
-        </div>
-        <div class="col-12">
-            <hr>
-            <h6>ویژگی‌های دینامیک</h6>
-        </div>
+        <div class="col-12"><hr><h6>ویژگی‌های دینامیک</h6></div>
         <div class="col-12" id="dynamic-attributes"></div>
     </div>
 </div>

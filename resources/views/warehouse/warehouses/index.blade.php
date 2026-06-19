@@ -2,6 +2,7 @@
 
 @section('title', 'انبارها')
 
+
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
@@ -12,7 +13,7 @@
     <div class="card shadow-none border mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-end">
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <label class="form-label fw-medium">جستجوی زنده</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bx bx-search-alt"></i></span>
@@ -28,11 +29,6 @@
                         <option value="inactive">غیرفعال</option>
                     </select>
                 </div>
-                <div class="col-md-2 text-end">
-                    <button type="button" class="btn btn-outline-secondary w-100" id="resetFilters">
-                        <i class="bx bx-reset"></i>
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -43,11 +39,24 @@
                 <i class="bx bx-buildings me-1"></i> انبارها
                 <small class="text-muted ms-2" id="filteredCount">({{ $warehouses->total() }})</small>
             </h5>
-            @can('access', 'warehouses.create')
-            <a href="{{ route('warehouse.warehouses.create') }}" class="btn btn-primary btn-sm">
-                <i class="bx bx-plus"></i> انبار جدید
-            </a>
-            @endcan
+            <div class="d-flex gap-2 flex-wrap">
+                {{-- Export placeholder --}}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bx bx-export"></i> خروجی
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bx-file me-1"></i> Excel (به‌زودی)</a></li>
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bxs-file-pdf me-1"></i> PDF (به‌زودی)</a></li>
+                    </ul>
+                </div>
+
+                @can('access', 'warehouses.create')
+                <a href="{{ route('warehouse.warehouses.create') }}" class="btn btn-primary btn-sm">
+                    <i class="bx bx-plus"></i> انبار جدید
+                </a>
+                @endcan
+            </div>
         </div>
 
         <div class="table-responsive" id="tableWrapper">
@@ -87,6 +96,29 @@
             $('#liveSearch').val('');
             $('#filterStatus').val('');
             performSearch();
+        });
+
+        // حذف با تأیید
+        $('.delete-form').on('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: 'آیا مطمئن هستید؟',
+                text: "این انبار حذف خواهد شد.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، حذف کن',
+                cancelButtonText: 'لغو',
+                customClass: {
+                    confirmButton: 'btn btn-danger me-3',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
         });
     });
 </script>

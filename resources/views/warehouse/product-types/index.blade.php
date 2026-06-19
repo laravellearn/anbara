@@ -1,11 +1,14 @@
 @extends('layouts.master')
 @section('title', 'انواع کالا')
 
+
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
+
     <div class="row g-4 mb-4" id="statsCards">
         @include('warehouse.product-types._stats', ['stats' => $stats])
     </div>
+
     <div class="card shadow-none border mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-end">
@@ -28,19 +31,35 @@
             </div>
         </div>
     </div>
+
     <div class="card shadow-none border">
         <div class="card-header border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
             <h5 class="card-title mb-0"><i class="bx bx-category me-1"></i> انواع کالا <small class="text-muted ms-2" id="filteredCount">({{ $productTypes->total() }})</small></h5>
-            @can('access', 'product-types.create')
-            <a href="{{ route('warehouse.product-types.create') }}" class="btn btn-primary btn-sm"><i class="bx bx-plus"></i> نوع جدید</a>
-            @endcan
+            <div class="d-flex gap-2 flex-wrap">
+                {{-- Export placeholder --}}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bx bx-export"></i> خروجی
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bx-file me-1"></i> Excel (به‌زودی)</a></li>
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bxs-file-pdf me-1"></i> PDF (به‌زودی)</a></li>
+                    </ul>
+                </div>
+
+                @can('access', 'product-types.create')
+                <a href="{{ route('warehouse.product-types.create') }}" class="btn btn-primary btn-sm"><i class="bx bx-plus"></i> نوع جدید</a>
+                @endcan
+            </div>
         </div>
+
         <div class="table-responsive" id="tableWrapper">
             @include('warehouse.product-types._table', ['productTypes' => $productTypes])
         </div>
     </div>
 </div>
 @endsection
+
 @push('scripts')
 <script>
     $(function(){
@@ -48,6 +67,7 @@
         const $tableWrapper = $('#tableWrapper');
         const $statsCards = $('#statsCards');
         const $filteredCount = $('#filteredCount');
+
         function performSearch() {
             const search = $('#liveSearch').val();
             const status = $('#filterStatus').val();
@@ -62,6 +82,7 @@
                 }
             }).always(() => $tableWrapper.removeClass('opacity-50'));
         }
+
         $('#liveSearch').on('keyup', function() { clearTimeout(searchTimeout); searchTimeout = setTimeout(performSearch, 500); });
         $('#filterStatus').on('change', performSearch);
         $('#clearSearch').on('click', function() { $('#liveSearch').val('').focus(); performSearch(); });

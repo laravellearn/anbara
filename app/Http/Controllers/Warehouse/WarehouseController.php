@@ -50,9 +50,7 @@ class WarehouseController extends BaseController
     public function create()
     {
         Gate::authorize('access', 'warehouses.create');
-
         $users = User::where('tenant_id', $this->manager->getTenantId())->get();
-
         return view('warehouse.warehouses.create', compact('users'));
     }
 
@@ -60,37 +58,48 @@ class WarehouseController extends BaseController
     {
         Gate::authorize('access', 'warehouses.create');
 
-        $data = $request->validate([
-            'code'                 => 'required|string|max:50|unique:warehouses,code',
-            'title'                => 'required|string|max:255',
-            'description'          => 'nullable|string',
-            'address'              => 'nullable|string',
-            'allow_negative_stock' => 'boolean',
-            'is_active'            => 'boolean',
-            'users'                => 'nullable|array',
-            'users.*'              => 'exists:users,id',
-        ]);
+        try {
+            $data = $request->validate([
+                'code'                 => 'required|string|max:50|unique:warehouses,code',
+                'title'                => 'required|string|max:255',
+                'description'          => 'nullable|string',
+                'address'              => 'nullable|string',
+                'allow_negative_stock' => 'boolean',
+                'is_active'            => 'boolean',
+                'users'                => 'nullable|array',
+                'users.*'              => 'exists:users,id',
+            ]);
 
-        $data['tenant_id']  = $this->manager->getTenantId();
-        $data['company_id'] = $this->manager->getCompanyId();
+            $data['tenant_id']  = $this->manager->getTenantId();
+            $data['company_id'] = $this->manager->getCompanyId();
 
-        $warehouse = Warehouse::create($data);
+            $warehouse = Warehouse::create($data);
 
-        if ($request->has('users')) {
-            $warehouse->users()->sync($request->users);
+            if ($request->has('users')) {
+                $warehouse->users()->sync($request->users);
+            }
+
+            return redirect()->route('warehouse.warehouses.index')->with('toast', [
+                'message' => 'انبار با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد انبار'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد انبار: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        flash()->success('انبار ایجاد شد.');
-        return redirect()->route('warehouse.warehouses.index');
     }
 
     public function edit(Warehouse $warehouse)
     {
         Gate::authorize('access', 'warehouses.edit');
-
         $users = User::where('tenant_id', $this->manager->getTenantId())->get();
         $warehouse->load('users');
-
         return view('warehouse.warehouses.edit', compact('warehouse', 'users'));
     }
 
@@ -98,34 +107,55 @@ class WarehouseController extends BaseController
     {
         Gate::authorize('access', 'warehouses.edit');
 
-        $data = $request->validate([
-            'code'                 => 'required|string|max:50|unique:warehouses,code,' . $warehouse->id,
-            'title'                => 'required|string|max:255',
-            'description'          => 'nullable|string',
-            'address'              => 'nullable|string',
-            'allow_negative_stock' => 'boolean',
-            'is_active'            => 'boolean',
-            'users'                => 'nullable|array',
-            'users.*'              => 'exists:users,id',
-        ]);
+        try {
+            $data = $request->validate([
+                'code'                 => 'required|string|max:50|unique:warehouses,code,' . $warehouse->id,
+                'title'                => 'required|string|max:255',
+                'description'          => 'nullable|string',
+                'address'              => 'nullable|string',
+                'allow_negative_stock' => 'boolean',
+                'is_active'            => 'boolean',
+                'users'                => 'nullable|array',
+                'users.*'              => 'exists:users,id',
+            ]);
 
-        $warehouse->update($data);
+            $warehouse->update($data);
 
-        if ($request->has('users')) {
-            $warehouse->users()->sync($request->users);
+            if ($request->has('users')) {
+                $warehouse->users()->sync($request->users);
+            }
+
+            return redirect()->route('warehouse.warehouses.index')->with('toast', [
+                'message' => 'انبار با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش انبار'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش انبار: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        flash()->success('انبار ویرایش شد.');
-        return redirect()->route('warehouse.warehouses.index');
     }
 
     public function destroy(Warehouse $warehouse)
     {
         Gate::authorize('access', 'warehouses.delete');
 
-        $warehouse->delete();
+        try {
+            $warehouse->delete();
 
-        flash()->success('انبار حذف شد.');
-        return back();
+            return redirect()->route('warehouse.warehouses.index')->with('toast', [
+                'message' => 'انبار با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف انبار'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف انبار: ' . $e->getMessage()]);
+        }
     }
 }

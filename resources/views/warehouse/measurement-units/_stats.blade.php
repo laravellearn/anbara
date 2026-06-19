@@ -43,7 +43,7 @@
             <div class="d-flex align-items-start justify-content-between">
                 <div class="content-left">
                     <span class="fw-medium text-muted">دارای والد</span>
-                    <h3 class="mb-0 mt-1">-</h3>
+                    <h3 class="mb-0 mt-1">{{ $stats['has_parent'] }}</h3>
                 </div>
                 <span class="badge bg-label-info rounded p-2"><i class="bx bx-git-branch bx-sm"></i></span>
             </div>

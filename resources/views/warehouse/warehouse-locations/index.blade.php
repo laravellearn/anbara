@@ -2,7 +2,6 @@
 
 @section('title', 'موقعیت‌های انبار')
 
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
@@ -63,11 +62,24 @@
                 <i class="bx bx-map-pin me-1"></i> موقعیت‌ها
                 <small class="text-muted ms-2" id="filteredCount">({{ $locations->total() }})</small>
             </h5>
-            @can('access', 'warehouse-locations.create')
-            <a href="{{ route('warehouse.warehouse-locations.create') }}" class="btn btn-primary btn-sm">
-                <i class="bx bx-plus"></i> موقعیت جدید
-            </a>
-            @endcan
+            <div class="d-flex gap-2 flex-wrap">
+                {{-- Export placeholder --}}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bx bx-export"></i> خروجی
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bx-file me-1"></i> Excel (به‌زودی)</a></li>
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bxs-file-pdf me-1"></i> PDF (به‌زودی)</a></li>
+                    </ul>
+                </div>
+
+                @can('access', 'warehouse-locations.create')
+                <a href="{{ route('warehouse.warehouse-locations.create') }}" class="btn btn-primary btn-sm">
+                    <i class="bx bx-plus"></i> موقعیت جدید
+                </a>
+                @endcan
+            </div>
         </div>
 
         <div class="table-responsive" id="tableWrapper">
@@ -79,7 +91,6 @@
 
 @push('scripts')
 <script>
-    // مشابه قبل با فیلدهای خودش
     $(function(){
         let searchTimeout;
         const $tableWrapper = $('#tableWrapper');
@@ -112,6 +123,29 @@
             $('#filterType').val('');
             $('#filterStatus').val('');
             performSearch();
+        });
+
+        // حذف با تأیید
+        $('.delete-form').on('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: 'آیا مطمئن هستید؟',
+                text: "این موقعیت حذف خواهد شد.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، حذف کن',
+                cancelButtonText: 'لغو',
+                customClass: {
+                    confirmButton: 'btn btn-danger me-3',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
         });
     });
 </script>

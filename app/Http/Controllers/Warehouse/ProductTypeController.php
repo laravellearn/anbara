@@ -14,6 +14,7 @@ class ProductTypeController extends BaseController
     {
         Gate::authorize('access', 'product-types.view');
         $tenantId = $this->manager->getTenantId();
+
         $query = ProductType::where('tenant_id', $tenantId);
         if ($request->filled('search')) {
             $query->where('title', 'like', "%{$request->search}%");
@@ -22,18 +23,21 @@ class ProductTypeController extends BaseController
             $query->where('is_active', $request->status === 'active');
         }
         $productTypes = $query->paginate($request->per_page ?? 20);
+
         $stats = [
-            'total' => ProductType::where('tenant_id', $tenantId)->count(),
-            'active' => ProductType::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'total'    => ProductType::where('tenant_id', $tenantId)->count(),
+            'active'   => ProductType::where('tenant_id', $tenantId)->where('is_active', true)->count(),
             'inactive' => ProductType::where('tenant_id', $tenantId)->where('is_active', false)->count(),
         ];
-        if ($request->ajax()) {
+
+        if ($request->ajax() || $request->input('ajax')) {
             return response()->json([
-                'html' => view('warehouse.product-types._table', compact('productTypes'))->render(),
+                'html'      => view('warehouse.product-types._table', compact('productTypes'))->render(),
                 'statsHtml' => view('warehouse.product-types._stats', compact('stats'))->render(),
-                'total' => $productTypes->total(),
+                'total'     => $productTypes->total(),
             ]);
         }
+
         return view('warehouse.product-types.index', compact('productTypes', 'stats'));
     }
 
@@ -47,35 +51,50 @@ class ProductTypeController extends BaseController
     public function store(Request $request)
     {
         Gate::authorize('access', 'product-types.create');
-        $data = $request->validate([
-            'title'       => 'required|string|max:255|unique:product_types,title',
-            'description' => 'nullable|string',
-            'is_active'   => 'boolean',
-            'attributes'  => 'nullable|array',
-            'attributes.*.id'          => 'exists:product_attributes,id',
-            'attributes.*.is_required' => 'boolean',
-            'attributes.*.sort_order'  => 'integer|min:0',
-        ]);
-        $data['tenant_id'] = $this->manager->getTenantId();
-        $data['company_id'] = $this->manager->getCompanyId();
-        $productType = ProductType::create($data);
 
-        // همگام‌سازی ویژگی‌ها
-        if ($request->has('attributes')) {
-            $sync = [];
-            foreach ($request->attributes as $attr) {
-                if (!empty($attr['id'])) {
-                    $sync[$attr['id']] = [
-                        'is_required' => $attr['is_required'] ?? false,
-                        'sort_order'  => $attr['sort_order'] ?? 0,
-                    ];
+        try {
+            $data = $request->validate([
+                'title'       => 'required|string|max:255|unique:product_types,title',
+                'description' => 'nullable|string',
+                'is_active'   => 'boolean',
+                'attributes'  => 'nullable|array',
+                'attributes.*.id'          => 'exists:product_attributes,id',
+                'attributes.*.is_required' => 'boolean',
+                'attributes.*.sort_order'  => 'integer|min:0',
+            ]);
+
+            $data['tenant_id']  = $this->manager->getTenantId();
+            $data['company_id'] = $this->manager->getCompanyId();
+
+            $productType = ProductType::create($data);
+
+            if ($request->has('attributes')) {
+                $sync = [];
+                foreach ($request->attributes as $attr) {
+                    if (!empty($attr['id'])) {
+                        $sync[$attr['id']] = [
+                            'is_required' => $attr['is_required'] ?? false,
+                            'sort_order'  => $attr['sort_order'] ?? 0,
+                        ];
+                    }
                 }
+                $productType->attributes()->sync($sync);
             }
-            $productType->attributes()->sync($sync);
-        }
 
-        flash()->success('نوع کالا ایجاد شد.');
-        return redirect()->route('warehouse.product-types.index');
+            return redirect()->route('warehouse.product-types.index')->with('toast', [
+                'message' => 'نوع کالا با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد نوع کالا'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد نوع کالا: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     public function edit(ProductType $productType)
@@ -89,46 +108,70 @@ class ProductTypeController extends BaseController
     public function update(Request $request, ProductType $productType)
     {
         Gate::authorize('access', 'product-types.edit');
-        $data = $request->validate([
-            'title'       => 'required|string|max:255|unique:product_types,title,' . $productType->id,
-            'description' => 'nullable|string',
-            'is_active'   => 'boolean',
-            'attributes'  => 'nullable|array',
-            'attributes.*.id'          => 'exists:product_attributes,id',
-            'attributes.*.is_required' => 'boolean',
-            'attributes.*.sort_order'  => 'integer|min:0',
-        ]);
-        $productType->update($data);
 
-        if ($request->has('attributes')) {
-            $sync = [];
-            foreach ($request->attributes as $attr) {
-                if (!empty($attr['id'])) {
-                    $sync[$attr['id']] = [
-                        'is_required' => $attr['is_required'] ?? false,
-                        'sort_order'  => $attr['sort_order'] ?? 0,
-                    ];
+        try {
+            $data = $request->validate([
+                'title'       => 'required|string|max:255|unique:product_types,title,' . $productType->id,
+                'description' => 'nullable|string',
+                'is_active'   => 'boolean',
+                'attributes'  => 'nullable|array',
+                'attributes.*.id'          => 'exists:product_attributes,id',
+                'attributes.*.is_required' => 'boolean',
+                'attributes.*.sort_order'  => 'integer|min:0',
+            ]);
+
+            $productType->update($data);
+
+            if ($request->has('attributes')) {
+                $sync = [];
+                foreach ($request->attributes as $attr) {
+                    if (!empty($attr['id'])) {
+                        $sync[$attr['id']] = [
+                            'is_required' => $attr['is_required'] ?? false,
+                            'sort_order'  => $attr['sort_order'] ?? 0,
+                        ];
+                    }
                 }
+                $productType->attributes()->sync($sync);
             }
-            $productType->attributes()->sync($sync);
-        }
 
-        flash()->success('نوع کالا ویرایش شد.');
-        return redirect()->route('warehouse.product-types.index');
+            return redirect()->route('warehouse.product-types.index')->with('toast', [
+                'message' => 'نوع کالا با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش نوع کالا'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش نوع کالا: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     public function destroy(ProductType $productType)
     {
         Gate::authorize('access', 'product-types.delete');
-        $productType->delete();
-        flash()->success('نوع کالا حذف شد.');
-        return back();
+
+        try {
+            $productType->delete();
+
+            return redirect()->route('warehouse.product-types.index')->with('toast', [
+                'message' => 'نوع کالا با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف نوع کالا'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف نوع کالا: ' . $e->getMessage()]);
+        }
     }
 
-    // متد در ProductTypeController
+    // متد AJAX برای برگرداندن ویژگی‌های نوع کالا
     public function attributes(ProductType $productType, Request $request)
     {
-        // اگر product_id ارسال شده، مقادیر قبلی را بگیریم
         $oldValues = collect();
         if ($request->has('product_id')) {
             $product = Product::find($request->product_id);
@@ -136,10 +179,12 @@ class ProductTypeController extends BaseController
                 $oldValues = $product->attributeValues->pluck('value', 'attribute_id');
             }
         }
+
         $html = view('warehouse.products._dynamic_attributes', [
             'attributes' => $productType->attributes,
             'oldValues'  => $oldValues,
         ])->render();
+
         return response()->json(['html' => $html]);
     }
 }

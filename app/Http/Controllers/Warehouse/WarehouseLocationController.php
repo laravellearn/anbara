@@ -69,23 +69,37 @@ class WarehouseLocationController extends BaseController
     {
         Gate::authorize('access', 'warehouse-locations.create');
 
-        $data = $request->validate([
-            'warehouse_id' => 'required|exists:warehouses,id',
-            'parent_id'    => 'nullable|exists:warehouse_locations,id',
-            'code'         => 'required|string|max:50',
-            'title'        => 'required|string|max:255',
-            'description'  => 'nullable|string',
-            'sort_order'   => 'nullable|integer|min:0',
-            'is_active'    => 'boolean',
-        ]);
+        try {
+            $data = $request->validate([
+                'warehouse_id' => 'required|exists:warehouses,id',
+                'parent_id'    => 'nullable|exists:warehouse_locations,id',
+                'code'         => 'required|string|max:50',
+                'title'        => 'required|string|max:255',
+                'description'  => 'nullable|string',
+                'sort_order'   => 'nullable|integer|min:0',
+                'capacity'     => 'nullable|numeric|min:0',
+                'is_active'    => 'boolean',
+            ]);
 
-        $data['tenant_id']  = $this->manager->getTenantId();
-        $data['company_id'] = $this->manager->getCompanyId();
+            $data['tenant_id']  = $this->manager->getTenantId();
+            $data['company_id'] = $this->manager->getCompanyId();
 
-        WarehouseLocation::create($data);
+            WarehouseLocation::create($data);
 
-        flash()->success('موقعیت انبار ایجاد شد.');
-        return redirect()->route('warehouse.warehouse-locations.index');
+            return redirect()->route('warehouse.warehouse-locations.index')->with('toast', [
+                'message' => 'موقعیت انبار با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد موقعیت'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد موقعیت: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     public function edit(WarehouseLocation $warehouseLocation)
@@ -97,36 +111,63 @@ class WarehouseLocationController extends BaseController
             ->where('id', '!=', $warehouseLocation->id)
             ->get();
 
-        return view('warehouse.warehouse-locations.edit', compact('warehouseLocation', 'warehouses', 'locations'));
+        // تغییر نام متغیر برای هماهنگی با ویو
+        return view('warehouse.warehouse-locations.edit', [
+            'location'  => $warehouseLocation,
+            'warehouses'=> $warehouses,
+            'locations' => $locations,
+        ]);
     }
 
     public function update(Request $request, WarehouseLocation $warehouseLocation)
     {
         Gate::authorize('access', 'warehouse-locations.edit');
 
-        $data = $request->validate([
-            'warehouse_id' => 'required|exists:warehouses,id',
-            'parent_id'    => 'nullable|exists:warehouse_locations,id',
-            'code'         => 'required|string|max:50',
-            'title'        => 'required|string|max:255',
-            'description'  => 'nullable|string',
-            'sort_order'   => 'nullable|integer|min:0',
-            'is_active'    => 'boolean',
-        ]);
+        try {
+            $data = $request->validate([
+                'warehouse_id' => 'required|exists:warehouses,id',
+                'parent_id'    => 'nullable|exists:warehouse_locations,id',
+                'code'         => 'required|string|max:50',
+                'title'        => 'required|string|max:255',
+                'description'  => 'nullable|string',
+                'sort_order'   => 'nullable|integer|min:0',
+                'capacity'     => 'nullable|numeric|min:0',
+                'is_active'    => 'boolean',
+            ]);
 
-        $warehouseLocation->update($data);
+            $warehouseLocation->update($data);
 
-        flash()->success('موقعیت انبار ویرایش شد.');
-        return redirect()->route('warehouse.warehouse-locations.index');
+            return redirect()->route('warehouse.warehouse-locations.index')->with('toast', [
+                'message' => 'موقعیت انبار با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش موقعیت'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش موقعیت: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     public function destroy(WarehouseLocation $warehouseLocation)
     {
         Gate::authorize('access', 'warehouse-locations.delete');
 
-        $warehouseLocation->delete();
+        try {
+            $warehouseLocation->delete();
 
-        flash()->success('موقعیت انبار حذف شد.');
-        return back();
+            return redirect()->route('warehouse.warehouse-locations.index')->with('toast', [
+                'message' => 'موقعیت انبار با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف موقعیت'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف موقعیت: ' . $e->getMessage()]);
+        }
     }
 }

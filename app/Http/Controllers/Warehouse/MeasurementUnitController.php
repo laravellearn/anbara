@@ -31,9 +31,10 @@ class MeasurementUnitController extends BaseController
         $units = $query->paginate($request->per_page ?? 20);
 
         $stats = [
-            'total'    => MeasurementUnit::where('tenant_id', $tenantId)->count(),
-            'active'   => MeasurementUnit::where('tenant_id', $tenantId)->where('is_active', true)->count(),
-            'inactive' => MeasurementUnit::where('tenant_id', $tenantId)->where('is_active', false)->count(),
+            'total'      => MeasurementUnit::where('tenant_id', $tenantId)->count(),
+            'active'     => MeasurementUnit::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'inactive'   => MeasurementUnit::where('tenant_id', $tenantId)->where('is_active', false)->count(),
+            'has_parent' => MeasurementUnit::where('tenant_id', $tenantId)->whereNotNull('parent_id')->count(),
         ];
 
         if ($request->ajax() || $request->input('ajax')) {
@@ -51,47 +52,87 @@ class MeasurementUnitController extends BaseController
     {
         Gate::authorize('access', 'measurement-units.create');
 
-        $data = $request->validate([
-            'title'             => 'required|string|max:255',
-            'symbol'            => 'nullable|string|max:20',
-            'parent_id'         => 'nullable|exists:measurement_units,id',
-            'conversion_factor' => 'nullable|numeric|min:0',
-            'description'       => 'nullable|string',
-            'is_active'         => 'boolean',
-        ]);
+        try {
+            $data = $request->validate([
+                'title'             => 'required|string|max:255',
+                'symbol'            => 'nullable|string|max:20',
+                'parent_id'         => 'nullable|exists:measurement_units,id',
+                'conversion_factor' => 'nullable|numeric|min:0',
+                'description'       => 'nullable|string',
+                'is_active'         => 'boolean',
+            ]);
 
-        $data['tenant_id'] = $this->manager->getTenantId();
+            $data['tenant_id'] = $this->manager->getTenantId();
 
-        MeasurementUnit::create($data);
+            MeasurementUnit::create($data);
 
-        flash()->success('واحد اندازه‌گیری ایجاد شد.');
-        return redirect()->route('warehouse.measurement-units.index');
+            return redirect()->route('warehouse.measurement-units.index')->with('toast', [
+                'message' => 'واحد اندازه‌گیری با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد واحد'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_create_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد واحد: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_create_modal', true);
+        }
     }
 
     public function update(Request $request, MeasurementUnit $measurementUnit)
     {
         Gate::authorize('access', 'measurement-units.edit');
 
-        $measurementUnit->update($request->validate([
-            'title'             => 'required|string|max:255',
-            'symbol'            => 'nullable|string|max:20',
-            'parent_id'         => 'nullable|exists:measurement_units,id',
-            'conversion_factor' => 'nullable|numeric|min:0',
-            'description'       => 'nullable|string',
-            'is_active'         => 'boolean',
-        ]));
+        try {
+            $data = $request->validate([
+                'title'             => 'required|string|max:255',
+                'symbol'            => 'nullable|string|max:20',
+                'parent_id'         => 'nullable|exists:measurement_units,id',
+                'conversion_factor' => 'nullable|numeric|min:0',
+                'description'       => 'nullable|string',
+                'is_active'         => 'boolean',
+            ]);
 
-        flash()->success('واحد اندازه‌گیری ویرایش شد.');
-        return redirect()->route('warehouse.measurement-units.index');
+            $measurementUnit->update($data);
+
+            return redirect()->route('warehouse.measurement-units.index')->with('toast', [
+                'message' => 'واحد اندازه‌گیری با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش واحد'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_edit_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش واحد: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_edit_modal', true);
+        }
     }
 
     public function destroy(MeasurementUnit $measurementUnit)
     {
         Gate::authorize('access', 'measurement-units.delete');
 
-        $measurementUnit->delete();
+        try {
+            $measurementUnit->delete();
 
-        flash()->success('واحد اندازه‌گیری حذف شد.');
-        return back();
+            return redirect()->route('warehouse.measurement-units.index')->with('toast', [
+                'message' => 'واحد اندازه‌گیری با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف واحد'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف واحد: ' . $e->getMessage()]);
+        }
     }
 }

@@ -6,12 +6,10 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
-    {{-- کارت‌های آماری --}}
     <div class="row g-4 mb-4" id="statsCards">
         @include('warehouse.products._stats', ['stats' => $stats])
     </div>
 
-    {{-- جستجوی زنده + فیلترها --}}
     <div class="card shadow-none border mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-end">
@@ -60,18 +58,30 @@
         </div>
     </div>
 
-    {{-- لیست کالاها --}}
     <div class="card shadow-none border">
         <div class="card-header border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
             <h5 class="card-title mb-0">
                 <i class="bx bx-package me-1"></i> لیست کالاها
                 <small class="text-muted ms-2" id="filteredCount">({{ $products->total() }})</small>
             </h5>
-            @can('access', 'products.create')
-            <a href="{{ route('warehouse.products.create') }}" class="btn btn-primary btn-sm">
-                <i class="bx bx-plus"></i> کالای جدید
-            </a>
-            @endcan
+            <div class="d-flex gap-2 flex-wrap">
+                {{-- Export placeholder --}}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bx bx-export"></i> خروجی
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bx-file me-1"></i> Excel (به‌زودی)</a></li>
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bxs-file-pdf me-1"></i> PDF (به‌زودی)</a></li>
+                    </ul>
+                </div>
+
+                @can('access', 'products.create')
+                <a href="{{ route('warehouse.products.create') }}" class="btn btn-primary btn-sm">
+                    <i class="bx bx-plus"></i> کالای جدید
+                </a>
+                @endcan
+            </div>
         </div>
 
         <div class="table-responsive" id="productsTableWrapper">
@@ -98,8 +108,7 @@
             $tableWrapper.addClass('opacity-50');
 
             $.ajax({
-                url: '{{ route('
-                warehouse.products.index ') }}',
+                url: '{{ route('warehouse.products.index') }}',
                 data: {
                     search: search,
                     category_id: category,
@@ -109,17 +118,13 @@
                 },
                 success: function(response) {
                     $tableWrapper.html(response.html);
-                    $tableWrapper.removeClass('opacity-50');
-                    $filteredCount.text(`(${response.total})`);
-
-                    // به‌روزرسانی کارت‌های آماری
                     $statsCards.html(response.statsHtml);
+                    $filteredCount.text(`(${response.total})`);
                 },
                 error: function() {
-                    $tableWrapper.removeClass('opacity-50');
-                    // نمایش خطا
+                    showToast('خطا در جستجو', 'error');
                 }
-            });
+            }).always(() => $tableWrapper.removeClass('opacity-50'));
         }
 
         $('#liveSearch').on('keyup', function() {
@@ -141,65 +146,29 @@
             $('#filterStatus').val('');
             performSearch();
         });
-    });
 
-
-    let unitIndex = {
-        {
-            isset($product) ? $product - > measurementUnits - > count() : 0
-        }
-    };
-    $('#add-unit').click(function() {
-        const row = `<div class="row mb-2 unit-row">
-        <div class="col-5">
-            <select name="measurement_units[${unitIndex}][id]" class="form-select">
-                <option value="">انتخاب واحد</option>
-                @foreach($measurementUnits as $mu)
-                    <option value="{{ $mu->id }}">{{ $mu->title }} ({{ $mu->symbol }})</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-4">
-            <input type="number" step="any" name="measurement_units[${unitIndex}][conversion_factor]" class="form-control" value="1">
-        </div>
-        <div class="col-2">
-            <div class="form-check mt-2">
-                <input type="checkbox" name="measurement_units[${unitIndex}][is_default]" value="1" class="form-check-input">
-                <label class="form-check-label">پیش‌فرض</label>
-            </div>
-        </div>
-        <div class="col-1">
-            <button type="button" class="btn btn-sm btn-danger remove-unit"><i class="bx bx-x"></i></button>
-        </div>
-    </div>`;
-        $('#additional-units').append(row);
-        unitIndex++;
-    });
-    $(document).on('click', '.remove-unit', function() {
-        $(this).closest('.unit-row').remove();
-    });
-
-
-    $('#product_type_id').on('change', function() {
-        const typeId = $(this).val();
-        const productId = '{{ $product->id ?? '
-        ' }}';
-        if (typeId) {
-            $.get('{{ route('
-                warehouse.product - types.attributes ', ': typeId ') }}'.replace(':typeId', typeId), {
-                    product_id: productId
+        // حذف با تأیید
+        $('.delete-form').on('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: 'آیا مطمئن هستید؟',
+                text: "این کالا حذف خواهد شد.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، حذف کن',
+                cancelButtonText: 'لغو',
+                customClass: {
+                    confirmButton: 'btn btn-danger me-3',
+                    cancelButton: 'btn btn-label-secondary'
                 },
-                function(response) {
-                    $('#dynamic-attributes').html(response.html);
-                });
-        } else {
-            $('#dynamic-attributes').html('');
-        }
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
     });
-
-    // در صورت ویرایش، اگر نوع کالا از قبل انتخاب شده باشد، بارگذاری اولیه انجام شود
-    @if(isset($product) && $product - > product_type_id)
-    $('#product_type_id').trigger('change');
-    @endif
 </script>
 @endpush

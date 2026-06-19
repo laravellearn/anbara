@@ -47,41 +47,96 @@ class ProductAttributeController extends BaseController
     {
         Gate::authorize('access', 'product-attributes.create');
 
-        $data = $request->validate([
-            'name'    => 'required|string|max:255',
-            'type'    => 'required|in:text,number,select',
-            'options' => 'nullable|json',
-        ]);
+        try {
+            $data = $request->validate([
+                'name'    => 'required|string|max:255',
+                'type'    => 'required|in:text,number,select',
+                'options' => 'nullable|string',   // دریافت به‌عنوان رشته
+            ]);
 
-        $data['tenant_id'] = $this->manager->getTenantId();
+            // تبدیل رشتهٔ کاما-جدا به آرایه و سپس JSON
+            if (!empty($data['options'])) {
+                $optionsArray = array_map('trim', explode(',', $data['options']));
+                $data['options'] = json_encode($optionsArray);
+            } else {
+                $data['options'] = null;
+            }
 
-        ProductAttribute::create($data);
+            $data['tenant_id'] = $this->manager->getTenantId();
 
-        flash()->success('ویژگی ایجاد شد.');
-        return redirect()->route('warehouse.product-attributes.index');
+            ProductAttribute::create($data);
+
+            return redirect()->route('warehouse.product-attributes.index')->with('toast', [
+                'message' => 'ویژگی با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد ویژگی'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_create_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد ویژگی: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_create_modal', true);
+        }
     }
 
     public function update(Request $request, ProductAttribute $productAttribute)
     {
         Gate::authorize('access', 'product-attributes.edit');
 
-        $productAttribute->update($request->validate([
-            'name'    => 'required|string|max:255',
-            'type'    => 'required|in:text,number,select',
-            'options' => 'nullable|json',
-        ]));
+        try {
+            $data = $request->validate([
+                'name'    => 'required|string|max:255',
+                'type'    => 'required|in:text,number,select',
+                'options' => 'nullable|string',
+            ]);
 
-        flash()->success('ویژگی ویرایش شد.');
-        return redirect()->route('warehouse.product-attributes.index');
+            if (!empty($data['options'])) {
+                $optionsArray = array_map('trim', explode(',', $data['options']));
+                $data['options'] = json_encode($optionsArray);
+            } else {
+                $data['options'] = null;
+            }
+
+            $productAttribute->update($data);
+
+            return redirect()->route('warehouse.product-attributes.index')->with('toast', [
+                'message' => 'ویژگی با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش ویژگی'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_edit_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش ویژگی: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_edit_modal', true);
+        }
     }
 
     public function destroy(ProductAttribute $productAttribute)
     {
         Gate::authorize('access', 'product-attributes.delete');
 
-        $productAttribute->delete();
+        try {
+            $productAttribute->delete();
 
-        flash()->success('ویژگی حذف شد.');
-        return back();
+            return redirect()->route('warehouse.product-attributes.index')->with('toast', [
+                'message' => 'ویژگی با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف ویژگی'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف ویژگی: ' . $e->getMessage()]);
+        }
     }
 }

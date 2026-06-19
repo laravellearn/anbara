@@ -47,41 +47,81 @@ class BrandController extends BaseController
     {
         Gate::authorize('access', 'brands.create');
 
-        $data = $request->validate([
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_active'   => 'boolean',
-        ]);
+        try {
+            $data = $request->validate([
+                'title'       => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'is_active'   => 'boolean',
+            ]);
 
-        $data['tenant_id'] = $this->manager->getTenantId();
+            $data['tenant_id'] = $this->manager->getTenantId();
 
-        Brand::create($data);
+            Brand::create($data);
 
-        flash()->success('برند ایجاد شد.');
-        return redirect()->route('warehouse.brands.index');
+            return redirect()->route('warehouse.brands.index')->with('toast', [
+                'message' => 'برند با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد برند'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_create_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد برند: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_create_modal', true);
+        }
     }
 
     public function update(Request $request, Brand $brand)
     {
         Gate::authorize('access', 'brands.edit');
 
-        $brand->update($request->validate([
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_active'   => 'boolean',
-        ]));
+        try {
+            $data = $request->validate([
+                'title'       => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'is_active'   => 'boolean',
+            ]);
 
-        flash()->success('برند ویرایش شد.');
-        return redirect()->route('warehouse.brands.index');
+            $brand->update($data);
+
+            return redirect()->route('warehouse.brands.index')->with('toast', [
+                'message' => 'برند با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش برند'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_edit_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش برند: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_edit_modal', true);
+        }
     }
 
     public function destroy(Brand $brand)
     {
         Gate::authorize('access', 'brands.delete');
 
-        $brand->delete();
+        try {
+            $brand->delete();
 
-        flash()->success('برند حذف شد.');
-        return back();
+            return redirect()->route('warehouse.brands.index')->with('toast', [
+                'message' => 'برند با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف برند'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف برند: ' . $e->getMessage()]);
+        }
     }
 }

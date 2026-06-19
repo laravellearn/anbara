@@ -6,6 +6,7 @@
             <th>نماد</th>
             <th>ضریب تبدیل</th>
             <th>والد</th>
+            <th>توضیحات</th>
             <th>وضعیت</th>
             <th>عملیات</th>
         </tr>
@@ -18,6 +19,7 @@
             <td>{{ $unit->symbol ?? '---' }}</td>
             <td>{{ $unit->conversion_factor }}</td>
             <td>{{ $unit->parent->title ?? '---' }}</td>
+            <td>{{ Str::limit($unit->description, 30) ?? '---' }}</td>
             <td>{!! $unit->is_active ? '<span class="badge bg-success">فعال</span>' : '<span class="badge bg-danger">غیرفعال</span>' !!}</td>
             <td>
                 <div class="d-flex gap-1">
@@ -25,7 +27,7 @@
                     <button class="btn btn-sm btn-icon btn-outline-warning edit-unit-btn"
                         data-id="{{ $unit->id }}" data-title="{{ $unit->title }}" data-symbol="{{ $unit->symbol }}"
                         data-conversion="{{ $unit->conversion_factor }}" data-parent="{{ $unit->parent_id }}"
-                        data-active="{{ $unit->is_active }}">
+                        data-desc="{{ $unit->description }}" data-active="{{ $unit->is_active }}">
                         <i class="bx bx-edit"></i>
                     </button>
                     @endcan
@@ -39,7 +41,7 @@
             </td>
         </tr>
         @empty
-        <tr><td colspan="7" class="text-center text-muted py-5">واحدی یافت نشد.</td></tr>
+        <tr><td colspan="8" class="text-center text-muted py-5">واحدی یافت نشد.</td></tr>
         @endforelse
     </tbody>
 </table>

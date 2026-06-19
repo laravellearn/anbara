@@ -29,7 +29,7 @@
 
     @canany(['products.view', 'product-categories.view', 'measurement-units.view',
     'brands.view', 'product-attributes.view'])
-    <li class="menu-item {{ request()->routeIs('warehouse.products.*', 'warehouse.categories.*', 'warehouse.measurement-units.*', 'warehouse.brands.*', 'warehouse.product-attributes.*') ? 'active open' : '' }}">
+    <li class="menu-item {{ request()->routeIs('warehouse.products.*', 'warehouse.categories.*', 'warehouse.measurement-units.*', 'warehouse.brands.*', 'warehouse.product-attributes.*','warehouse.product-types.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-package"></i>
         <div>کالاها و اقلام</div>
@@ -76,6 +76,14 @@
         </li>
         @endcan
 
+        @can('product-types.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.product-types.*') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.product-types.index') }}" class="menu-link">
+            <div>نوع کالاها</div>
+          </a>
+        </li>
+        @endcan
+
       </ul>
     </li>
     @endcanany
@@ -116,7 +124,7 @@
     {{-- ==================== طرف‌های حساب ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">طرف‌های حساب</span></li>
 
-    <li class="menu-item {{ request()->routeIs('contacts.*', 'organizational-units.*', 'employees.*','warehouse.cost-centers.*') ? 'active open' : '' }}">
+    <li class="menu-item {{ request()->routeIs('warehouse.contacts.*', 'organizational-units.*', 'employees.*','warehouse.cost-centers.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-user-pin"></i>
         <div>طرف‌های حساب</div>
@@ -124,7 +132,7 @@
       <ul class="menu-sub">
 
         @can('contacts.view')
-        <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
+        <li class="menu-item {{ request()->routeIs('warehouse.contacts.*') ? 'active' : '' }}">
           <a href="{{ route('warehouse.contacts.index') }}" class="menu-link">
             <div>طرف تجاری‌ها</div>
           </a>
@@ -518,7 +526,7 @@
     {{-- ==================== تنظیمات ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">تنظیمات</span></li>
 
-    <li class="menu-item {{ request()->routeIs('settings.*','license.*') ? 'active open' : '' }}">
+    <li class="menu-item {{ request()->routeIs('settings.*','billing.license.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-cog"></i>
         <div>تنظیمات سیستم</div>
@@ -542,11 +550,11 @@
         <li class="menu-item"><a href="#" class="menu-link">
             <div>روش ارزش‌گذاری پیش‌فرض</div>
           </a></li>
-          @can('license.view')
+        @can('license.view')
         <li class="menu-item"><a href="{{ route('billing.license') }}" class="menu-link">
             <div>وضعیت لایسنس</div>
           </a></li>
-          @endcan
+        @endcan
       </ul>
     </li>
 

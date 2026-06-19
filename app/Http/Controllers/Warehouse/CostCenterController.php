@@ -52,44 +52,84 @@ class CostCenterController extends BaseController
     {
         Gate::authorize('access', 'cost-centers.create');
 
-        $data = $request->validate([
-            'code'        => 'required|string|max:50|unique:cost_centers,code',
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_active'   => 'boolean',
-        ]);
+        try {
+            $data = $request->validate([
+                'code'        => 'required|string|max:50|unique:cost_centers,code',
+                'title'       => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'is_active'   => 'boolean',
+            ]);
 
-        $data['tenant_id']  = $this->manager->getTenantId();
-        $data['company_id'] = $this->manager->getCompanyId();
+            $data['tenant_id']  = $this->manager->getTenantId();
+            $data['company_id'] = $this->manager->getCompanyId();
 
-        CostCenter::create($data);
+            CostCenter::create($data);
 
-        flash()->success('مرکز هزینه ایجاد شد.');
-        return redirect()->route('warehouse.cost-centers.index');
+            return redirect()->route('warehouse.cost-centers.index')->with('toast', [
+                'message' => 'مرکز هزینه با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد مرکز هزینه'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_create_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد مرکز هزینه: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_create_modal', true);
+        }
     }
 
     public function update(Request $request, CostCenter $costCenter)
     {
         Gate::authorize('access', 'cost-centers.edit');
 
-        $costCenter->update($request->validate([
-            'code'        => 'required|string|max:50|unique:cost_centers,code,' . $costCenter->id,
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_active'   => 'boolean',
-        ]));
+        try {
+            $data = $request->validate([
+                'code'        => 'required|string|max:50|unique:cost_centers,code,' . $costCenter->id,
+                'title'       => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'is_active'   => 'boolean',
+            ]);
 
-        flash()->success('مرکز هزینه ویرایش شد.');
-        return redirect()->route('warehouse.cost-centers.index');
+            $costCenter->update($data);
+
+            return redirect()->route('warehouse.cost-centers.index')->with('toast', [
+                'message' => 'مرکز هزینه با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش مرکز هزینه'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_edit_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش مرکز هزینه: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_edit_modal', true);
+        }
     }
 
     public function destroy(CostCenter $costCenter)
     {
         Gate::authorize('access', 'cost-centers.delete');
 
-        $costCenter->delete();
+        try {
+            $costCenter->delete();
 
-        flash()->success('مرکز هزینه حذف شد.');
-        return back();
+            return redirect()->route('warehouse.cost-centers.index')->with('toast', [
+                'message' => 'مرکز هزینه با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف مرکز هزینه'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف مرکز هزینه: ' . $e->getMessage()]);
+        }
     }
 }

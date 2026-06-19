@@ -45,6 +45,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
+            //
+            $table->string('image')->nullable();
+
             $table->string('title');
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
@@ -153,6 +156,8 @@ return new class extends Migration
             $table->string('model')->nullable();
             $table->string('part_number')->nullable();
             $table->text('description')->nullable();
+            $table->string('image')->nullable();
+
             $table->decimal('minimum_stock', 18, 4)->default(0);
             $table->decimal('maximum_stock', 18, 4)->nullable();
             $table->boolean('is_asset')->default(false);
@@ -163,6 +168,7 @@ return new class extends Migration
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['tenant_id', 'sku']);
         });
+
 
         // 3. جداول وابسته به products
         Schema::create('product_measurement_units', function (Blueprint $table) {
@@ -221,18 +227,39 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('warehouse_user');
+        // 1. ابتدا جداول فرزندی که به products وابسته‌اند
+        Schema::dropIfExists('product_variant_images');
+        Schema::dropIfExists('product_variants');
+        Schema::dropIfExists('galleries');
+        Schema::dropIfExists('product_tag');
+        Schema::dropIfExists('tags');
         Schema::dropIfExists('product_alternatives');
         Schema::dropIfExists('product_attribute_values');
         Schema::dropIfExists('product_measurement_units');
+
+        // 2. حالا می‌توان products را حذف کرد
         Schema::dropIfExists('products');
+
+        // 3. جداول وابسته به محصول که به آن ارجاع ندارند
         Schema::dropIfExists('product_type_attribute');
         Schema::dropIfExists('product_types');
+
+        // 4. انبارها و موقعیت‌ها
+        Schema::dropIfExists('warehouse_user');
         Schema::dropIfExists('warehouse_locations');
         Schema::dropIfExists('warehouses');
+
+        // 5. ویژگی‌ها، برندها، دسته‌بندی‌ها و واحدها
         Schema::dropIfExists('product_attributes');
         Schema::dropIfExists('brands');
         Schema::dropIfExists('categories');
         Schema::dropIfExists('measurement_units');
+
+        // 6. سایر جداول قدیمی (در صورت وجود)
+        Schema::dropIfExists('colors');
+        Schema::dropIfExists('sizes');
+        Schema::dropIfExists('warranties');
+        Schema::dropIfExists('category_product');
+        Schema::dropIfExists('attribute_category');
     }
 };

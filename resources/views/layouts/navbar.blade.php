@@ -578,7 +578,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="pages-faq.html">
+                            <a class="dropdown-item" href="{{ route('billing.license') }}">
                                 <i class="bx bx-help-circle me-2"></i>
                                 <span class="align-middle">مدیریت لایسنس</span>
                             </a>

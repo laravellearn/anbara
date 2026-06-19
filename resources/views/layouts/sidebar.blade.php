@@ -518,7 +518,7 @@
     {{-- ==================== تنظیمات ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">تنظیمات</span></li>
 
-    <li class="menu-item {{ request()->routeIs('settings.*') ? 'active open' : '' }}">
+    <li class="menu-item {{ request()->routeIs('settings.*','license.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-cog"></i>
         <div>تنظیمات سیستم</div>
@@ -542,6 +542,11 @@
         <li class="menu-item"><a href="#" class="menu-link">
             <div>روش ارزش‌گذاری پیش‌فرض</div>
           </a></li>
+          @can('license.view')
+        <li class="menu-item"><a href="{{ route('billing.license') }}" class="menu-link">
+            <div>وضعیت لایسنس</div>
+          </a></li>
+          @endcan
       </ul>
     </li>
 

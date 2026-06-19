@@ -2,38 +2,26 @@
 
 namespace App\Observers;
 
+use App\Concerns\ChecksSubscriptionLimit;
 use App\Models\User;
-use App\Services\SubscriptionService;
 use App\Services\TenantManager;
 
 class UserObserver
 {
-    public function creating(User $user)
+    use ChecksSubscriptionLimit;
+
+    public function creating(User $user): void
     {
-        $manager = app(TenantManager::class);
+        // فقط زمانی چک کن که کاربر tenant داشته باشد (یعنی مدیر سازمان کاربر جدید می‌سازد، نه ثبت‌نام اولیه)
+        if (!$user->tenant_id) return;
 
-        // اگر Tenant Context وجود ندارد (مثلاً در مرحلهٔ ثبت‌نام اولیه)، کاری نکن
-        if (! $manager->getTenant()) {
-            return;
-        }
-
-        $tenant = $manager->requireTenant();
-        $subscriptionService = app(SubscriptionService::class);
-
-        if (! $subscriptionService->canCreate('max_users', $tenant)) {
-            throw new \Exception('ظرفیت کاربران به پایان رسیده است.');
-        }
+        $this->checkLimit('max_users', $user);
     }
 
-    public function created(User $user)
+    public function created(User $user): void
     {
-        $manager = app(TenantManager::class);
+        if (!$user->tenant_id) return;
 
-        if (! $manager->getTenant()) {
-            return;
-        }
-
-        $tenant = $manager->requireTenant();
-        app(SubscriptionService::class)->incrementUsage($tenant, 'max_users');
+        $this->incrementUsage('max_users', $user);
     }
 }

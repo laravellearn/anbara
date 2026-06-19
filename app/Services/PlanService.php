@@ -77,22 +77,30 @@ class PlanService
         $subscription = $this->getActiveSubscription();
         if (!$subscription) return [];
 
-        $plan = $subscription->plan;
+        $plan   = $subscription->plan;
         $limits = $plan->limits ?? [];
         $usages = $subscription->usages()->pluck('used_value', 'feature_key')->all();
 
         $details = [];
         foreach ($limits as $key => $limit) {
-            if ($limit === null) continue; // نامحدود
-            $used = $usages[$key] ?? 0;
+            // فقط محدودیت‌های عددی را بررسی کن
+            if (!is_numeric($limit)) continue;
+
+            $limit = (int) $limit;          // تبدیل به عدد صحیح
+            if ($limit <= 0) continue;      // محدودیت صفر یا منفی بی‌معنی است
+
+            $used = (int) ($usages[$key] ?? 0);
+            $percent = min(100, round(($used / $limit) * 100));
+
             $details[] = [
-                'key'       => $key,
-                'label'     => __("limits.{$key}"), // می‌توانید در فایل lang ترجمه کنید
-                'limit'     => $limit,
-                'used'      => $used,
-                'percent'   => $limit > 0 ? min(100, round(($used / $limit) * 100)) : 100,
+                'key'     => $key,
+                'label'   => __("limits.{$key}"),
+                'limit'   => $limit,
+                'used'    => $used,
+                'percent' => $percent,
             ];
         }
+
         return $details;
     }
 }

@@ -2,15 +2,25 @@
 
 namespace App\Providers;
 
+use App\Models\Brand;
+use App\Models\Category;
 use App\Models\CompanyUser;
+use App\Models\Contact;
 use App\Models\Permission;
+use App\Models\Product;
 use App\Services\TenantManager;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Gate;
 use App\Models\User;
+use App\Models\Warehouse;
+use App\Observers\BrandObserver;
+use App\Observers\CategoryObserver;
+use App\Observers\ContactObserver;
+use App\Observers\ProductObserver;
 use App\Observers\UserObserver;
+use App\Observers\WarehouseObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +37,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        Product::observe(ProductObserver::class);
+        Warehouse::observe(WarehouseObserver::class);
+        User::observe(UserObserver::class);
+        Category::observe(CategoryObserver::class);
+        Brand::observe(BrandObserver::class);
+        Contact::observe(ContactObserver::class);
+
+
         $this->app->singleton(TenantManager::class);
 
         View::composer('*', function ($view) {

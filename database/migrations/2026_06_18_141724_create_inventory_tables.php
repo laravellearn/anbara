@@ -109,6 +109,35 @@ return new class extends Migration
             $table->index(['tenant_id', 'warehouse_id']);
         });
 
+
+        Schema::create('product_types', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
+            $table->unique(['tenant_id', 'title']);
+        });
+
+        Schema::create('product_type_attribute', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_type_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_attribute_id')->constrained()->cascadeOnDelete();
+            $table->boolean('is_required')->default(false);
+            $table->integer('sort_order')->default(0);
+            $table->timestamps();
+            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
+            $table->unique(
+                ['product_type_id', 'product_attribute_id'],
+                'uniq_product_type_attr'   // نام کوتاه دلخواه
+            );
+        });
+
         // 2. products (به categories, brands, measurement_units وابسته است)
         Schema::create('products', function (Blueprint $table) {
             $table->id();
@@ -188,42 +217,17 @@ return new class extends Migration
             $table->unique(['warehouse_id', 'user_id']);
             $table->index('tenant_id');
         });
-
-        Schema::create('product_types', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
-            $table->unique(['tenant_id', 'title']);
-        });
-
-        Schema::create('product_type_attribute', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_type_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_attribute_id')->constrained()->cascadeOnDelete();
-            $table->boolean('is_required')->default(false);
-            $table->integer('sort_order')->default(0);
-            $table->timestamps();
-            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
-            $table->unique(['product_type_id', 'product_attribute_id']);
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('product_type_attribute');
-        Schema::dropIfExists('product_types');
         Schema::dropIfExists('warehouse_user');
         Schema::dropIfExists('product_alternatives');
         Schema::dropIfExists('product_attribute_values');
         Schema::dropIfExists('product_measurement_units');
         Schema::dropIfExists('products');
+        Schema::dropIfExists('product_type_attribute');
+        Schema::dropIfExists('product_types');
         Schema::dropIfExists('warehouse_locations');
         Schema::dropIfExists('warehouses');
         Schema::dropIfExists('product_attributes');

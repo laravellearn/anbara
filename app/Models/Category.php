@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Concerns\Auditable;
 use App\Concerns\BelongsToTenant;
 use App\Concerns\BelongsToCompany;
 use App\Concerns\AutoFillTenantAndCompany;
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes,Auditable,LogsActivity;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes,LogsActivity;
 
     protected $fillable = [
         'tenant_id', 'company_id', 'parent_id', 'title', 'description', 'is_active',

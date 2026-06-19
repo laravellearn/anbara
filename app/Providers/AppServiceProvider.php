@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Company;
 use App\Models\CompanyUser;
 use App\Models\Contact;
+use App\Models\Employee;
 use App\Models\Permission;
 use App\Models\Product;
 use App\Services\TenantManager;
@@ -17,10 +19,13 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Observers\BrandObserver;
 use App\Observers\CategoryObserver;
+use App\Observers\CompanyObserver;
 use App\Observers\ContactObserver;
+use App\Observers\EmployeeObserver;
 use App\Observers\ProductObserver;
 use App\Observers\UserObserver;
 use App\Observers\WarehouseObserver;
+use App\Services\PlanService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,10 +46,8 @@ class AppServiceProvider extends ServiceProvider
         Product::observe(ProductObserver::class);
         Warehouse::observe(WarehouseObserver::class);
         User::observe(UserObserver::class);
-        Category::observe(CategoryObserver::class);
-        Brand::observe(BrandObserver::class);
-        Contact::observe(ContactObserver::class);
-
+        Employee::observe(EmployeeObserver::class);     // جدید
+        Company::observe(CompanyObserver::class);        // جدید
 
         $this->app->singleton(TenantManager::class);
 
@@ -137,5 +140,11 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Exception $e) {
             // اگر جدول permissions هنوز وجود نداشته باشد (مثلاً هنگام migrate)
         }
+
+
+        Gate::define('feature', function (User $user, string $featureKey) {
+            $planService = app(PlanService::class);
+            return $planService->tenantHasFeature($featureKey);
+        });
     }
 }

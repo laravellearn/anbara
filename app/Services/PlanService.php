@@ -103,4 +103,10 @@ class PlanService
 
         return $details;
     }
+
+    public function tenantHasFeature(string $featureKey): bool
+    {
+        $plan = $this->getCurrentPlan();
+        return $plan ? $plan->hasFeature($featureKey) : false;
+    }
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Plan extends Model
 {
-    use Auditable,LogsActivity;
+    use Auditable, LogsActivity;
     protected $fillable = [
         'name',
         'slug',
@@ -34,13 +34,6 @@ class Plan extends Model
         'duration_days' => 'integer',
     ];
 
-    /**
-     * چک می‌کنه که یک feature خاص تو این پلن فعال هست یا نه.
-     */
-    public function hasFeature(string $featureKey): bool
-    {
-        return in_array($featureKey, $this->features ?? []);
-    }
 
     /**
      * مقدار محدودیت یک ویژگی را برمی‌گرداند.
@@ -54,5 +47,14 @@ class Plan extends Model
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * بررسی می‌کند که یک قابلیت خاص در این پلن وجود دارد یا خیر.
+     */
+    public function hasFeature(string $featureKey): bool
+    {
+        $features = $this->features ?? [];
+        return in_array($featureKey, $features);
     }
 }

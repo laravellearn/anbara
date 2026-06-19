@@ -4,12 +4,14 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="card">
-        <div class="card-header"><h5>ویرایش {{ $role->title }}</h5></div>
-        <form action="{{ route('admin.roles.update', $role) }}" method="POST">
+        <div class="card-header">
+            <h5>ویرایش {{ $role->title }}</h5>
+        </div>
+        <form action="{{ route('roles.update', $role->id) }}" method="POST">
             @csrf @method('PUT')
-            @include('roles._form')
+            @include('core.roles._form')
             <div class="card-footer text-end">
-                <a href="{{ route('admin.roles.index') }}" class="btn btn-label-secondary me-2">انصراف</a>
+                <a href="{{ route('roles.index') }}" class="btn btn-label-secondary me-2">انصراف</a>
                 <button type="submit" class="btn btn-warning">بروزرسانی</button>
             </div>
         </form>
@@ -18,18 +20,59 @@
 @endsection
 @push('scripts')
 <script>
-    // همان اسکریپت‌های انتخاب گروهی که در index دارید، اینجا هم کپی شود
     $(function() {
-        function updateGroupCounter(groupSlug) { /* ... مشابه */ }
-        function updateAllCounters() { /* ... */ }
-        $('.select-group-btn').on('click', function() { /* ... */ });
-        $('.deselect-group-btn').on('click', function() { /* ... */ });
-        $('#selectAllGroups').on('click', function() { /* ... */ });
-        $('#deselectAllGroups').on('click', function() { /* ... */ });
-        $(document).on('change', '.permission-checkbox', function() { /* ... */ });
-        
-        // مقداردهی اولیه شمارنده‌ها با توجه به rolePermissions
-        updateAllCounters();
+        // ========== تغییر وضعیت چک‌باکس گروه ==========
+        $(document).on('change', '.group-checkbox', function() {
+            const groupSlug = $(this).data('group');
+            const isChecked = $(this).prop('checked');
+            // انتخاب یا حذف تمام مجوزهای این گروه
+            $(`.group-${groupSlug}`).prop('checked', isChecked).trigger('change');
+            // به‌روزرسانی شمارنده
+            updateGroupCounter(groupSlug);
+        });
+
+        // ========== تغییر هر چک‌باکس مجوز ==========
+        $(document).on('change', '.permission-checkbox', function() {
+            const groupSlug = $(this).data('group');
+            if (groupSlug) {
+                updateGroupCounter(groupSlug);
+            }
+        });
+
+        // ========== به‌روزرسانی شمارنده و وضعیت چک‌باکس گروه ==========
+        function updateGroupCounter(groupSlug) {
+            const $groupCheckboxes = $(`.group-${groupSlug}`);
+            const total = $groupCheckboxes.length;
+            const checked = $groupCheckboxes.filter(':checked').length;
+
+            // شمارنده
+            $(`#counter_${groupSlug}`).find('span.fw-bold').text(checked);
+
+            // badge
+            const $badge = $(`#badge_${groupSlug}`);
+            if (checked === total && total > 0) {
+                $badge.removeClass('bg-primary').addClass('bg-success').html(`✓ ${checked}/${total}`);
+            } else if (checked > 0) {
+                $badge.removeClass('bg-primary').addClass('bg-warning').html(`${checked}/${total}`);
+            } else {
+                $badge.removeClass('bg-success bg-warning').addClass('bg-primary').html(total);
+            }
+
+            // همگام‌سازی چک‌باکس گروه
+            const $groupCheckbox = $(`#group_${groupSlug}`);
+            if ($groupCheckbox.length) {
+                $groupCheckbox.prop('checked', checked === total && total > 0);
+            }
+        }
+
+        // مقداردهی اولیه شمارنده‌ها و چک‌باکس‌های گروه
+        function initCounters() {
+            $('.group-checkbox').each(function() {
+                const groupSlug = $(this).data('group');
+                updateGroupCounter(groupSlug);
+            });
+        }
+        initCounters();
     });
 </script>
 @endpush

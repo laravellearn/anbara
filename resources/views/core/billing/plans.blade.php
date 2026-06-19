@@ -4,12 +4,24 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4">انتخاب پلن</h4>
+
+    {{-- نمایش خطاها در صورت وجود --}}
+    @if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><i class="bx bx-error-circle me-1"></i> خطا!</strong>
+        <ul class="mb-0 mt-2">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
 
     <div class="row">
         @foreach($allPlans as $plan)
         <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 {{ $currentPlan && $currentPlan->id == $plan->id ? 'border-primary' : '' }}">
+            <div class="card h-100 shadow-none border {{ $currentPlan && $currentPlan->id == $plan->id ? 'border-primary' : '' }}">
                 <div class="card-body">
                     <h5 class="card-title text-center">{{ $plan->name }}</h5>
                     <p class="card-text text-muted">{{ $plan->description }}</p>
@@ -23,7 +35,6 @@
                         @endif
                     </div>
 
-                    
                     <ul class="list-unstyled">
                         @foreach($plan->features as $feature)
                         <li class="mb-2">

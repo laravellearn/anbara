@@ -27,7 +27,7 @@
                     </button>
                     @endcan
                     @can('access', 'organizational-units.delete')
-                    <form action="{{ route('warehouse.organizational-units.destroy', $unit) }}" method="POST" class="d-inline delete-form">
+                    <form action="{{ route('organizational-units.destroy', $unit) }}" method="POST" class="d-inline delete-form">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-icon btn-outline-danger"><i class="bx bx-trash"></i></button>
                     </form>

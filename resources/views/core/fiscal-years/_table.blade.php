@@ -48,7 +48,7 @@
                     </button>
                     @endif
                     @if(!$fy->is_active && !$fy->is_closed)
-                    <form action="{{ route('fiscal-years.activate', $fy) }}" method="POST">
+                    <form action="{{ route('fiscal-years.activate', $fy) }}" method="POST" class="d-inline">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-icon btn-outline-success" title="فعال‌سازی">
                             <i class="bx bx-play"></i>
@@ -56,7 +56,7 @@
                     </form>
                     @endif
                     @if($fy->is_active && !$fy->is_closed)
-                    <form action="{{ route('fiscal-years.close', $fy) }}" method="POST">
+                    <form action="{{ route('fiscal-years.close', $fy) }}" method="POST" class="d-inline">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-icon btn-outline-danger" title="بستن سال">
                             <i class="bx bx-lock"></i>
@@ -64,8 +64,7 @@
                     </form>
                     @endif
                     @if(!$fy->is_active && !$fy->is_closed)
-                    <form action="{{ route('fiscal-years.destroy', $fy) }}" method="POST"
-                        onsubmit="return confirm('آیا از حذف اطمینان دارید؟')">
+                    <form action="{{ route('fiscal-years.destroy', $fy) }}" method="POST" class="d-inline delete-form">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-icon btn-outline-danger" title="حذف">
                             <i class="bx bx-trash"></i>

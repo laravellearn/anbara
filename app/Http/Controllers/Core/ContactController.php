@@ -57,61 +57,99 @@ class ContactController extends BaseController
     {
         Gate::authorize('access', 'contacts.create');
 
-        $data = $request->validate([
-            'type'           => 'required|in:customer,supplier,both',
-            'first_name'     => 'nullable|string|max:255',
-            'last_name'      => 'nullable|string|max:255',
-            'company_name'   => 'nullable|string|max:255',
-            'national_code'  => 'nullable|string|max:20',
-            'economic_code'  => 'nullable|string|max:20',
-            'mobile'         => 'nullable|string|max:20',
-            'phone'          => 'nullable|string|max:20',
-            'email'          => 'nullable|email|max:255',
-            'website'        => 'nullable|string|max:255',
-            'address'        => 'nullable|string',
-            'description'    => 'nullable|string',
-            'is_active'      => 'boolean',
-        ]);
+        try {
+            $data = $request->validate([
+                'type'           => 'required|in:customer,supplier,both',
+                'first_name'     => 'nullable|string|max:255',
+                'last_name'      => 'nullable|string|max:255',
+                'company_name'   => 'nullable|string|max:255',
+                'national_code'  => 'nullable|string|max:20',
+                'economic_code'  => 'nullable|string|max:20',
+                'mobile'         => 'nullable|string|max:20',
+                'phone'          => 'nullable|string|max:20',
+                'email'          => 'nullable|email|max:255',
+                'website'        => 'nullable|string|max:255',
+                'address'        => 'nullable|string',
+                'description'    => 'nullable|string',
+                'is_active'      => 'boolean',
+            ]);
 
-        $data['tenant_id'] = $this->manager->getTenantId();
+            $data['tenant_id'] = $this->manager->getTenantId();
 
-        Contact::create($data);
+            Contact::create($data);
 
-        flash()->success('مخاطب ایجاد شد.');
-        return redirect()->route('core.contacts.index');
+            return redirect()->route('core.contacts.index')->with('toast', [
+                'message' => 'مخاطب با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد مخاطب'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_create_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد مخاطب: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_create_modal', true);
+        }
     }
 
     public function update(Request $request, Contact $contact)
     {
         Gate::authorize('access', 'contacts.edit');
 
-        $contact->update($request->validate([
-            'type'           => 'required|in:customer,supplier,both',
-            'first_name'     => 'nullable|string|max:255',
-            'last_name'      => 'nullable|string|max:255',
-            'company_name'   => 'nullable|string|max:255',
-            'national_code'  => 'nullable|string|max:20',
-            'economic_code'  => 'nullable|string|max:20',
-            'mobile'         => 'nullable|string|max:20',
-            'phone'          => 'nullable|string|max:20',
-            'email'          => 'nullable|email|max:255',
-            'website'        => 'nullable|string|max:255',
-            'address'        => 'nullable|string',
-            'description'    => 'nullable|string',
-            'is_active'      => 'boolean',
-        ]));
+        try {
+            $contact->update($request->validate([
+                'type'           => 'required|in:customer,supplier,both',
+                'first_name'     => 'nullable|string|max:255',
+                'last_name'      => 'nullable|string|max:255',
+                'company_name'   => 'nullable|string|max:255',
+                'national_code'  => 'nullable|string|max:20',
+                'economic_code'  => 'nullable|string|max:20',
+                'mobile'         => 'nullable|string|max:20',
+                'phone'          => 'nullable|string|max:20',
+                'email'          => 'nullable|email|max:255',
+                'website'        => 'nullable|string|max:255',
+                'address'        => 'nullable|string',
+                'description'    => 'nullable|string',
+                'is_active'      => 'boolean',
+            ]));
 
-        flash()->success('مخاطب ویرایش شد.');
-        return redirect()->route('core.contacts.index');
+            return redirect()->route('core.contacts.index')->with('toast', [
+                'message' => 'مخاطب با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش مخاطب'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_edit_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش مخاطب: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_edit_modal', true);
+        }
     }
 
     public function destroy(Contact $contact)
     {
         Gate::authorize('access', 'contacts.delete');
 
-        $contact->delete();
+        try {
+            $contact->delete();
 
-        flash()->success('مخاطب حذف شد.');
-        return back();
+            return redirect()->route('core.contacts.index')->with('toast', [
+                'message' => 'مخاطب با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف مخاطب'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف مخاطب: ' . $e->getMessage()]);
+        }
     }
 }

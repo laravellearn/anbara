@@ -32,7 +32,7 @@
                     </button>
                     @endcan
                     @can('access', 'employees.delete')
-                    <form action="{{ route('warehouse.employees.destroy', $emp) }}" method="POST" class="d-inline delete-form">
+                    <form action="{{ route('employees.destroy', $emp) }}" method="POST" class="d-inline delete-form">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-icon btn-outline-danger"><i class="bx bx-trash"></i></button>
                     </form>

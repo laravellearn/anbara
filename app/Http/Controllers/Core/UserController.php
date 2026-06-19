@@ -84,9 +84,6 @@ class UserController extends Controller
     /**
      * ذخیره کاربر جدید (از طریق مودال)
      */
-    /**
-     * ذخیره کاربر جدید (از طریق مودال)
-     */
     public function store(Request $request)
     {
         Gate::authorize('access', 'users.create');

@@ -125,7 +125,7 @@
 
         @can('contacts.view')
         <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
-          <a href="{{ route('contacts.index') }}" class="menu-link">
+          <a href="{{ route('warehouse.contacts.index') }}" class="menu-link">
             <div>طرف تجاری‌ها</div>
           </a>
         </li>

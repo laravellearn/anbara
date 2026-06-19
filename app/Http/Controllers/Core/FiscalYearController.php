@@ -10,19 +10,16 @@ use Illuminate\Validation\Rule;
 
 class FiscalYearController extends Controller
 {
-
     public function index(Request $request)
     {
         $tenant = auth()->user()->tenant;
 
-        // اگر کاربر مالک نباشد دسترسی ندارد (مطابق Middleware)
         if (!auth()->user()->isOwner()) {
             abort(403);
         }
 
         $query = $tenant->fiscalYears()->latest();
 
-        // فیلتر بر اساس وضعیت
         if ($request->filled('status')) {
             if ($request->status === 'active') {
                 $query->where('is_active', true);
@@ -31,7 +28,6 @@ class FiscalYearController extends Controller
             }
         }
 
-        // مرتب‌سازی
         $sort = $request->input('sort', 'created_at');
         $direction = $request->input('direction', 'desc');
         $allowedSorts = ['name', 'start_date', 'end_date', 'created_at'];
@@ -42,16 +38,14 @@ class FiscalYearController extends Controller
         $perPage = $request->input('per_page', 20);
         $fiscalYears = $query->paginate($perPage)->appends($request->query());
 
-        // اگر درخواست AJAX بود، فقط جدول را برگردان
         if ($request->ajax()) {
-            $html = view('fiscal-years._table', compact('fiscalYears'))->render();
+            $html = view('core.fiscal-years._table', compact('fiscalYears'))->render();
             return response()->json([
                 'html'  => $html,
                 'total' => $fiscalYears->total(),
             ]);
         }
 
-        // داده‌های آماری برای کارت‌ها
         $stats = [
             'total'   => $tenant->fiscalYears()->count(),
             'active'  => $tenant->fiscalYears()->where('is_active', true)->count(),
@@ -62,51 +56,64 @@ class FiscalYearController extends Controller
         return view('core.fiscal-years.index', compact('fiscalYears', 'stats'));
     }
 
-    public function create()
-    {
-        return view('fiscal-years.create');
-    }
-
     public function store(Request $request)
     {
         $tenant = auth()->user()->tenant;
-        $data = $request->validate([
-            'name'       => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date'   => 'required|date|after:start_date',
-            'is_active'  => 'sometimes|boolean',
-        ]);
 
-        // اطمینان از عدم تداخل تاریخ با سال‌های دیگر
-        $overlap = $tenant->fiscalYears()
-            ->where(function ($q) use ($data) {
-                $q->whereBetween('start_date', [$data['start_date'], $data['end_date']])
-                    ->orWhereBetween('end_date', [$data['start_date'], $data['end_date']])
-                    ->orWhere(function ($q) use ($data) {
-                        $q->where('start_date', '<=', $data['start_date'])
-                            ->where('end_date', '>=', $data['end_date']);
-                    });
-            })->exists();
+        try {
+            $data = $request->validate([
+                'name'       => 'required|string|max:255',
+                'start_date' => 'required|date',
+                'end_date'   => 'required|date|after:start_date',
+                'is_active'  => 'sometimes|boolean',
+            ]);
 
-        if ($overlap) {
-            return back()->withErrors(['start_date' => 'بازهٔ تاریخ با سال مالی دیگری تداخل دارد.'])->withInput();
+            $overlap = $tenant->fiscalYears()
+                ->where(function ($q) use ($data) {
+                    $q->whereBetween('start_date', [$data['start_date'], $data['end_date']])
+                        ->orWhereBetween('end_date', [$data['start_date'], $data['end_date']])
+                        ->orWhere(function ($q) use ($data) {
+                            $q->where('start_date', '<=', $data['start_date'])
+                                ->where('end_date', '>=', $data['end_date']);
+                        });
+                })->exists();
+
+            if ($overlap) {
+                return redirect()->back()
+                    ->withErrors(['start_date' => 'بازهٔ تاریخ با سال مالی دیگری تداخل دارد.'])
+                    ->withInput()
+                    ->with('show_create_modal', true);
+            }
+
+            $data['tenant_id'] = $tenant->id;
+
+            $fiscalYear = FiscalYear::create($data);
+
+            if ($fiscalYear->is_active) {
+                $fiscalYear->activate();
+            }
+
+            return redirect()->route('core.fiscal-years.index')->with('toast', [
+                'message' => 'سال مالی جدید با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد سال مالی'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_create_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد سال مالی: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_create_modal', true);
         }
-
-        $data['tenant_id'] = $tenant->id;
-
-        $fiscalYear = FiscalYear::create($data);
-
-        // اگر فعال بود، بقیه را غیرفعال کند
-        if ($fiscalYear->is_active) {
-            $fiscalYear->activate();
-        }
-
-        return redirect()->route('core.fiscal-years.index')->with('success', 'سال مالی جدید ایجاد شد.');
     }
 
     public function edit(FiscalYear $fiscalYear)
     {
-        $this->authorize('update', $fiscalYear); // Policy (اختیاری)
+        $this->authorize('update', $fiscalYear);
         return view('core.fiscal-years.edit', compact('fiscalYear'));
     }
 
@@ -115,56 +122,103 @@ class FiscalYearController extends Controller
         $this->authorize('update', $fiscalYear);
         $tenant = auth()->user()->tenant;
 
-        $data = $request->validate([
-            'name'       => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date'   => 'required|date|after:start_date',
-            'is_active'  => 'sometimes|boolean',
-        ]);
+        try {
+            $data = $request->validate([
+                'name'       => 'required|string|max:255',
+                'start_date' => 'required|date',
+                'end_date'   => 'required|date|after:start_date',
+                'is_active'  => 'sometimes|boolean',
+            ]);
 
-        // بررسی تداخل (به جز خودش)
-        $overlap = $tenant->fiscalYears()
-            ->where('id', '!=', $fiscalYear->id)
-            ->where(function ($q) use ($data) {
-                $q->whereBetween('start_date', [$data['start_date'], $data['end_date']])
-                    ->orWhereBetween('end_date', [$data['start_date'], $data['end_date']])
-                    ->orWhere(function ($q) use ($data) {
-                        $q->where('start_date', '<=', $data['start_date'])
-                            ->where('end_date', '>=', $data['end_date']);
-                    });
-            })->exists();
+            $overlap = $tenant->fiscalYears()
+                ->where('id', '!=', $fiscalYear->id)
+                ->where(function ($q) use ($data) {
+                    $q->whereBetween('start_date', [$data['start_date'], $data['end_date']])
+                        ->orWhereBetween('end_date', [$data['start_date'], $data['end_date']])
+                        ->orWhere(function ($q) use ($data) {
+                            $q->where('start_date', '<=', $data['start_date'])
+                                ->where('end_date', '>=', $data['end_date']);
+                        });
+                })->exists();
 
-        if ($overlap) {
-            return back()->withErrors(['start_date' => 'بازهٔ تاریخ با سال مالی دیگری تداخل دارد.'])->withInput();
+            if ($overlap) {
+                return redirect()->back()
+                    ->withErrors(['start_date' => 'بازهٔ تاریخ با سال مالی دیگری تداخل دارد.'])
+                    ->withInput()
+                    ->with('show_edit_modal', true);
+            }
+
+            $fiscalYear->update($data);
+
+            if ($fiscalYear->is_active) {
+                $fiscalYear->activate();
+            }
+
+            return redirect()->route('core.fiscal-years.index')->with('toast', [
+                'message' => 'سال مالی با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش سال مالی'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_edit_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش سال مالی: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_edit_modal', true);
         }
-
-        $fiscalYear->update($data);
-
-        if ($fiscalYear->is_active) {
-            $fiscalYear->activate();
-        }
-
-        return redirect()->route('fiscal-years.index')->with('success', 'سال مالی ویرایش شد.');
     }
 
     public function destroy(FiscalYear $fiscalYear)
     {
         $this->authorize('delete', $fiscalYear);
-        $fiscalYear->delete();
-        return redirect()->route('fiscal-years.index')->with('success', 'سال مالی حذف شد.');
+
+        try {
+            $fiscalYear->delete();
+
+            return redirect()->route('core.fiscal-years.index')->with('toast', [
+                'message' => 'سال مالی با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف سال مالی'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف سال مالی: ' . $e->getMessage()]);
+        }
     }
 
-    // فعال‌سازی یک سال خاص
     public function activate(FiscalYear $fiscalYear)
     {
-        $fiscalYear->activate();
-        return back()->with('success', 'سال مالی فعال شد.');
+        try {
+            $fiscalYear->activate();
+
+            return redirect()->back()->with('toast', [
+                'message' => 'سال مالی با موفقیت فعال شد.',
+                'type'    => 'success',
+                'title'   => 'فعال‌سازی سال مالی'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در فعال‌سازی سال مالی: ' . $e->getMessage()]);
+        }
     }
 
-    // بستن سال مالی
     public function close(FiscalYear $fiscalYear)
     {
-        $fiscalYear->close();
-        return back()->with('success', 'سال مالی بسته شد.');
+        try {
+            $fiscalYear->close();
+
+            return redirect()->back()->with('toast', [
+                'message' => 'سال مالی با موفقیت بسته شد.',
+                'type'    => 'success',
+                'title'   => 'بستن سال مالی'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در بستن سال مالی: ' . $e->getMessage()]);
+        }
     }
 }

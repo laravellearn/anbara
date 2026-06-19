@@ -110,9 +110,22 @@
                 <i class="bx bx-calendar me-1"></i>لیست سال‌های مالی
                 <small class="text-muted ms-2" id="filteredCount">({{ $fiscalYears->total() }} سال)</small>
             </h5>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createFiscalYearModal">
-                <i class="bx bx-plus"></i> سال مالی جدید
-            </button>
+            <div class="d-flex gap-2 flex-wrap">
+                {{-- Export placeholder --}}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bx bx-export"></i> خروجی
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bx-file me-1"></i> Excel (به‌زودی)</a></li>
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bxs-file-pdf me-1"></i> PDF (به‌زودی)</a></li>
+                    </ul>
+                </div>
+
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createFiscalYearModal">
+                    <i class="bx bx-plus"></i> سال مالی جدید
+                </button>
+            </div>
         </div>
 
         <div class="table-responsive" id="fiscalYearsTableWrapper">

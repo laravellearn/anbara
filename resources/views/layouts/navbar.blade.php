@@ -514,7 +514,7 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="pages-account-settings-account.html">
+                            <a class="dropdown-item" href="{{ route('profile.edit') }}">
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar avatar-online">
@@ -548,7 +548,7 @@
                             <div class="dropdown-divider"></div>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="pages-profile-user.html">
+                            <a class="dropdown-item" href="{{ route('profile.edit') }}">
                                 <i class="bx bx-user me-2"></i>
                                 <span class="align-middle">پروفایل من</span>
                             </a>
@@ -556,7 +556,7 @@
                         <li>
                             <a class="dropdown-item" href="pages-account-settings-account.html">
                                 <i class="bx bx-cog me-2"></i>
-                                <span class="align-middle">تنظیمات</span>
+                                <span class="align-middle">تنظیمات من</span>
                             </a>
                         </li>
                         {{-- <li>
@@ -584,7 +584,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="pages-pricing.html">
+                            <a class="dropdown-item" href="{{ route('billing.plans') }}">
                                 <i class="bx bx-dollar me-2"></i>
                                 <span class="align-middle">خرید یا ارتقا اشتراک</span>
                             </a>

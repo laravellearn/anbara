@@ -4,12 +4,24 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4">لایسنس و مصرف</h4>
+
+    {{-- نمایش خطاها در صورت وجود --}}
+    @if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><i class="bx bx-error-circle me-1"></i> خطا!</strong>
+        <ul class="mb-0 mt-2">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
 
     <div class="row">
         <!-- کارت اطلاعات اشتراک -->
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card">
+            <div class="card shadow-none border">
                 <div class="card-body">
                     <h5 class="card-title">{{ $plan->name }}</h5>
                     <p class="card-text">
@@ -40,7 +52,7 @@
 
         <!-- نمودارهای پیشرفت -->
         <div class="col-md-6 col-lg-8 mb-4">
-            <div class="card">
+            <div class="card shadow-none border">
                 <div class="card-header">
                     <h5 class="card-title mb-0">میزان مصرف منابع</h5>
                 </div>

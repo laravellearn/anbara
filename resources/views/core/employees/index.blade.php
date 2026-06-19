@@ -2,7 +2,6 @@
 
 @section('title', 'کارمندان')
 
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
@@ -53,11 +52,24 @@
                 <i class="bx bx-user-badge me-1"></i> کارمندان
                 <small class="text-muted ms-2" id="filteredCount">({{ $employees->total() }})</small>
             </h5>
-            @can('access', 'employees.create')
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-                <i class="bx bx-plus"></i> کارمند جدید
-            </button>
-            @endcan
+            <div class="d-flex gap-2 flex-wrap">
+                {{-- Export placeholder --}}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bx bx-export"></i> خروجی
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bx-file me-1"></i> Excel (به‌زودی)</a></li>
+                        <li><a class="dropdown-item disabled" href="#"><i class="bx bxs-file-pdf me-1"></i> PDF (به‌زودی)</a></li>
+                    </ul>
+                </div>
+
+                @can('access', 'employees.create')
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <i class="bx bx-plus"></i> کارمند جدید
+                </button>
+                @endcan
+            </div>
         </div>
 
         <div class="table-responsive" id="tableWrapper">
@@ -83,7 +95,7 @@
             const status = $('#filterStatus').val();
             $tableWrapper.addClass('opacity-50');
             $.ajax({
-                url: '{{ route('warehouse.employees.index') }}',
+                url: '{{ route('employees.index') }}',
                 data: { search, unit_id: unit, status, ajax: 1 },
                 success: function(response) {
                     $tableWrapper.html(response.html);
@@ -102,6 +114,62 @@
             $('#filterStatus').val('');
             performSearch();
         });
+
+        // ========== مودال ویرایش ==========
+        $(document).on('click', '.edit-employee-btn', function() {
+            const btn = $(this);
+            const id = btn.data('id');
+            $('#employeeForm').attr('action', `{{ route('employees.update', ':id') }}`.replace(':id', id));
+            if (!$('input[name="_method"]').length) $('#employeeForm').prepend('<input type="hidden" name="_method" value="PUT">');
+            $('#emp_name').val(btn.data('name'));
+            $('#emp_code').val(btn.data('code'));
+            $('#emp_unit').val(btn.data('unit'));
+            $('#emp_position').val(btn.data('position'));
+            $('#emp_mobile').val(btn.data('mobile'));
+            $('#emp_phone').val(btn.data('phone'));
+            $('#emp_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
+            $('#createModal').modal('show');
+        });
+
+        // ========== ریست فرم هنگام بسته شدن مودال ==========
+        $('#createModal').on('hidden.bs.modal', function() {
+            $('#employeeForm').attr('action', `{{ route('employees.store') }}`);
+            $('input[name="_method"]').remove();
+            $('#employeeForm')[0].reset();
+        });
+
+        // ========== حذف با تأیید ==========
+        $('.delete-form').on('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: 'آیا مطمئن هستید؟',
+                text: "این کارمند حذف خواهد شد.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، حذف کن',
+                cancelButtonText: 'لغو',
+                customClass: {
+                    confirmButton: 'btn btn-danger me-3',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+
+        // ========== نمایش خطاهای اعتبارسنجی در مودال ==========
+        @if($errors->any() && session('show_create_modal'))
+            $('#createModal').modal('show');
+            @foreach ($errors->all() as $error)
+                if (typeof showToast !== 'undefined') {
+                    showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
+                }
+            @endforeach
+        @endif
     });
 </script>
 @endpush

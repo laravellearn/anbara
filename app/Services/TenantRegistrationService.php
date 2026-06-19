@@ -76,6 +76,28 @@ class TenantRegistrationService
                 'mobile_verified_at' => now(),
             ]);
 
+
+            // 7. ایجاد اشتراک آزمایشی ۱۴ روزه (Plan trial)
+            $trialPlan = Plan::where('code', 'trial')->first();
+            if ($trialPlan) {
+                $subscription = Subscription::create([
+                    'tenant_id'  => $tenant->id,
+                    'plan_id'    => $trialPlan->id,
+                    'starts_at'  => now(),
+                    'ends_at'    => now()->addDays(config('app.trial_days', 14)),
+                    'status'     => 'active',
+                    'auto_renew' => false,
+                ]);
+
+                // مقداردهی مصرف اولیه
+                foreach ($trialPlan->features as $feature) {
+                    $subscription->usages()->create([
+                        'feature_key' => $feature,
+                        'used_value'  => 0,
+                    ]);
+                }
+            }
+
             // 3. ایجاد شرکت پیش‌فرض
             $company = Company::create([
                 'tenant_id' => $tenant->id,
@@ -112,27 +134,6 @@ class TenantRegistrationService
 
             // 6. تخصیص نقش به کاربر در شرکت
             $companyUser->roles()->attach($role->id);
-
-            // 7. ایجاد اشتراک آزمایشی ۱۴ روزه (Plan trial)
-            $trialPlan = Plan::where('code', 'trial')->first();
-            if ($trialPlan) {
-                $subscription = Subscription::create([
-                    'tenant_id'  => $tenant->id,
-                    'plan_id'    => $trialPlan->id,
-                    'starts_at'  => now(),
-                    'ends_at'    => now()->addDays(config('app.trial_days', 14)),
-                    'status'     => 'active',
-                    'auto_renew' => false,
-                ]);
-
-                // مقداردهی مصرف اولیه
-                foreach ($trialPlan->features as $feature) {
-                    $subscription->usages()->create([
-                        'feature_key' => $feature,
-                        'used_value'  => 0,
-                    ]);
-                }
-            }
 
             return compact('user', 'tenant', 'company');
         });

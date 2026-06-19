@@ -17,7 +17,6 @@ class BillingController extends Controller
         $currentPlan = $planService->getCurrentPlan();
         $allPlans = Plan::where('is_active', true)->orderBy('sort_order')->get();
         $upgradable = $planService->getUpgradablePlans();
-        // آرایه‌ای از ID های قابل ارتقا برای نشان دادن دکمه مناسب
         $upgradableIds = array_map(fn($p) => $p->id, $upgradable);
 
         return view('core.billing.plans', compact('allPlans', 'currentPlan', 'upgradableIds'));
@@ -25,43 +24,62 @@ class BillingController extends Controller
 
     public function subscribe(Request $request, PlanService $planService)
     {
-        $request->validate(['plan_id' => 'required|exists:plans,id']);
-        $targetPlan = Plan::findOrFail($request->plan_id);
+        try {
+            $request->validate(['plan_id' => 'required|exists:plans,id']);
+            $targetPlan = Plan::findOrFail($request->plan_id);
 
-        $currentPlan = $planService->getCurrentPlan();
-        if ($currentPlan && !$planService->canUpgradeTo($currentPlan, $targetPlan)) {
-            return back()->with('swal_error', 'امکان ارتقا به این پلن وجود ندارد.');
-        }
-
-        // اینجا می‌توان فرآیند پرداخت را فراخوانی کرد.
-        // برای نمونه، اشتراک جدید می‌سازیم (بدون پرداخت)
-
-        // غیرفعال‌سازی اشتراک فعلی
-        if ($currentPlan) {
-            $activeSubscription = $planService->getActiveSubscription();
-            if ($activeSubscription) {
-                $activeSubscription->update(['status' => 'canceled']);
+            $currentPlan = $planService->getCurrentPlan();
+            if ($currentPlan && !$planService->canUpgradeTo($currentPlan, $targetPlan)) {
+                return redirect()->back()->with('toast', [
+                    'message' => 'امکان ارتقا به این پلن وجود ندارد.',
+                    'type'    => 'error',
+                    'title'   => 'خطا'
+                ]);
             }
+
+            // غیرفعال‌سازی اشتراک فعلی
+            if ($currentPlan) {
+                $activeSubscription = $planService->getActiveSubscription();
+                if ($activeSubscription) {
+                    $activeSubscription->update(['status' => 'canceled']);
+                }
+            }
+
+            $tenant = app(TenantManager::class)->requireTenant();
+            Subscription::create([
+                'tenant_id'  => $tenant->id,
+                'plan_id'    => $targetPlan->id,
+                'starts_at'  => now(),
+                'ends_at'    => $targetPlan->duration_days ? now()->addDays($targetPlan->duration_days) : null,
+                'status'     => 'active',
+                'auto_renew' => false,
+            ]);
+
+            return redirect()->route('core.billing.license')->with('toast', [
+                'message' => 'اشتراک شما با موفقیت به ' . $targetPlan->name . ' ارتقا یافت.',
+                'type'    => 'success',
+                'title'   => 'ارتقا اشتراک'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ارتقا اشتراک: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        $tenant = app(\App\Services\TenantManager::class)->requireTenant();
-        \App\Models\Subscription::create([
-            'tenant_id'  => $tenant->id,
-            'plan_id'    => $targetPlan->id,
-            'starts_at'  => now(),
-            'ends_at'    => $targetPlan->duration_days ? now()->addDays($targetPlan->duration_days) : null,
-            'status'     => 'active',
-            'auto_renew' => false,
-        ]);
-
-        return redirect()->route('billing.license')->with('swal_success', 'اشتراک شما با موفقیت به ' . $targetPlan->name . ' ارتقا یافت.');
     }
 
     public function license(PlanService $planService)
     {
         $subscription = $planService->getActiveSubscription();
         if (!$subscription) {
-            return redirect()->route('billing.plans')->with(['swal_error' , 'اشتراک فعالی وجود ندارد.']);
+            return redirect()->route('core.billing.plans')->with('toast', [
+                'message' => 'اشتراک فعالی وجود ندارد.',
+                'type'    => 'error',
+                'title'   => 'خطا'
+            ]);
         }
 
         $plan = $subscription->plan;

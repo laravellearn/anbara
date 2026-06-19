@@ -30,9 +30,9 @@ class Employee extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function unit()
+    public function OrganizationalUnit()
     {
-        return $this->belongsTo(Unit::class);
+        return $this->belongsTo(OrganizationalUnit::class);
     }
 
     public function user()

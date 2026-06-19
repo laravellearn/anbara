@@ -87,7 +87,7 @@ Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superad
 });
 
 //Authentication-----------------
-Route::middleware(['guest', 'throttle:6,1'])->group(function () {
+Route::middleware(['guest', 'throttle:7,1'])->group(function () {
 
     //Login-----------------
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -142,11 +142,6 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
     Route::post('users/import', [UserController::class, 'import'])->name('users.import');
     Route::get('users/export', [UserController::class, 'export'])->name('users.export');
 
-    // پروفایل
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
-
     //سطوح دسترسی
     Route::resource('roles', RoleController::class)->except(['show']);
 
@@ -157,8 +152,6 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
 
     // واحدهای سازمانی (Organizational Units) – در Core
     Route::resource('organizational-units', OrganizationalUnitController::class)->except(['show', 'create', 'edit']);
-    // مخاطبین (Contacts) – در Core یا طرف تجاری ها
-    Route::resource('contacts', ContactController::class)->except(['show', 'create', 'edit']);
     // کارمندان (Employees) – در Core
     Route::resource('employees', EmployeeController::class)->except(['show', 'create', 'edit']);
 });
@@ -166,6 +159,8 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
 
 Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.tenant'])->group(function () {
 
+    // مخاطبین (Contacts) – در Core یا طرف تجاری ها
+    Route::resource('contacts', ContactController::class)->except(['show', 'create', 'edit']);
 
     // =	واحدهای اندازه‌گیری (Measurement Units)
     Route::resource('measurement-units', MeasurementUnitController::class)->except(['show', 'create', 'edit']);

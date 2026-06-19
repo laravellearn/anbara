@@ -2,7 +2,7 @@
     <thead class="table-light">
         <tr>
             <th style="width: 50px;">#</th>
-            <th class="cursor-pointer sortable" data-sort="title">
+            <th class="cursor-pointer sortable" data-sort="name">
                 نام سازمان
                 <i class="bx bx-sort ms-1 text-muted sort-icon"></i>
             </th>
@@ -28,26 +28,29 @@
                 @endif
             </td>
             <td>
-                {{ \Verta::instance($cmp->created_at)->format('Y/m/d-H:i:s') }}
+                {{ \Verta::instance($cmp->created_at)->format('Y/m/d') }}
             </td>
             <td>
                 <div class="d-flex gap-1">
+                    @can('access', 'companies.edit')
                     <button class="btn btn-sm btn-icon btn-outline-warning edit-company-btn"
                         data-bs-toggle="tooltip" title="ویرایش"
                         data-id="{{ $cmp->id }}"
-                        data-title="{{ $cmp->title }}"
+                        data-name="{{ $cmp->name }}"
                         data-description="{{ $cmp->description }}"
                         data-parent-id="{{ $cmp->parent_id }}"
                         data-is-active="{{ $cmp->is_active ? 1 : 0 }}">
                         <i class="bx bx-edit"></i>
                     </button>
-                    <form action="{{ route('companies.destroy', $cmp) }}" method="POST"
-                        onsubmit="return confirm('آیا از حذف این سازمان اطمینان دارید؟')">
+                    @endcan
+                    @can('access', 'companies.delete')
+                    <form action="{{ route('companies.destroy', $cmp) }}" method="POST" class="d-inline delete-form">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-icon btn-outline-danger" title="حذف">
                             <i class="bx bx-trash"></i>
                         </button>
                     </form>
+                    @endcan
                 </div>
             </td>
         </tr>

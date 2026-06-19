@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Core;
 
 use App\Models\Employee;
-use App\Models\Unit;
+use App\Models\OrganizationalUnit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -14,7 +14,8 @@ class EmployeeController extends BaseController
         Gate::authorize('access', 'employees.view');
         $tenantId = $this->manager->getTenantId();
 
-        $units = Unit::where('tenant_id', $tenantId)->get();
+        // استفاده از OrganizationalUnit به‌جای Unit
+        $units = OrganizationalUnit::where('tenant_id', $tenantId)->get();
 
         $query = Employee::with('unit')->where('tenant_id', $tenantId);
 
@@ -37,8 +38,8 @@ class EmployeeController extends BaseController
         $employees = $query->paginate($request->per_page ?? 20);
 
         $stats = [
-            'total'  => Employee::where('tenant_id', $tenantId)->count(),
-            'active' => Employee::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'total'    => Employee::where('tenant_id', $tenantId)->count(),
+            'active'   => Employee::where('tenant_id', $tenantId)->where('is_active', true)->count(),
             'inactive' => Employee::where('tenant_id', $tenantId)->where('is_active', false)->count(),
         ];
 
@@ -57,60 +58,100 @@ class EmployeeController extends BaseController
     {
         Gate::authorize('access', 'employees.create');
 
-        $data = $request->validate([
-            'unit_id'         => 'nullable|exists:units,id',
-            'user_id'         => 'nullable|exists:users,id',
-            'employee_code'   => 'nullable|string|max:50',
-            'name'            => 'required|string|max:255',
-            'national_code'   => 'nullable|string|max:20',
-            'mobile'          => 'nullable|string|max:20',
-            'phone'           => 'nullable|string|max:20',
-            'position'        => 'nullable|string|max:255',
-            'employment_date' => 'nullable|date',
-            'address'         => 'nullable|string',
-            'description'     => 'nullable|string',
-            'is_active'       => 'boolean',
-        ]);
+        try {
+            $data = $request->validate([
+                'unit_id'         => 'nullable|exists:units,id',   // جدول units معتبر است
+                'user_id'         => 'nullable|exists:users,id',
+                'employee_code'   => 'nullable|string|max:50',
+                'name'            => 'required|string|max:255',
+                'national_code'   => 'nullable|string|max:20',
+                'mobile'          => 'nullable|string|max:20',
+                'phone'           => 'nullable|string|max:20',
+                'position'        => 'nullable|string|max:255',
+                'employment_date' => 'nullable|date',
+                'address'         => 'nullable|string',
+                'description'     => 'nullable|string',
+                'is_active'       => 'boolean',
+            ]);
 
-        $data['tenant_id']  = $this->manager->getTenantId();
-        $data['company_id'] = $this->manager->getCompanyId();
+            $data['tenant_id']  = $this->manager->getTenantId();
+            $data['company_id'] = $this->manager->getCompanyId();
 
-        Employee::create($data);
+            Employee::create($data);
 
-        flash()->success('کارمند ایجاد شد.');
-        return redirect()->route('core.employees.index');
+            return redirect()->route('core.employees.index')->with('toast', [
+                'message' => 'کارمند با موفقیت ایجاد شد.',
+                'type'    => 'success',
+                'title'   => 'ایجاد کارمند'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_create_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ایجاد کارمند: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_create_modal', true);
+        }
     }
 
     public function update(Request $request, Employee $employee)
     {
         Gate::authorize('access', 'employees.edit');
 
-        $employee->update($request->validate([
-            'unit_id'         => 'nullable|exists:units,id',
-            'user_id'         => 'nullable|exists:users,id',
-            'employee_code'   => 'nullable|string|max:50',
-            'name'            => 'required|string|max:255',
-            'national_code'   => 'nullable|string|max:20',
-            'mobile'          => 'nullable|string|max:20',
-            'phone'           => 'nullable|string|max:20',
-            'position'        => 'nullable|string|max:255',
-            'employment_date' => 'nullable|date',
-            'address'         => 'nullable|string',
-            'description'     => 'nullable|string',
-            'is_active'       => 'boolean',
-        ]));
+        try {
+            $data = $request->validate([
+                'unit_id'         => 'nullable|exists:units,id',
+                'user_id'         => 'nullable|exists:users,id',
+                'employee_code'   => 'nullable|string|max:50',
+                'name'            => 'required|string|max:255',
+                'national_code'   => 'nullable|string|max:20',
+                'mobile'          => 'nullable|string|max:20',
+                'phone'           => 'nullable|string|max:20',
+                'position'        => 'nullable|string|max:255',
+                'employment_date' => 'nullable|date',
+                'address'         => 'nullable|string',
+                'description'     => 'nullable|string',
+                'is_active'       => 'boolean',
+            ]);
 
-        flash()->success('کارمند ویرایش شد.');
-        return redirect()->route('core.employees.index');
+            $employee->update($data);
+
+            return redirect()->route('core.employees.index')->with('toast', [
+                'message' => 'کارمند با موفقیت ویرایش شد.',
+                'type'    => 'success',
+                'title'   => 'ویرایش کارمند'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('show_edit_modal', true);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در ویرایش کارمند: ' . $e->getMessage()])
+                ->withInput()
+                ->with('show_edit_modal', true);
+        }
     }
 
     public function destroy(Employee $employee)
     {
         Gate::authorize('access', 'employees.delete');
 
-        $employee->delete();
+        try {
+            $employee->delete();
 
-        flash()->success('کارمند حذف شد.');
-        return back();
+            return redirect()->route('core.employees.index')->with('toast', [
+                'message' => 'کارمند با موفقیت حذف شد.',
+                'type'    => 'success',
+                'title'   => 'حذف کارمند'
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'خطا در حذف کارمند: ' . $e->getMessage()]);
+        }
     }
 }

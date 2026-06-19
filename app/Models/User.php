@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Concerns\AutoFillTenantAndCompany;
+use App\Concerns\LogsActivity;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Scopes\CompanyScope;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class User extends Authenticatable
 {
-    use SoftDeletes,Auditable;
+    use SoftDeletes,Auditable,LogsActivity;
     // use AutoFillTenantAndCompany; // اگر قصد پر کردن اتومات این دو فیلد باشد
     // use BelongsToTenant; // برای tenant scope
 

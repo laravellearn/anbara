@@ -6,11 +6,12 @@ use App\Concerns\Auditable;
 use App\Concerns\BelongsToTenant;
 use App\Concerns\BelongsToCompany;
 use App\Concerns\AutoFillTenantAndCompany;
+use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class ProductAttribute extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, Auditable;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, Auditable,LogsActivity;
 
     protected $fillable = [
         'tenant_id',

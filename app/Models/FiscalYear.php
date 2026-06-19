@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Concerns\BelongsToTenant;
+use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class FiscalYear extends Model
 {
-    use HasFactory, BelongsToTenant,Auditable;
+    use HasFactory, BelongsToTenant,Auditable,LogsActivity;
 
     protected $fillable = [
         'name',

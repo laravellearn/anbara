@@ -1,12 +1,12 @@
 <?php
 namespace App\Models;
-use App\Concerns\{BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, Auditable};
+use App\Concerns\{BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, Auditable, LogsActivity};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductType extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, Auditable;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, Auditable,LogsActivity;
 
     protected $fillable = ['tenant_id', 'company_id', 'title', 'description', 'is_active'];
     protected $casts = ['is_active' => 'boolean'];

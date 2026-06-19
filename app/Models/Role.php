@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Concerns\BelongsToTenant;
+use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Role extends Model
 {
-    use SoftDeletes, BelongsToTenant,Auditable;
+    use SoftDeletes, BelongsToTenant,Auditable,LogsActivity;
 
     protected $fillable = [
         'tenant_id',

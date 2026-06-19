@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Permission extends Model
 {
-    use SoftDeletes,Auditable;
+    use SoftDeletes,Auditable,LogsActivity;
 
     protected $fillable = [
         'name',

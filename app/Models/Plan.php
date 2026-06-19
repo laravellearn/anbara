@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Plan extends Model
 {
-    use Auditable;
+    use Auditable,LogsActivity;
     protected $fillable = [
         'name',
         'slug',

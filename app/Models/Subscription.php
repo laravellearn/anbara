@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Concerns\BelongsToTenant;
+use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Subscription extends Model
 {
-    use BelongsToTenant,Auditable;
+    use BelongsToTenant,Auditable,LogsActivity;
 
     protected $fillable = [
         'tenant_id',

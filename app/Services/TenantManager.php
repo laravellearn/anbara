@@ -81,13 +81,25 @@ class TenantManager
 
     public function getFiscalYear(): ?FiscalYear
     {
-        if ($this->fiscalYear) return $this->fiscalYear;
+        if ($this->fiscalYear) {
+            return $this->fiscalYear;
+        }
+
+        $companyId = $this->getCompanyId();
+        if (!$companyId) {
+            return null;
+        }
+
+        // از session بخوان یا اولین سال فعال را پیدا کن
         $id = session('current_fiscal_year_id');
         if ($id) {
-            $this->fiscalYear = FiscalYear::find($id);
+            $this->fiscalYear = FiscalYear::where('company_id', $companyId)->find($id);
         } else {
-            $this->fiscalYear = FiscalYear::current();
+            $this->fiscalYear = FiscalYear::where('company_id', $companyId)
+                ->where('is_active', true)
+                ->first();
         }
+
         return $this->fiscalYear;
     }
 }

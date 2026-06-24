@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('provinces', function (Blueprint $table) {
+        Schema::create('countries', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('slug');
@@ -19,9 +19,9 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('counties', function (Blueprint $table) {
+        Schema::create('provinces', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('province_id')->constrained('provinces')->cascadeOnDelete();
+            $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
             $table->string('lat');
@@ -34,7 +34,7 @@ return new class extends Migration
         Schema::create('cities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('province_id')->constrained('provinces')->cascadeOnDelete();
-            $table->foreignId('county_id')->constrained('counties')->cascadeOnDelete();
+            $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
             $table->string('lat');
@@ -48,7 +48,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('cities');
-        Schema::dropIfExists('counties');
         Schema::dropIfExists('provinces');
+        Schema::dropIfExists('countries');
     }
 };

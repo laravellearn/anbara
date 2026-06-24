@@ -2,30 +2,32 @@
 
 namespace App\Http\Controllers\Core;
 
-use App\Http\Controllers\Controller;
 use App\Models\FiscalYear;
-use App\Services\FiscalYearService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
-class FiscalYearController extends Controller
+class FiscalYearController extends BaseController
 {
     public function index(Request $request)
     {
         $tenant = auth()->user()->tenant;
+        $companyId = $this->manager->getCompanyId();
 
-        if (!auth()->user()->isOwner()) {
-            abort(403);
-        }
+        $query = $tenant->fiscalYears()->where('company_id', $companyId)->latest();
 
-        $query = $tenant->fiscalYears()->latest();
-
+        // فیلتر وضعیت
         if ($request->filled('status')) {
             if ($request->status === 'active') {
                 $query->where('is_active', true);
             } elseif ($request->status === 'closed') {
                 $query->where('is_closed', true);
             }
+        }
+
+        // جستجو
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
         }
 
         $sort = $request->input('sort', 'created_at');
@@ -47,10 +49,10 @@ class FiscalYearController extends Controller
         }
 
         $stats = [
-            'total'   => $tenant->fiscalYears()->count(),
-            'active'  => $tenant->fiscalYears()->where('is_active', true)->count(),
-            'closed'  => $tenant->fiscalYears()->where('is_closed', true)->count(),
-            'current' => $tenant->activeFiscalYear?->name ?? '---',
+            'total'   => $tenant->fiscalYears()->where('company_id', $companyId)->count(),
+            'active'  => $tenant->fiscalYears()->where('company_id', $companyId)->where('is_active', true)->count(),
+            'closed'  => $tenant->fiscalYears()->where('company_id', $companyId)->where('is_closed', true)->count(),
+            'current' => $tenant->fiscalYears()->where('company_id', $companyId)->where('is_active', true)->first()?->name ?? '---',
         ];
 
         return view('core.fiscal-years.index', compact('fiscalYears', 'stats'));
@@ -58,8 +60,6 @@ class FiscalYearController extends Controller
 
     public function store(Request $request)
     {
-        $tenant = auth()->user()->tenant;
-
         try {
             $data = $request->validate([
                 'name'       => 'required|string|max:255',
@@ -68,7 +68,11 @@ class FiscalYearController extends Controller
                 'is_active'  => 'sometimes|boolean',
             ]);
 
-            $overlap = $tenant->fiscalYears()
+            $data['tenant_id']  = auth()->user()->tenant_id;
+            $data['company_id'] = $this->manager->getCompanyId();
+
+            // بررسی تداخل تاریخ با سال‌های همین سازمان
+            $overlap = FiscalYear::where('company_id', $data['company_id'])
                 ->where(function ($q) use ($data) {
                     $q->whereBetween('start_date', [$data['start_date'], $data['end_date']])
                         ->orWhereBetween('end_date', [$data['start_date'], $data['end_date']])
@@ -85,12 +89,10 @@ class FiscalYearController extends Controller
                     ->with('show_create_modal', true);
             }
 
-            $data['tenant_id'] = $tenant->id;
-
             $fiscalYear = FiscalYear::create($data);
 
             if ($fiscalYear->is_active) {
-                $fiscalYear->activate();
+                $fiscalYear->activate(); // فقط سال‌های همین سازمان را غیرفعال می‌کند
             }
 
             return redirect()->route('core.fiscal-years.index')->with('toast', [
@@ -111,17 +113,8 @@ class FiscalYearController extends Controller
         }
     }
 
-    public function edit(FiscalYear $fiscalYear)
-    {
-        $this->authorize('update', $fiscalYear);
-        return view('core.fiscal-years.edit', compact('fiscalYear'));
-    }
-
     public function update(Request $request, FiscalYear $fiscalYear)
     {
-        $this->authorize('update', $fiscalYear);
-        $tenant = auth()->user()->tenant;
-
         try {
             $data = $request->validate([
                 'name'       => 'required|string|max:255',
@@ -130,7 +123,8 @@ class FiscalYearController extends Controller
                 'is_active'  => 'sometimes|boolean',
             ]);
 
-            $overlap = $tenant->fiscalYears()
+            // بررسی تداخل (به جز خودش)
+            $overlap = FiscalYear::where('company_id', $fiscalYear->company_id)
                 ->where('id', '!=', $fiscalYear->id)
                 ->where(function ($q) use ($data) {
                     $q->whereBetween('start_date', [$data['start_date'], $data['end_date']])
@@ -174,8 +168,6 @@ class FiscalYearController extends Controller
 
     public function destroy(FiscalYear $fiscalYear)
     {
-        $this->authorize('delete', $fiscalYear);
-
         try {
             $fiscalYear->delete();
 
@@ -192,33 +184,21 @@ class FiscalYearController extends Controller
 
     public function activate(FiscalYear $fiscalYear)
     {
-        try {
-            $fiscalYear->activate();
-
-            return redirect()->back()->with('toast', [
-                'message' => 'سال مالی با موفقیت فعال شد.',
-                'type'    => 'success',
-                'title'   => 'فعال‌سازی سال مالی'
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'خطا در فعال‌سازی سال مالی: ' . $e->getMessage()]);
-        }
+        $fiscalYear->activate();
+        return redirect()->back()->with('toast', [
+            'message' => 'سال مالی فعال شد.',
+            'type'    => 'success',
+            'title'   => 'فعال‌سازی سال مالی'
+        ]);
     }
 
     public function close(FiscalYear $fiscalYear)
     {
-        try {
-            $fiscalYear->close();
-
-            return redirect()->back()->with('toast', [
-                'message' => 'سال مالی با موفقیت بسته شد.',
-                'type'    => 'success',
-                'title'   => 'بستن سال مالی'
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'خطا در بستن سال مالی: ' . $e->getMessage()]);
-        }
+        $fiscalYear->close();
+        return redirect()->back()->with('toast', [
+            'message' => 'سال مالی بسته شد.',
+            'type'    => 'success',
+            'title'   => 'بستن سال مالی'
+        ]);
     }
 }

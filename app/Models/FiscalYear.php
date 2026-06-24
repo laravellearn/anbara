@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Concerns\AutoFillTenantAndCompany;
+use App\Concerns\BelongsToCompany;
 use App\Concerns\BelongsToTenant;
 use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,15 +13,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FiscalYear extends Model
 {
-    use HasFactory, SoftDeletes, BelongsToTenant,Auditable,LogsActivity;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes, Auditable, LogsActivity;
 
     protected $fillable = [
+        'tenant_id',
+        'company_id',
         'name',
         'start_date',
         'end_date',
         'is_active',
-        'is_closed',
-        'tenant_id',
+        'is_closed'
     ];
 
     protected $casts = [
@@ -67,5 +70,10 @@ class FiscalYear extends Model
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now())
             ->first();
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

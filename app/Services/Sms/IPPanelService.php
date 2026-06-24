@@ -16,10 +16,13 @@ class IPPanelService
             $client = new SoapClient(
                 'https://ippanel.com/class/sms/wsdlservice/server.php?wsdl',
                 [
-                    'connection_timeout' => 5,
+                    'connection_timeout' => 10,
                     'cache_wsdl' => WSDL_CACHE_MEMORY,
                 ]
             );
+
+
+            
             $response = $client->sendPatternSms(
                 config('services.ippanel.from'),
                 $mobile,

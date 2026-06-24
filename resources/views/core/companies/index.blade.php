@@ -148,15 +148,53 @@
         }
 
         // باز کردن مودال ویرایش
-        $(document).on('click', '.edit-company-btn', function() {
-            const btn = $(this);
-            $('#edit_company_id').val(btn.data('id'));
-            $('#edit_title').val(btn.data('title'));
-            $('#edit_description').val(btn.data('description'));
-            $('#edit_parent_id').val(btn.data('parent-id') || '');
-            $('#edit_is_active').prop('checked', btn.data('is-active') == 1);
-            $('#editCompanyModal').modal('show');
-        });
+$(document).on('click', '.edit-company-btn', function() {
+    const btn = $(this);
+    const id = btn.data('id');
+    const url = `{{ route('companies.update', ':id') }}`.replace(':id', id);
+
+    $('#editCompanyForm').attr('action', url);
+    $('#edit_company_id').val(id);
+    $('#edit_name').val(btn.data('name'));
+    $('#edit_code').val(btn.data('code'));
+    $('#edit_type').val(btn.data('type'));
+    $('#edit_national_id').val(btn.data('national-id'));
+    $('#edit_economic_code').val(btn.data('economic-code'));
+    $('#edit_description').val(btn.data('description'));
+    $('#edit_parent_id').val(btn.data('parent-id') || '');
+    $('#edit_is_active').prop('checked', btn.data('is-active') == 1);
+
+    $('#editCompanyModal').modal('show');
+});
     });
+
+
+// ========== باز کردن خودکار مودال ایجاد ==========
+@if($errors->any() && session('show_create_modal'))
+    $(function() {
+        var createModal = new bootstrap.Modal(document.getElementById('createCompanyModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        createModal.show();
+
+        @foreach ($errors->all() as $error)
+            if (typeof showToast !== 'undefined') {
+                showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
+            }
+        @endforeach
+    });
+@endif
+
+// ========== باز کردن خودکار مودال ویرایش ==========
+@if($errors->any() && session('show_edit_modal'))
+    $(function() {
+        var editModal = new bootstrap.Modal(document.getElementById('editCompanyModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        editModal.show();
+    });
+@endif
 </script>
 @endpush

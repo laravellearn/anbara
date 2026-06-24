@@ -83,7 +83,7 @@
             const status = $('#filterStatus').val();
             $tableWrapper.addClass('opacity-50');
             $.ajax({
-                url: '{{ route('warehouse.contacts.index') }}',
+                url: '{{ route('contacts.index') }}',
                 data: { search, type, status, ajax: 1 },
                 success: function(response) {
                     $tableWrapper.html(response.html);

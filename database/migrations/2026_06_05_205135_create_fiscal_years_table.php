@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('end_date');
             $table->boolean('is_closed')->default(false); // بسته شده؟
             $table->boolean('is_active')->default(false); // آیا سال جاری است؟
+            $table->foreignId('company_id')->nullable()->constrained('companies')->nullOnDelete();
 
             $table->timestamps();
             $table->softDeletes();

@@ -5,7 +5,7 @@ return [
     'max_users' => 'حداکثر کاربر',
     'max_warehouses' => 'حداکثر انبار',
     'max_invoices_month' => 'فاکتور ماهانه',
-    'max_organizations' => 'سازمان‌ها',
+    'max_organizations' => 'حداکثر سازمان',
     'storage_mb' => 'فضای ذخیره‌سازی (مگابایت)',
     'max_categories' => 'دسته‌بندی کالا',
     'max_brands' => 'برندها',

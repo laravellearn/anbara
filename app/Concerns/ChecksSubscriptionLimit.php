@@ -22,7 +22,9 @@ trait ChecksSubscriptionLimit
                 'subject_id'  => 0,
                 'description' => "محدودیت {$featureKey} به پایان رسیده است.",
             ]);
-            throw new \Exception("ظرفیت {$featureKey} تکمیل شده است.");
+            $label = __("limits.{$featureKey}");
+
+            throw new \Exception("{$label} به حداکثر مجاز رسیده است.");
         }
     }
 

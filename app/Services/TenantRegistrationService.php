@@ -63,12 +63,6 @@ class TenantRegistrationService
 
             $fiscalEnd = (clone $fiscalStart)->addYear()->subDay();
 
-            FiscalYear::create([
-                'tenant_id'  => $tenant->id,
-                'name'       => 'سال مالی ' . $fiscalStart->year,
-                'start_date' => $fiscalStart->toCarbon(),
-                'end_date'   => $fiscalEnd->toCarbon(),
-            ]);
             // 2. اتصال کاربر به Tenant و فعال‌سازی
             $user->update([
                 'tenant_id'          => $tenant->id,
@@ -113,6 +107,16 @@ class TenantRegistrationService
                 'user_id'    => $user->id,
                 'is_default' => true,
             ]);
+
+            FiscalYear::create([
+                'tenant_id'  => $tenant->id,
+                'company_id' => $company->id,   // ← اضافه شود
+                'name'       => $fiscalStart->year,
+                'is_active'  => true,
+                'start_date' => $fiscalStart->toCarbon(),
+                'end_date'   => $fiscalEnd->toCarbon(),
+            ]);
+
 
             // 5. Role ادمین Tenant (اگر وجود ندارد)
             $role = Role::firstOrCreate(

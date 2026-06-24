@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Concerns\AutoFillTenantAndCompany;
+use App\Concerns\BelongsToCompany;
+use App\Concerns\BelongsToTenant;
 use App\Concerns\LogsActivity;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,9 +15,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class User extends Authenticatable
 {
-    use SoftDeletes,Auditable,LogsActivity;
-    // use AutoFillTenantAndCompany; // اگر قصد پر کردن اتومات این دو فیلد باشد
-    // use BelongsToTenant; // برای tenant scope
+    use SoftDeletes, Auditable, LogsActivity;
 
     //برای شرکت
     // protected static function booted(): void
@@ -275,5 +275,27 @@ class User extends Authenticatable
         return $companyUser->roles()
             ->where('code', 'tenant_admin') // ← تغییر به code
             ->exists();
+    }
+
+    /**
+     * رابطه با کارمند (Employee) در صورتی که کاربر یک حساب کاربری داشته باشد.
+     */
+    public function employee()
+    {
+        return $this->hasOne(Employee::class, 'user_id');
+    }
+
+    /**
+     * Get the user's avatar URL.
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        // اگر کاربر آواتار سفارشی دارد (در storage آپلود کرده)
+        if ($this->avatar && str_starts_with($this->avatar, 'storage/')) {
+            return asset($this->avatar);
+        }
+
+        // در غیر این صورت تصویر پیش‌فرض
+        return asset($this->avatar ?: '/img/avatars/avatar.png');
     }
 }

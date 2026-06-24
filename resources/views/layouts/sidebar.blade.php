@@ -124,7 +124,7 @@
     {{-- ==================== طرف‌های حساب ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">طرف‌های حساب</span></li>
 
-    <li class="menu-item {{ request()->routeIs('warehouse.contacts.*', 'organizational-units.*', 'employees.*','warehouse.cost-centers.*') ? 'active open' : '' }}">
+    <li class="menu-item {{ request()->routeIs('contacts.*', 'organizational-units.*', 'employees.*','warehouse.cost-centers.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-user-pin"></i>
         <div>طرف‌های حساب</div>
@@ -132,8 +132,8 @@
       <ul class="menu-sub">
 
         @can('contacts.view')
-        <li class="menu-item {{ request()->routeIs('warehouse.contacts.*') ? 'active' : '' }}">
-          <a href="{{ route('warehouse.contacts.index') }}" class="menu-link">
+        <li class="menu-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
+          <a href="{{ route('contacts.index') }}" class="menu-link">
             <div>طرف تجاری‌ها</div>
           </a>
         </li>

@@ -1,6 +1,6 @@
 <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <form id="contactForm" method="POST" action="{{ route('warehouse.contacts.store') }}">
+        <form id="contactForm" method="POST" action="{{ route('contacts.store') }}">
             @csrf
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">

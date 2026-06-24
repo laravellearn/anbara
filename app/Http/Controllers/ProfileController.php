@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
     public function edit()
     {
-        $user = auth()->user();
+        $user = auth()->user()->load('employee');
         return view('profile.edit', compact('user'));
     }
 
@@ -20,17 +22,26 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         try {
-            $request->validate([
-                'name' => ['required', 'string', 'max:255'],
+            $rules = [
+                'name'          => ['required', 'string', 'max:255'],
+                'email'         => ['nullable', 'email', Rule::unique('users')->ignore($user->id)],
+                'avatar_base64' => ['nullable', 'string'],   // رشته Base64
+            ];
 
-                'email' => [
-                    'nullable',
-                    'email',
-                    Rule::unique('users')->ignore($user->id),
-                ],
-            ]);
+            if (! $user->employee) {
+                $rules['national_code'] = ['nullable', 'string', 'max:20'];
+            }
 
-            $user->update($request->only('name', 'email'));
+            $data = $request->validate($rules);
+
+            // پردازش آواتار از Base64
+            $avatarPath = $this->saveAvatarFromBase64($data['avatar_base64'] ?? null, $user);
+            if ($avatarPath !== null) {
+                $data['avatar'] = $avatarPath;
+            }
+            unset($data['avatar_base64']);   // فیلد اضافی پاک شود
+
+            $user->update($data);
 
             return redirect()->route('profile.edit')->with('toast', [
                 'message' => 'پروفایل با موفقیت به‌روز شد.',
@@ -38,13 +49,9 @@ class ProfileController extends Controller
                 'title'   => 'ویرایش پروفایل'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->errors())
-                ->withInput();
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'خطا در به‌روزرسانی پروفایل: ' . $e->getMessage()])
-                ->withInput();
+            return redirect()->back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }
 
@@ -56,15 +63,11 @@ class ProfileController extends Controller
                 'password'         => [
                     'required',
                     'confirmed',
-                    \Illuminate\Validation\Rules\Password::min(8)
-                        ->mixedCase()
-                        ->numbers()
+                    \Illuminate\Validation\Rules\Password::min(8)->mixedCase()->numbers()
                 ],
             ]);
 
-            auth()->user()->update([
-                'password' => Hash::make($request->password),
-            ]);
+            auth()->user()->update(['password' => Hash::make($request->password)]);
 
             return redirect()->route('profile.edit')->with('toast', [
                 'message' => 'رمز عبور با موفقیت تغییر کرد.',
@@ -72,11 +75,51 @@ class ProfileController extends Controller
                 'title'   => 'تغییر رمز عبور'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->errors());
+            return redirect()->back()->withErrors($e->errors());
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'خطا در تغییر رمز عبور: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * ذخیرهٔ آواتار با استفاده از PHP خالص (کاملاً مشابه storeLogo در CompanyController)
+     * این روش مسیر موقت C:\Windows\Temp را کاملاً دور می‌زند.
+     */
+    private function saveAvatarFromBase64(?string $base64, $user): ?string
+    {
+        if (empty($base64) || ! str_contains($base64, ',')) {
+            return null;
+        }
+
+        // جداسازی داده از هدر (data:image/...;base64,XXXX)
+        [, $raw] = explode(',', $base64, 2);
+        $decoded = base64_decode($raw);
+
+        if ($decoded === false || strlen($decoded) === 0) {
+            return null;
+        }
+
+        // تشخیص پسوند
+        preg_match('/^data:image\/(\w+);base64/', $base64, $matches);
+        $extension = $matches[1] ?? 'png';
+
+        $filename  = Str::uuid() . '.' . $extension;
+        $destination = public_path('/storage/avatars');
+        if (! file_exists($destination)) {
+            mkdir($destination, 0755, true);
+        }
+
+        // ذخیرهٔ فیزیکی
+        file_put_contents($destination . '/' . $filename, $decoded);
+
+        // حذف آواتار قبلی (اگر آپلودی باشد)
+        if ($user->avatar && str_starts_with($user->avatar, 'storage/')) {
+            $oldPath = public_path(ltrim($user->avatar, '/'));
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+
+        return 'storage/avatars/' . $filename;
     }
 }

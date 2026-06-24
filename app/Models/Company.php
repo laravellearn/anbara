@@ -10,14 +10,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Company extends Model
 {
-    use SoftDeletes, BelongsToTenant,Auditable,LogsActivity;
+    use SoftDeletes, BelongsToTenant, Auditable, LogsActivity;
 
     protected $fillable = [
         'tenant_id',
         'parent_id',
         'name',
+        'logo',
         'code',
-        'type',
         'national_id',
         'economic_code',
         'is_active',

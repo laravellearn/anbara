@@ -25,7 +25,7 @@
                     <select id="filterParent" class="form-select select2">
                         <option value="">همه</option>
                         @foreach($allUnits as $parent)
-                            <option value="{{ $parent->id }}">{{ $parent->title }}</option>
+                        <option value="{{ $parent->id }}">{{ $parent->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -83,7 +83,7 @@
 
 @push('scripts')
 <script>
-    $(function(){
+    $(function() {
         let searchTimeout;
         const $tableWrapper = $('#tableWrapper');
         const $statsCards = $('#statsCards');
@@ -96,7 +96,12 @@
             $tableWrapper.addClass('opacity-50');
             $.ajax({
                 url: '{{ route("organizational-units.index") }}',
-                data: { search, parent_id: parent, status, ajax: 1 },
+                data: {
+                    search,
+                    parent_id: parent,
+                    status,
+                    ajax: 1
+                },
                 success: function(response) {
                     $tableWrapper.html(response.html);
                     $statsCards.html(response.statsHtml);
@@ -105,9 +110,15 @@
             }).always(() => $tableWrapper.removeClass('opacity-50'));
         }
 
-        $('#liveSearch').on('keyup', function() { clearTimeout(searchTimeout); searchTimeout = setTimeout(performSearch, 500); });
+        $('#liveSearch').on('keyup', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 500);
+        });
         $('#filterParent, #filterStatus').on('change', performSearch);
-        $('#clearSearch').on('click', function() { $('#liveSearch').val('').focus(); performSearch(); });
+        $('#clearSearch').on('click', function() {
+            $('#liveSearch').val('').focus();
+            performSearch();
+        });
         $('#resetFilters').on('click', function() {
             $('#liveSearch').val('');
             $('#filterParent').val('').trigger('change');
@@ -160,13 +171,16 @@
 
         // ========== نمایش خطاهای اعتبارسنجی در مودال ==========
         @if($errors->any() && session('show_create_modal'))
-            $('#createModal').modal('show');
-            @foreach ($errors->all() as $error)
-                if (typeof showToast !== 'undefined') {
-                    showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
-                }
-            @endforeach
+        $('#createModal').modal('show');
+        @foreach($errors->all() as $error)
+        if (typeof showToast !== 'undefined') {
+            showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
+        }
+        @endforeach
         @endif
     });
+
+
+
 </script>
 @endpush

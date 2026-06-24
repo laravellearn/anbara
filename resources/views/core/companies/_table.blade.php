@@ -2,6 +2,7 @@
     <thead class="table-light">
         <tr>
             <th style="width: 50px;">#</th>
+            <th>لوگو</th> <!-- جدید -->
             <th class="cursor-pointer sortable" data-sort="name">
                 نام سازمان
                 <i class="bx bx-sort ms-1 text-muted sort-icon"></i>
@@ -17,14 +18,21 @@
         @forelse($companies as $cmp)
         <tr>
             <td>{{ $loop->iteration }}</td>
+            <td>
+                @if($cmp->logo)
+                <img src="{{ asset('storage/' . $cmp->logo) }}" alt="logo" width="40" class="rounded">
+                @else
+                <span class="badge bg-label-secondary">---</span>
+                @endif
+            </td>
             <td>{{ $cmp->name }}</td>
             <td>{{ $cmp->code }}</td>
             <td>{{ $cmp->parent->name ?? '---' }}</td>
             <td>
                 @if($cmp->is_active)
-                    <span class="badge bg-success">فعال</span>
+                <span class="badge bg-success">فعال</span>
                 @else
-                    <span class="badge bg-danger">غیرفعال</span>
+                <span class="badge bg-danger">غیرفعال</span>
                 @endif
             </td>
             <td>
@@ -34,9 +42,12 @@
                 <div class="d-flex gap-1">
                     @can('access', 'companies.edit')
                     <button class="btn btn-sm btn-icon btn-outline-warning edit-company-btn"
-                        data-bs-toggle="tooltip" title="ویرایش"
                         data-id="{{ $cmp->id }}"
                         data-name="{{ $cmp->name }}"
+                        data-code="{{ $cmp->code }}"
+                        data-type="{{ $cmp->type }}"
+                        data-national-id="{{ $cmp->national_id }}"
+                        data-economic-code="{{ $cmp->economic_code }}"
                         data-description="{{ $cmp->description }}"
                         data-parent-id="{{ $cmp->parent_id }}"
                         data-is-active="{{ $cmp->is_active ? 1 : 0 }}">
@@ -44,12 +55,23 @@
                     </button>
                     @endcan
                     @can('access', 'companies.delete')
+                    @php
+                    $currentCompanyId = app(\App\Services\TenantManager::class)->getCompanyId();
+                    @endphp
+                    @if($cmp->id === $currentCompanyId)
+                    {{-- سازمان جاری قابل حذف نیست --}}
+                    <button class="btn btn-sm btn-icon btn-outline-secondary" disabled
+                        data-bs-toggle="tooltip" title="شما نمی‌توانید سازمان جاری را حذف کنید.">
+                        <i class="bx bx-block"></i>
+                    </button>
+                    @else
                     <form action="{{ route('companies.destroy', $cmp) }}" method="POST" class="d-inline delete-form">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-icon btn-outline-danger" title="حذف">
                             <i class="bx bx-trash"></i>
                         </button>
                     </form>
+                    @endif
                     @endcan
                 </div>
             </td>
@@ -70,3 +92,32 @@
     </small>
     {{ $companies->appends(request()->query())->links() }}
 </div>
+
+
+@push('scripts')
+
+<script>
+    // حذف سازمان با تأیید
+    $('.delete-form').on('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        Swal.fire({
+            title: 'آیا مطمئن هستید؟',
+            text: "این سازمان حذف خواهد شد!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله، حذف کن',
+            cancelButtonText: 'لغو',
+            customClass: {
+                confirmButton: 'btn btn-danger me-3',
+                cancelButton: 'btn btn-label-secondary'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+</script>
+@endpush

@@ -102,11 +102,16 @@
 
 
                 @php
-                $currentFiscalYear = app(\App\Services\TenantManager::class)->getFiscalYear();
-                $allFiscalYears = $currentFiscalYear
-                ? \App\Models\FiscalYear::where('tenant_id', $currentFiscalYear->tenant_id)->get()
+                $manager = app(\App\Services\TenantManager::class);
+                $currentCompany = $manager->getCompany();
+                $currentFiscalYear = $manager->getFiscalYear();
+
+                // سال‌های مالی فقط برای سازمان جاری
+                $allFiscalYears = $currentCompany
+                ? \App\Models\FiscalYear::where('company_id', $currentCompany->id)->get()
                 : collect();
                 @endphp
+
                 <li class="nav-item dropdown me-2">
                     <a class="nav-link dropdown-toggle hide-arrow d-flex align-items-center" href="javascript:void(0);"
                         data-bs-toggle="dropdown">
@@ -123,14 +128,12 @@
                                 <input type="hidden" name="fiscal_year_id" value="{{ $fy->id }}">
                                 <button type="submit"
                                     class="dropdown-item {{ $currentFiscalYear?->id == $fy->id ? 'active' : '' }}">
-                                    <i
-                                        class="bx bx-check me-1 {{ $currentFiscalYear?->id == $fy->id ? '' : 'd-none' }}"></i>
+                                    <i class="bx bx-check me-1 {{ $currentFiscalYear?->id == $fy->id ? '' : 'd-none' }}"></i>
                                     {{ $fy->name }}
                                 </button>
                             </form>
                         </li>
                         @endforeach
-                        {{-- فقط مدیر سازمان گزینهٔ مدیریت را می‌بیند --}}
                         @if (auth()->user()->isTenantAdmin())
                         <li>
                             <hr class="dropdown-divider">
@@ -145,11 +148,18 @@
                 </li>
 
 
-                @if (auth()->user() && app(\App\Services\TenantManager::class)->getTenantId())
+                @if(auth()->user() && app(\App\Services\TenantManager::class)->getTenantId())
                 @php
-                $currentCompany = app(\App\Services\TenantManager::class)->getCompany();
-                $tenantCompanies = auth()->user()->companies;
+                $manager = app(\App\Services\TenantManager::class);
+                $currentCompany = $manager->getCompany();
+                $tenantId = $manager->getTenantId();
+                $userId = auth()->id();
+
+                $tenantCompanies = \App\Models\Company::where('tenant_id', $tenantId)
+                ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+                ->get();
                 @endphp
+
                 <li class="nav-item dropdown me-2">
                     <a class="nav-link dropdown-toggle hide-arrow d-flex align-items-center"
                         href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -159,22 +169,21 @@
                         <i class="bx bx-chevron-down ms-1"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        @foreach ($tenantCompanies as $company)
+                        @foreach($tenantCompanies as $company)
                         <li>
                             <form action="{{ route('company.switch') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="company_id" value="{{ $company->id }}">
                                 <button type="submit"
                                     class="dropdown-item {{ $currentCompany?->id == $company->id ? 'active' : '' }}">
-                                    <i
-                                        class="bx bx-check me-1 {{ $currentCompany?->id == $company->id ? '' : 'd-none' }}"></i>
+                                    <i class="bx bx-check me-1 {{ $currentCompany?->id == $company->id ? '' : 'd-none' }}"></i>
                                     {{ $company->name }}
                                 </button>
                             </form>
                         </li>
                         @endforeach
-                        {{-- فقط مدیر سازمان گزینهٔ مدیریت را می‌بیند --}}
-                        @if (auth()->user()->isTenantAdmin())
+
+                        @if(auth()->user()->isTenantAdmin())
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -509,7 +518,7 @@
                     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
                         data-bs-toggle="dropdown">
                         <div class="avatar avatar-online">
-                            <img src="{{ $userLogin->avatar }}" alt class="rounded-circle">
+                            <img src="/{{ $userLogin->avatar }}" alt class="rounded-circle">
                         </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
@@ -518,7 +527,7 @@
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar avatar-online">
-                                            <img src="{{ $userLogin->avatar }}" alt class="rounded-circle">
+                                            <img src="/{{ $userLogin->avatar }}" alt class="rounded-circle">
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">

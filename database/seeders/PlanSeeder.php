@@ -32,7 +32,7 @@ class PlanSeeder extends Seeder
                     'max_warehouses' => null,
                     'max_invoices_month' => null,
                     'max_employees' => null,
-                    'max_organizations' => 1,
+                    'max_organizations' => null,
                     'storage_mb' => 200,
                     'support' => 'ticket',
                 ]),

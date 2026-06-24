@@ -28,9 +28,7 @@ return new class extends Migration {
             $table->string('name');
 
             $table->string('code')->nullable();
-
-            $table->string('type')
-                ->default('company');
+            $table->string('logo')->nullable();
 
             $table->string('national_id')
                 ->nullable();
@@ -91,7 +89,7 @@ return new class extends Migration {
                 ->nullable()
                 ->constrained()
                 ->cascadeOnDelete();
-
+                
             $table->string('name');
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')
@@ -103,6 +101,7 @@ return new class extends Migration {
                 ->nullable();
             $table->string('password');
             $table->string('avatar')->default('/img/avatars/avatar.png');
+
             $table->boolean('is_active')->default(false);
             $table->string('last_ip', 45)->nullable(); // پشتیبانی IPv4 و IPv6
             $table->timestamp('last_login_at')

@@ -2,11 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\Brand;
-use App\Models\Category;
 use App\Models\Company;
-use App\Models\CompanyUser;
-use App\Models\Contact;
 use App\Models\Employee;
 use App\Models\Permission;
 use App\Models\Product;
@@ -17,10 +13,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Gate;
 use App\Models\User;
 use App\Models\Warehouse;
-use App\Observers\BrandObserver;
-use App\Observers\CategoryObserver;
 use App\Observers\CompanyObserver;
-use App\Observers\ContactObserver;
 use App\Observers\EmployeeObserver;
 use App\Observers\ProductObserver;
 use App\Observers\UserObserver;

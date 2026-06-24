@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Core;
 use App\Models\OrganizationalUnit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class OrganizationalUnitController extends BaseController
 {
@@ -57,7 +58,7 @@ class OrganizationalUnitController extends BaseController
         try {
             $data = $request->validate([
                 'title'       => 'required|string|max:255',
-                'parent_id'   => 'nullable|exists:units,id',
+                'parent_id'   => 'nullable|exists:organizational_units,id',
                 'description' => 'nullable|string',
                 'is_active'   => 'boolean',
             ]);
@@ -92,9 +93,15 @@ class OrganizationalUnitController extends BaseController
         try {
             $request->validate([
                 'title'       => 'required|string|max:255',
-                'parent_id'   => 'nullable|exists:units,id',
+                'parent_id'   => [
+                    'nullable',
+                    'exists:organizational_units,id',
+                    Rule::notIn([$unit->id]),
+                ],
                 'description' => 'nullable|string',
                 'is_active'   => 'boolean',
+            ], [
+                'parent_id.not_in' => 'یک واحد سازمانی نمی‌تواند والد خودش باشد.',
             ]);
 
             $unit->update($request->only('title', 'parent_id', 'description', 'is_active'));

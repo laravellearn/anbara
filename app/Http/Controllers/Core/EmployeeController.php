@@ -27,8 +27,8 @@ class EmployeeController extends BaseController
                     ->orWhere('mobile', 'like', "%{$search}%");
             });
         }
-        if ($request->filled('unit_id')) {
-            $query->where('unit_id', $request->unit_id);
+        if ($request->filled('organizational_unit_id')) {
+            $query->where('organizational_unit_id', $request->organizational_unit_id);
         }
         if ($request->filled('status')) {
             $query->where('is_active', $request->status === 'active');
@@ -60,7 +60,7 @@ class EmployeeController extends BaseController
 
         try {
             $data = $request->validate([
-                'unit_id'         => 'nullable|exists:units,id',   // جدول units معتبر است
+                'organizational_unit_id' => 'nullable|exists:organizational_units,id',
                 'user_id'         => 'nullable|exists:users,id',
                 'employee_code'   => 'nullable|string|max:50',
                 'name'            => 'required|string|max:255',
@@ -103,7 +103,7 @@ class EmployeeController extends BaseController
 
         try {
             $data = $request->validate([
-                'unit_id'         => 'nullable|exists:units,id',
+                'organizational_unit_id' => 'nullable|exists:organizational_units,id',
                 'user_id'         => 'nullable|exists:users,id',
                 'employee_code'   => 'nullable|string|max:50',
                 'name'            => 'required|string|max:255',

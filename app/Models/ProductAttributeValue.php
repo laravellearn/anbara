@@ -8,10 +8,11 @@ use App\Concerns\BelongsToCompany;
 use App\Concerns\AutoFillTenantAndCompany;
 use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductAttributeValue extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany,Auditable,LogsActivity;
+    use SoftDeletes, BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany,Auditable,LogsActivity;
 
     protected $fillable = [
         'tenant_id', 'company_id', 'product_id', 'attribute_id', 'value',

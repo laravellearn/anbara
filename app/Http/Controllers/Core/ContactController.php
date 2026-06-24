@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Core;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class ContactController extends BaseController
 {
@@ -58,7 +59,13 @@ class ContactController extends BaseController
         Gate::authorize('access', 'contacts.create');
 
         try {
+            $tenantId = $this->manager->getTenantId();
+
             $data = $request->validate([
+                'code'           => [
+                    'nullable', 'string', 'max:50',
+                    Rule::unique('contacts', 'code')->where('tenant_id', $tenantId),
+                ],
                 'type'           => 'required|in:customer,supplier,both',
                 'first_name'     => 'nullable|string|max:255',
                 'last_name'      => 'nullable|string|max:255',
@@ -74,7 +81,12 @@ class ContactController extends BaseController
                 'is_active'      => 'boolean',
             ]);
 
-            $data['tenant_id'] = $this->manager->getTenantId();
+            $data['tenant_id'] = $tenantId;
+
+            // اگر کد به‌صورت دستی وارد نشده بود، به‌صورت خودکار تولید می‌شود.
+            if (empty($data['code'])) {
+                $data['code'] = $this->generateNextCode($tenantId);
+            }
 
             Contact::create($data);
 
@@ -102,6 +114,12 @@ class ContactController extends BaseController
 
         try {
             $contact->update($request->validate([
+                'code'           => [
+                    'nullable', 'string', 'max:50',
+                    Rule::unique('contacts', 'code')
+                        ->where('tenant_id', $this->manager->getTenantId())
+                        ->ignore($contact->id),
+                ],
                 'type'           => 'required|in:customer,supplier,both',
                 'first_name'     => 'nullable|string|max:255',
                 'last_name'      => 'nullable|string|max:255',
@@ -151,5 +169,22 @@ class ContactController extends BaseController
             return redirect()->back()
                 ->withErrors(['error' => 'خطا در حذف مخاطب: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * تولید خودکار کد بعدی طرف‌حساب در قالب C-00001، C-00002 و ...
+     * بر اساس بیشترین عدد موجود در tenant جاری (حتی رکوردهای soft-delete شده
+     * را هم در نظر می‌گیرد تا کد تکراری دوباره صادر نشود).
+     */
+    protected function generateNextCode(int $tenantId): string
+    {
+        $lastNumber = Contact::withTrashed()
+            ->where('tenant_id', $tenantId)
+            ->where('code', 'like', 'C-%')
+            ->get()
+            ->map(fn ($contact) => (int) str_replace('C-', '', $contact->code))
+            ->max();
+
+        return 'C-' . str_pad((string) (($lastNumber ?? 0) + 1), 5, '0', STR_PAD_LEFT);
     }
 }

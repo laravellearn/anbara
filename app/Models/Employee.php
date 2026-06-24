@@ -15,7 +15,7 @@ class Employee extends Model
     use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes,Auditable,LogsActivity;
 
     protected $fillable = [
-        'tenant_id', 'company_id', 'unit_id', 'user_id',
+        'tenant_id', 'company_id', 'organizational_unit_id', 'user_id',
         'employee_code', 'name', 'national_code', 'mobile', 'phone',
         'position', 'employment_date', 'address', 'description', 'is_active',
     ];
@@ -30,7 +30,7 @@ class Employee extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function OrganizationalUnit()
+    public function organizationalUnit()
     {
         return $this->belongsTo(OrganizationalUnit::class);
     }

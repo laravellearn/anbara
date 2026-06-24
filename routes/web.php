@@ -154,13 +154,12 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
     Route::resource('organizational-units', OrganizationalUnitController::class)->except(['show', 'create', 'edit']);
     // کارمندان (Employees) – در Core
     Route::resource('employees', EmployeeController::class)->except(['show', 'create', 'edit']);
+    // مخاطبین (Contacts) – طرف‌حساب‌های تجاری (مشتری/تامین‌کننده)، در Core
+    Route::resource('contacts', ContactController::class)->except(['show', 'create', 'edit']);
 });
 
 
 Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.tenant'])->group(function () {
-
-    // مخاطبین (Contacts) – در Core یا طرف تجاری ها
-    Route::resource('contacts', ContactController::class)->except(['show', 'create', 'edit']);
 
     // =	واحدهای اندازه‌گیری (Measurement Units)
     Route::resource('measurement-units', MeasurementUnitController::class)->except(['show', 'create', 'edit']);

@@ -104,7 +104,7 @@ return new class extends Migration {
             $table->string('password');
             $table->string('avatar')->default('/img/avatars/avatar.png');
             $table->boolean('is_active')->default(false);
-            $table->string('last_ip', 19)->nullable(); //192.168.210.100
+            $table->string('last_ip', 45)->nullable(); // پشتیبانی IPv4 و IPv6
             $table->timestamp('last_login_at')
                 ->nullable();
             $table->rememberToken();
@@ -135,6 +135,7 @@ return new class extends Migration {
                 ->default(false);
 
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique([
@@ -160,6 +161,7 @@ return new class extends Migration {
                 ->cascadeOnDelete();
 
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique([

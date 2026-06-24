@@ -14,7 +14,7 @@ class Contact extends Model
     use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes,LogsActivity;
 
     protected $fillable = [
-        'tenant_id', 'company_id', 'type', 'first_name', 'last_name',
+        'tenant_id', 'company_id', 'code', 'type', 'first_name', 'last_name',
         'company_name', 'national_code', 'economic_code', 'mobile', 'phone',
         'email', 'website', 'address', 'description', 'is_active',
     ];

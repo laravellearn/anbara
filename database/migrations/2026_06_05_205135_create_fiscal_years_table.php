@@ -22,6 +22,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(false); // آیا سال جاری است؟
 
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['tenant_id', 'start_date', 'end_date']);

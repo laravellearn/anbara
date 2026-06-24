@@ -6,10 +6,11 @@ use App\Concerns\Auditable;
 use App\Concerns\BelongsToTenant;
 use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CompanyUser extends Model
 {
-    use BelongsToTenant,Auditable,LogsActivity;
+    use SoftDeletes, BelongsToTenant,Auditable,LogsActivity;
 
     protected $table = 'company_user';
 

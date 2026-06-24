@@ -33,10 +33,10 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">واحد سازمانی</label>
-                            <select name="unit_id" id="emp_unit" class="form-select">
+                            <select name="organizational_unit_id" id="emp_unit" class="form-select">
                                 <option value="">انتخاب کنید</option>
                                 @foreach($units as $unit)
-                                    <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->title }}</option>
+                                    <option value="{{ $unit->id }}" {{ old('organizational_unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->title }}</option>
                                 @endforeach
                             </select>
                         </div>

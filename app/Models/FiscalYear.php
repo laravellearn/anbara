@@ -7,10 +7,11 @@ use App\Concerns\BelongsToTenant;
 use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FiscalYear extends Model
 {
-    use HasFactory, BelongsToTenant,Auditable,LogsActivity;
+    use HasFactory, SoftDeletes, BelongsToTenant,Auditable,LogsActivity;
 
     protected $fillable = [
         'name',

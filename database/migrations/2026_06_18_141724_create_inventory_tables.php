@@ -133,6 +133,7 @@ return new class extends Migration
             $table->boolean('is_required')->default(false);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(
@@ -180,6 +181,7 @@ return new class extends Migration
             $table->decimal('conversion_factor', 18, 6)->default(1);
             $table->boolean('is_default')->default(false);
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['product_id', 'measurement_unit_id']);
@@ -193,6 +195,7 @@ return new class extends Migration
             $table->foreignId('attribute_id')->constrained('product_attributes')->cascadeOnDelete();
             $table->text('value')->nullable();
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['product_id', 'attribute_id']);
@@ -205,6 +208,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('alternative_product_id')->constrained('products')->cascadeOnDelete();
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->unique(['product_id', 'alternative_product_id']);

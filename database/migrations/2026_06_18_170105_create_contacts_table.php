@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('code', 50)->nullable();
             $table->string('type')->default('customer');
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
@@ -34,6 +35,7 @@ return new class extends Migration
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
             $table->index(['tenant_id', 'company_id']);
             $table->index('type');
+            $table->unique(['tenant_id', 'code']);
         });
     }
 

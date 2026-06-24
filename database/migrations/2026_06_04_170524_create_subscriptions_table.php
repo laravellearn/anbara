@@ -25,7 +25,7 @@ return new class extends Migration
 
             $table->date('starts_at');
 
-            $table->date('ends_at');
+            $table->date('ends_at')->nullable();
 
             $table->string('status')
                 ->default('active');

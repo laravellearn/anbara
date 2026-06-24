@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Concerns\Auditable;
 use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductMeasurementUnit extends Pivot
 {
-    use Auditable,LogsActivity;
+    use SoftDeletes, Auditable,LogsActivity;
     protected $table = 'product_measurement_units';
 
     protected $fillable = [

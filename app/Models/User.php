@@ -125,12 +125,12 @@ class User extends Authenticatable
             return false;
         }
 
-        return \DB::table('company_user_role')
-            ->join('company_user', 'company_user_role.company_user_id', '=', 'company_user.id')
-            ->join('roles', 'company_user_role.role_id', '=', 'roles.id')
-            ->where('company_user.user_id', $this->id)
-            ->where('company_user.company_id', $companyId)
-            ->where('roles.code', 'tenant_admin')
+        return $this->companyUsers()
+            ->where('company_id', $companyId)
+            ->whereHas('roles', function ($query) {
+                $query->where('code', 'tenant_admin')
+                    ->whereNull('company_id');   // فقط نقش عمومی
+            })
             ->exists();
     }
 

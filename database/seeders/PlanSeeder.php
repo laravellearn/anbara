@@ -18,14 +18,14 @@ class PlanSeeder extends Seeder
         //Plan Seeder
         Plan::insert([
             [
-                'name' => 'نسخه آزمایشی',
+                'name' => 'نسخه نامحدود',
                 'code' => 'trial',
                 'slug' => 'trial',
-                'description' => 'نسخه نامحدود 14 روزه',
+                'description' => 'نسخه نامحدود 30 روزه',
                 'monthly_price' => 0,
                 'yearly_price' => 0,
                 'currency' => 'IRT',
-                'duration_days' => 14,  // مدت‌دار نیست (تا وقتی کنسل نکنی)
+                'duration_days' => 30,  // مدت‌دار نیست (تا وقتی کنسل نکنی)
                 'limits' => json_encode([
                     'max_products' => null,
                     'max_users' => null,

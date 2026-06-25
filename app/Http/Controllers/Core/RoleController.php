@@ -22,11 +22,20 @@ class RoleController extends Controller
     public function index()
     {
         Gate::authorize('access', 'roles.view');
+        $tenantId   = $this->manager->getTenantId();
+        $companyId  = $this->manager->getCompanyId();
 
-        $roles = Role::where('tenant_id', $this->manager->getTenantId())
+        // نقش‌های عمومی (company_id = null) + نقش‌های همین سازمان
+        $query = Role::where('tenant_id', $tenantId)
+            ->where(function ($q) use ($companyId) {
+                $q->whereNull('company_id')
+                    ->orWhere('company_id', $companyId);
+            })
             ->with('permissions')
-            ->latest()
-            ->paginate(20);
+            ->latest();
+
+        $roles = $query->paginate(20);
+
 
         // محاسبه آمار
         $stats = [
@@ -35,7 +44,7 @@ class RoleController extends Controller
             'inactive' => Role::where('tenant_id', $this->manager->getTenantId())->where('is_active', false)->count(),
         ];
 
-        return view('core.roles.index', compact('roles','stats'));
+        return view('core.roles.index', compact('roles', 'stats'));
     }
 
     public function store(Request $request)
@@ -43,16 +52,19 @@ class RoleController extends Controller
         Gate::authorize('access', 'roles.create');
 
         try {
-            $request->validate([
+            $data = $request->validate([
                 'code' => 'required|string|unique:roles,code,NULL,id,tenant_id,' . $this->manager->getTenantId(),
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'permissions' => 'nullable|array',
                 'permissions.*' => 'exists:permissions,id',
+                'scope'       => 'required|in:tenant,company',   // انتخاب کاربر
+
             ]);
 
             $role = Role::create([
                 'tenant_id' => $this->manager->getTenantId(),
+                'company_id'  => $data['scope'] === 'company' ? $this->manager->getCompanyId() : null,
                 'code' => $request->code,
                 'title' => $request->title,
                 'description' => $request->description,
@@ -85,15 +97,22 @@ class RoleController extends Controller
         try {
             $role = Role::where('tenant_id', $this->manager->getTenantId())->findOrFail($id);
 
-            $request->validate([
+            $data = $request->validate([
                 'code' => 'required|string|unique:roles,code,' . $role->id . ',id,tenant_id,' . $this->manager->getTenantId(),
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'permissions' => 'nullable|array',
                 'permissions.*' => 'exists:permissions,id',
+                'scope'       => 'required|in:tenant,company',
+
             ]);
 
-            $role->update($request->only('code', 'title', 'description'));
+            $role->update([
+                'code'        => $data['code'],
+                'title'       => $data['title'],
+                'description' => $data['description'],
+                'company_id'  => $data['scope'] === 'company' ? $this->manager->getCompanyId() : null,
+            ]);
             $role->permissions()->sync($request->permissions ?? []);
 
             return redirect()->route('roles.index')->with('toast', [

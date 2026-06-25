@@ -117,30 +117,47 @@
             performSearch();
         });
 
-        // ========== مودال ویرایش ==========
+        // ========== باز کردن مودال برای ایجاد ==========
+        function resetCreateForm() {
+            $('#unitForm').attr('action', '{{ route('warehouse.measurement-units.store') }}');
+            $('#method_input').val('');                     // حذف PUT
+            $('#modalTitle').text('واحد اندازه‌گیری جدید');
+            $('#unit_title').val('');
+            $('#unit_symbol').val('');
+            $('#unit_conversion').val('1');
+            $('#unit_parent').val('');
+            $('#unit_desc').val('');
+            $('#unit_active').prop('checked', true);
+        }
+
+        // ========== باز کردن مودال برای ویرایش ==========
         $(document).on('click', '.edit-unit-btn', function() {
             const btn = $(this);
             const id = btn.data('id');
+
+            // تنظیم action و متد
             $('#unitForm').attr('action', `{{ route('warehouse.measurement-units.update', ':id') }}`.replace(':id', id));
-            if (!$('input[name="_method"]').length) $('#unitForm').prepend('<input type="hidden" name="_method" value="PUT">');
-            $('#unit_title').val(btn.data('title'));
-            $('#unit_symbol').val(btn.data('symbol'));
-            $('#unit_conversion').val(btn.data('conversion'));
-            $('#unit_parent').val(btn.data('parent'));
+            $('#method_input').val('PUT');                  // فعال‌سازی PUT
+            $('#modalTitle').text('ویرایش واحد');
+
+            // پر کردن فیلدها
+            $('#unit_title').val(btn.data('title') || '');
+            $('#unit_symbol').val(btn.data('symbol') || '');
+            $('#unit_conversion').val(btn.data('conversion') || 1);
+            $('#unit_parent').val(btn.data('parent') || '');
             $('#unit_desc').val(btn.data('desc') || '');
             $('#unit_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
+
             $('#createModal').modal('show');
         });
 
-        // ========== ریست فرم هنگام بسته شدن مودال ==========
+        // ========== هنگام بسته شدن مودال، فرم را به حالت ایجاد برگردان ==========
         $('#createModal').on('hidden.bs.modal', function() {
-            $('#unitForm').attr('action', `{{ route('warehouse.measurement-units.store') }}`);
-            $('input[name="_method"]').remove();
-            $('#unitForm')[0].reset();
+            resetCreateForm();
         });
 
-        // ========== حذف با تأیید ==========
-        $('.delete-form').on('submit', function(e) {
+        // ========== حذف با SweetAlert ==========
+        $(document).on('submit', '.delete-form', function(e) {
             e.preventDefault();
             const form = this;
             Swal.fire({
@@ -164,6 +181,8 @@
 
         // ========== نمایش خطاهای اعتبارسنجی در مودال ==========
         @if($errors->any() && session('show_create_modal'))
+            // اگر خطاها مربوط به ویرایش بود، عنوان را به ویرایش تغییر دهید (در صورت نیاز)
+            $('#modalTitle').text('{{ session("edit_mode") ? "ویرایش واحد" : "واحد اندازه‌گیری جدید" }}');
             $('#createModal').modal('show');
             @foreach ($errors->all() as $error)
                 if (typeof showToast !== 'undefined') {

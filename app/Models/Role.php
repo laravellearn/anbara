@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Role extends Model
 {
-    use SoftDeletes, BelongsToTenant,Auditable,LogsActivity;
+    use SoftDeletes, BelongsToTenant, Auditable, LogsActivity;
 
     protected $fillable = [
         'tenant_id',
+        'company_id',
         'code',
         'title',
         'description',
@@ -36,5 +37,10 @@ class Role extends Model
             User::class,
             'role_user'
         );
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

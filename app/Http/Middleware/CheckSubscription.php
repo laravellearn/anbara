@@ -33,11 +33,11 @@ class CheckSubscription
         $tenant = $user->tenant;
         if (!$tenant || !$tenant->hasActiveSubscription()) {
             // اگر اشتراک فعال ندارد، فقط صفحه انتخاب پلن و وضعیت اشتراک در دسترس است
-            if ($request->route()->getName() === 'plans.index') {
+            if ($request->route()->getName() === 'billing.plans') {
                 return $next($request);
             }
 
-            return redirect()->route('plans.index')->with(
+            return redirect()->route('billing.plans')->with(
                 'error',
                 'برای استفاده از امکانات، باید یک اشتراک فعال داشته باشید.'
             );

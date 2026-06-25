@@ -57,6 +57,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')
                 ->constrained()
                 ->cascadeOnDelete();
+            $table->foreignId('company_id')->nullable()->constrained('companies')->nullOnDelete();
 
             // کد یکتا برای استفاده در برنامه
             $table->string('code');

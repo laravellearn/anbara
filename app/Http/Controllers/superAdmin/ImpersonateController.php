@@ -5,32 +5,63 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ImpersonateController extends Controller
 {
     public function store(Request $request)
     {
         $request->validate(['user_id' => 'required|exists:users,id']);
-        $user = User::findOrFail($request->user_id);
+        $targetUser = User::findOrFail($request->user_id);
 
-        // ذخیره شناسه سوپرادمین در session
+        // اطمینان از اینکه کاربر هدف tenant دارد
+        if (!$targetUser->tenant_id) {
+            return back()->withErrors(['user_id' => 'کاربر مورد نظر به سازمانی متصل نیست.']);
+        }
+
+        // ذخیره شناسه سوپرادمین در session برای بازگشت
         session(['impersonator_id' => auth()->id()]);
 
-        auth()->login($user);
+        // پاک‌سازی اطلاعات tenant قبلی از session و container
+        session()->forget('current_organization_id');
+        app()->forgetInstance('currentTenantId');
+        app()->forgetInstance('currentOrganizationId');
 
-        flash()->success("شما اکنون به‌عنوان {$user->name} وارد شده‌اید.");
-        return redirect()->route('dashboard');
+        // لاگین کاربر هدف
+        auth()->login($targetUser);
+
+        // بازتولید session برای امنیت
+        session()->regenerate();
+
+        return redirect()->route('dashboard')->with('toast', [
+            'message' => "شما اکنون به‌عنوان {$targetUser->name} وارد شده‌اید.",
+            'type'    => 'success',
+            'title'   => 'ورود',
+        ]);
     }
 
     public function destroy()
     {
         $impersonatorId = session('impersonator_id');
-        if (!$impersonatorId) abort(403);
+        if (!$impersonatorId) {
+            abort(403);
+        }
 
+        // لاگین سوپرادمین اصلی
         auth()->loginUsingId($impersonatorId);
-        session()->forget('impersonator_id');
 
-        flash()->info('شما به حساب کاربری خود بازگشتید.');
-        return redirect()->route('super-admin.dashboard');
+        // پاک‌سازی کامل session
+        session()->forget('impersonator_id');
+        session()->forget('current_organization_id');
+        app()->forgetInstance('currentTenantId');
+        app()->forgetInstance('currentOrganizationId');
+
+        session()->regenerate();
+
+        return redirect()->route('super-admin.dashboard')->with('toast', [
+            'message' => 'شما به حساب کاربری خود بازگشتید.',
+            'type'    => 'success',
+            'title'   => 'ورود',
+        ]);
     }
 }

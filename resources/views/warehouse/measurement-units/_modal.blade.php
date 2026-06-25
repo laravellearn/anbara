@@ -1,20 +1,24 @@
+{{-- مودال ایجاد / ویرایش --}}
 <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form id="unitForm" method="POST" action="{{ route('warehouse.measurement-units.store') }}">
             @csrf
+            {{-- این input برای ویرایش مقداردهی می‌شود --}}
+            <input type="hidden" name="_method" id="method_input" value="">
+
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title text-white">واحد اندازه‌گیری</h5>
+                    <h5 class="modal-title text-white" id="modalTitle">واحد اندازه‌گیری جدید</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                {{-- نمایش خطاها در بالای مودال --}}
+                {{-- نمایش خطاها --}}
                 @if($errors->any() && session('show_create_modal'))
                 <div class="alert alert-danger alert-dismissible fade show m-3 mb-0" role="alert">
                     <strong><i class="bx bx-error-circle me-1"></i> خطا!</strong>
                     <ul class="mb-0 mt-2">
                         @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
+                        <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -39,7 +43,7 @@
                         <select name="parent_id" id="unit_parent" class="form-select">
                             <option value="">بدون والد</option>
                             @foreach($allUnits as $parent)
-                                <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>{{ $parent->title }}</option>
+                            <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>{{ $parent->title }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -48,13 +52,14 @@
                         <textarea name="description" id="unit_desc" class="form-control" rows="2">{{ old('description') }}</textarea>
                     </div>
                     <div class="form-check">
+                        <input type="hidden" name="is_active" value="0">
                         <input class="form-check-input" type="checkbox" name="is_active" value="1" id="unit_active" {{ old('is_active', '1') ? 'checked' : '' }}>
                         <label class="form-check-label" for="unit_active">فعال</label>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">انصراف</button>
-                    <button type="submit" class="btn btn-primary">ذخیره</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">ذخیره</button>
                 </div>
             </div>
         </form>

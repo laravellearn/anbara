@@ -100,7 +100,7 @@ return new class extends Migration {
             $table->string('national_code', 20)
                 ->nullable();
             $table->string('password');
-            $table->string('avatar')->default('/img/avatars/avatar.png');
+            $table->string('avatar')->default('img/avatars/avatar.png');
 
             $table->boolean('is_active')->default(false);
             $table->string('last_ip', 45)->nullable(); // پشتیبانی IPv4 و IPv6

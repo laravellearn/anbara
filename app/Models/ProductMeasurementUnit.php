@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Concerns\AutoFillTenantAndCompany;
+use App\Concerns\BelongsToCompany;
+use App\Concerns\BelongsToTenant;
 use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductMeasurementUnit extends Pivot
 {
-    use SoftDeletes, Auditable,LogsActivity;
+    use SoftDeletes, BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany,Auditable,LogsActivity;
     protected $table = 'product_measurement_units';
 
     protected $fillable = [

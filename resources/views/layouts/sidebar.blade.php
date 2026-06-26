@@ -60,14 +60,6 @@
         </li>
         @endcan
 
-        @can('brands.view')
-        <li class="menu-item {{ request()->routeIs('warehouse.brands.*') ? 'active' : '' }}">
-          <a href="{{ route('warehouse.brands.index') }}" class="menu-link">
-            <div>برندها</div>
-          </a>
-        </li>
-        @endcan
-
         @can('product-attributes.view')
         <li class="menu-item {{ request()->routeIs('warehouse.product-attributes.*') ? 'active' : '' }}">
           <a href="{{ route('warehouse.product-attributes.index') }}" class="menu-link">

@@ -2,7 +2,6 @@
 
 @section('title', 'ویرایش کالا')
 
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="card shadow-none border">
@@ -65,6 +64,27 @@
         $(this).closest('.unit-row').remove();
     });
 
+    
+
+
+      // بارگذاری ویژگی‌های داینامیک بر اساس نوع کالا
+    $('#product_type_id').on('change', function() {
+        const typeId = $(this).val();
+        if (typeId) {
+            let url = '{{ route('warehouse.product-types.attributes', ':typeId') }}'.replace(':typeId', typeId);
+            // اگر محصول وجود دارد، product_id را هم بفرست تا مقادیر قبلی بارگذاری شوند
+            @if(isset($product))
+                url += '?product_id={{ $product->id }}';
+            @endif
+            $.get(url, function(response) {
+                $('#dynamic-attributes').html(response.html);
+            });
+        } else {
+            $('#dynamic-attributes').html('');
+        }
+    });
+
+    // اگر محصول از قبل نوع کالا داشته باشد، ویژگی‌ها را بارگذاری کن
     @if($product->product_type_id)
         $('#product_type_id').trigger('change');
     @endif

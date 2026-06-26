@@ -12,13 +12,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes, Auditable,LogsActivity;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes, Auditable, LogsActivity;
 
     protected $fillable = [
         'tenant_id',
         'company_id',
         'category_id',
         'brand_id',
+        'product_type_id',
         'measurement_unit_id',
         'sku',
         'barcode',
@@ -47,11 +48,6 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
-    }
-
-    public function brand()
-    {
-        return $this->belongsTo(Brand::class);
     }
 
     public function baseMeasurementUnit()

@@ -63,14 +63,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'product-categories.delete', 'title' => 'حذف دسته‌بندی',        'group' => 'کالا و اقلام'],
 
             ['name' => 'measurement-units.view',   'title' => 'مشاهده واحدهای اندازه‌گیری', 'group' => 'کالا و اقلام'],
-            ['name' => 'measurement-units.create', 'title' => 'ایجاد واحد',                'group' => 'کالا و اقلام'],
-            ['name' => 'measurement-units.edit',   'title' => 'ویرایش واحد',                'group' => 'کالا و اقلام'],
-            ['name' => 'measurement-units.delete', 'title' => 'حذف واحد',                  'group' => 'کالا و اقلام'],
-
-            ['name' => 'brands.view',   'title' => 'مشاهده برندها',   'group' => 'کالا و اقلام'],
-            ['name' => 'brands.create', 'title' => 'ایجاد برند',      'group' => 'کالا و اقلام'],
-            ['name' => 'brands.edit',   'title' => 'ویرایش برند',     'group' => 'کالا و اقلام'],
-            ['name' => 'brands.delete', 'title' => 'حذف برند',        'group' => 'کالا و اقلام'],
+            ['name' => 'measurement-units.create', 'title' => 'ایجاد واحد اندازه گیری',                'group' => 'کالا و اقلام'],
+            ['name' => 'measurement-units.edit',   'title' => 'ویرایش واحد اندازه گیری',                'group' => 'کالا و اقلام'],
+            ['name' => 'measurement-units.delete', 'title' => 'حذف واحد اندازه گیری',                  'group' => 'کالا و اقلام'],
 
             ['name' => 'product-attributes.view',   'title' => 'مشاهده ویژگی‌ها',      'group' => 'کالا و اقلام'],
             ['name' => 'product-attributes.create', 'title' => 'ایجاد ویژگی',          'group' => 'کالا و اقلام'],
@@ -94,10 +89,10 @@ class PermissionSeeder extends Seeder
             ['name' => 'contacts.edit',   'title' => 'ویرایش مخاطب',       'group' => 'طرف حساب‌ها'],
             ['name' => 'contacts.delete', 'title' => 'حذف مخاطب',         'group' => 'طرف حساب‌ها'],
 
-            ['name' => 'organizational-units.view',   'title' => 'مشاهده واحدهای سازمانی',   'group' => 'مدیریت سازمان'],
-            ['name' => 'organizational-units.create', 'title' => 'ایجاد واحد سازمانی',        'group' => 'مدیریت سازمان'],
-            ['name' => 'organizational-units.edit',   'title' => 'ویرایش واحد سازمانی',       'group' => 'مدیریت سازمان'],
-            ['name' => 'organizational-units.delete', 'title' => 'حذف واحد سازمانی',          'group' => 'مدیریت سازمان'],
+            ['name' => 'organizational-units.view',   'title' => 'مشاهده واحدهای سازمانی',   'group' => 'مدیریت واحدهای سازمان'],
+            ['name' => 'organizational-units.create', 'title' => 'ایجاد واحد سازمانی',        'group' => 'مدیریت واحدهای سازمان'],
+            ['name' => 'organizational-units.edit',   'title' => 'ویرایش واحد سازمانی',       'group' => 'مدیریت واحدهای سازمان'],
+            ['name' => 'organizational-units.delete', 'title' => 'حذف واحد سازمانی',          'group' => 'مدیریت واحدهای سازمان'],
 
             ['name' => 'employees.view',   'title' => 'مشاهده کارمندان',     'group' => 'مدیریت کارمندان'],
             ['name' => 'employees.create', 'title' => 'ایجاد کارمند',        'group' => 'مدیریت کارمندان'],

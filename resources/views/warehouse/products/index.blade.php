@@ -33,15 +33,6 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label fw-medium">برند</label>
-                    <select id="filterBrand" class="form-select select2">
-                        <option value="">همه</option>
-                        @foreach($brands as $brand)
-                        <option value="{{ $brand->id }}">{{ $brand->title }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
                     <label class="form-label fw-medium">وضعیت</label>
                     <select id="filterStatus" class="form-select">
                         <option value="">همه</option>
@@ -102,7 +93,6 @@
         function performSearch() {
             const search = $('#liveSearch').val();
             const category = $('#filterCategory').val();
-            const brand = $('#filterBrand').val();
             const status = $('#filterStatus').val();
 
             $tableWrapper.addClass('opacity-50');
@@ -112,7 +102,6 @@
                 data: {
                     search: search,
                     category_id: category,
-                    brand_id: brand,
                     status: status,
                     ajax: 1,
                 },
@@ -132,7 +121,7 @@
             searchTimeout = setTimeout(performSearch, 500);
         });
 
-        $('#filterCategory, #filterBrand, #filterStatus').on('change', performSearch);
+        $('#filterCategory, #filterStatus').on('change', performSearch);
 
         $('#clearSearch').on('click', function() {
             $('#liveSearch').val('').focus();
@@ -142,7 +131,6 @@
         $('#resetFilters').on('click', function() {
             $('#liveSearch').val('');
             $('#filterCategory').val('').trigger('change');
-            $('#filterBrand').val('').trigger('change');
             $('#filterStatus').val('');
             performSearch();
         });

@@ -2,7 +2,6 @@
 
 @section('title', 'ایجاد کالای جدید')
 
-
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="card shadow-none border">
@@ -65,6 +64,7 @@
         $(this).closest('.unit-row').remove();
     });
 
+    // بارگذاری ویژگی‌های داینامیک
     $('#product_type_id').on('change', function() {
         const typeId = $(this).val();
         if (typeId) {

@@ -49,20 +49,22 @@ class ProductAttributeController extends BaseController
 
         try {
             $data = $request->validate([
-                'name'    => 'required|string|max:255',
-                'type'    => 'required|in:text,number,select',
-                'options' => 'nullable|string',   // دریافت به‌عنوان رشته
+                'name'      => 'required|string|max:255',
+                'type'      => 'required|in:text,number,select',
+                'options'   => 'nullable|string',   // کاما-جدا از hidden input
+                'is_active' => 'boolean',
             ]);
 
-            // تبدیل رشتهٔ کاما-جدا به آرایه و سپس JSON
+            // تبدیل رشتهٔ کاما-جدا (مثلاً "قرمز,آبی") به JSON آرایه
             if (!empty($data['options'])) {
-                $optionsArray = array_map('trim', explode(',', $data['options']));
-                $data['options'] = json_encode($optionsArray);
+                $optionsArray = array_filter(array_map('trim', explode(',', $data['options'])), fn($v) => $v !== '');
+                $data['options'] = !empty($optionsArray) ? json_encode(array_values($optionsArray)) : null;
             } else {
                 $data['options'] = null;
             }
 
             $data['tenant_id'] = $this->manager->getTenantId();
+            $data['is_active'] = $request->boolean('is_active'); // تضمین true/false
 
             ProductAttribute::create($data);
 
@@ -90,17 +92,20 @@ class ProductAttributeController extends BaseController
 
         try {
             $data = $request->validate([
-                'name'    => 'required|string|max:255',
-                'type'    => 'required|in:text,number,select',
-                'options' => 'nullable|string',
+                'name'      => 'required|string|max:255',
+                'type'      => 'required|in:text,number,select',
+                'options'   => 'nullable|string',
+                'is_active' => 'boolean',
             ]);
 
             if (!empty($data['options'])) {
-                $optionsArray = array_map('trim', explode(',', $data['options']));
-                $data['options'] = json_encode($optionsArray);
+                $optionsArray = array_filter(array_map('trim', explode(',', $data['options'])), fn($v) => $v !== '');
+                $data['options'] = !empty($optionsArray) ? json_encode(array_values($optionsArray)) : null;
             } else {
                 $data['options'] = null;
             }
+
+            $data['is_active'] = $request->boolean('is_active');
 
             $productAttribute->update($data);
 

@@ -25,7 +25,7 @@
                     <select id="filterParent" class="form-select select2">
                         <option value="">همه</option>
                         @foreach($allCategories as $parent)
-                            <option value="{{ $parent->id }}">{{ $parent->title }}</option>
+                        <option value="{{ $parent->id }}">{{ $parent->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -83,7 +83,7 @@
 
 @push('scripts')
 <script>
-    $(function(){
+    $(function() {
         let searchTimeout;
         const $tableWrapper = $('#categoriesTableWrapper');
         const $statsCards = $('#statsCards');
@@ -97,19 +97,31 @@
             $tableWrapper.addClass('opacity-50');
             $.ajax({
                 url: '{{ route('warehouse.categories.index') }}',
-                data: { search, parent_id: parent, status, ajax: 1 },
+                data: {
+                    search,
+                    parent_id: parent,
+                    status,
+                    ajax: 1
+                },
                 success: function(response) {
                     $tableWrapper.html(response.html);
                     $statsCards.html(response.statsHtml);
                     $filteredCount.text(`(${response.total})`);
                 },
-                error: function() { /* مدیریت خطا */ }
+                error: function() {
+                    /* مدیریت خطا */ }
             }).always(() => $tableWrapper.removeClass('opacity-50'));
         }
 
-        $('#liveSearch').on('keyup', function() { clearTimeout(searchTimeout); searchTimeout = setTimeout(performSearch, 500); });
+        $('#liveSearch').on('keyup', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 500);
+        });
         $('#filterParent, #filterStatus').on('change', performSearch);
-        $('#clearSearch').on('click', function() { $('#liveSearch').val('').focus(); performSearch(); });
+        $('#clearSearch').on('click', function() {
+            $('#liveSearch').val('').focus();
+            performSearch();
+        });
         $('#resetFilters').on('click', function() {
             $('#liveSearch').val('');
             $('#filterParent').val('').trigger('change');
@@ -121,20 +133,23 @@
         $(document).on('click', '.edit-cat-btn', function() {
             const btn = $(this);
             const id = btn.data('id');
-            $('#catForm').attr('action', `{{ route('warehouse.categories.update', ':id') }}`.replace(':id', id));
-            if (!$('input[name="_method"]').length) $('#catForm').prepend('<input type="hidden" name="_method" value="PUT">');
-            $('#cat_title').val(btn.data('title'));
-            $('#cat_parent').val(btn.data('parent'));
-            $('#cat_desc').val(btn.data('desc'));
-            $('#cat_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
-            $('#createModal').modal('show');
+            // تنظیم action فرم ویرایش
+            var action = '{{ route('warehouse.categories.update', ':id') }}'.replace(':id', id);
+            $('#editCatForm').attr('action', action);
+            // پر کردن فیلدها
+            $('#edit_cat_title').val(btn.data('title'));
+            $('#edit_cat_parent').val(btn.data('parent'));
+            $('#edit_cat_desc').val(btn.data('desc'));
+            $('#edit_cat_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
+            // نمایش مودال ویرایش (به‌جای createModal)
+            $('#editModal').modal('show');
         });
 
-        // ========== ریست فرم هنگام بسته شدن مودال ==========
-        $('#createModal').on('hidden.bs.modal', function() {
-            $('#catForm').attr('action', `{{ route('warehouse.categories.store') }}`);
-            $('input[name="_method"]').remove();
-            $('#catForm')[0].reset();
+        // ریست فرم ویرایش هنگام بستن (اختیاری)
+        $('#editModal').on('hidden.bs.modal', function() {
+            $('#editCatForm')[0].reset();
+            // در صورت نیاز action را به حالت اولیه برگردانید
+            $('#editCatForm').attr('action', '{{ route('warehouse.categories.update', ':id') }}');
         });
 
         // ========== حذف با تأیید ==========
@@ -162,12 +177,12 @@
 
         // ========== نمایش خطاهای اعتبارسنجی در مودال ==========
         @if($errors->any() && session('show_create_modal'))
-            $('#createModal').modal('show');
-            @foreach ($errors->all() as $error)
-                if (typeof showToast !== 'undefined') {
-                    showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
-                }
-            @endforeach
+        $('#createModal').modal('show');
+        @foreach($errors->all() as $error)
+        if (typeof showToast !== 'undefined') {
+            showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
+        }
+        @endforeach
         @endif
     });
 </script>

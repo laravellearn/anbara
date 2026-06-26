@@ -41,23 +41,6 @@ return new class extends Migration
             $table->unique(['tenant_id', 'title']);
         });
 
-        Schema::create('brands', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
-            //
-            $table->string('image')->nullable();
-
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->softDeletes();
-            $table->timestamps();
-            $table->foreignId('edited_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_at');
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('edited_by');
-            $table->unique(['tenant_id', 'title']);
-        });
-
         Schema::create('product_attributes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
@@ -142,13 +125,12 @@ return new class extends Migration
             );
         });
 
-        // 2. products (به categories, brands, measurement_units وابسته است)
+
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
-            $table->foreignId('brand_id')->nullable()->constrained('brands')->nullOnDelete();
             $table->foreignId('measurement_unit_id')->nullable()->constrained('measurement_units')->nullOnDelete();
             $table->foreignId('product_type_id')->nullable()->constrained('product_types')->nullOnDelete()->after('measurement_unit_id');
             $table->string('sku')->nullable();
@@ -231,39 +213,26 @@ return new class extends Migration
 
     public function down(): void
     {
-        // 1. ابتدا جداول فرزندی که به products وابسته‌اند
-        Schema::dropIfExists('product_variant_images');
-        Schema::dropIfExists('product_variants');
-        Schema::dropIfExists('galleries');
-        Schema::dropIfExists('product_tag');
-        Schema::dropIfExists('tags');
+        // جداول وابسته به users و warehouses و products را ابتدا حذف می‌کنیم
+        Schema::dropIfExists('warehouse_user');
         Schema::dropIfExists('product_alternatives');
         Schema::dropIfExists('product_attribute_values');
         Schema::dropIfExists('product_measurement_units');
 
-        // 2. حالا می‌توان products را حذف کرد
+        // حالا می‌توان products را حذف کرد
         Schema::dropIfExists('products');
 
-        // 3. جداول وابسته به محصول که به آن ارجاع ندارند
+        // جداول pivot و نوع محصول
         Schema::dropIfExists('product_type_attribute');
         Schema::dropIfExists('product_types');
 
-        // 4. انبارها و موقعیت‌ها
-        Schema::dropIfExists('warehouse_user');
+        // موقعیت‌های انبار و خود انبارها
         Schema::dropIfExists('warehouse_locations');
         Schema::dropIfExists('warehouses');
 
-        // 5. ویژگی‌ها، برندها، دسته‌بندی‌ها و واحدها
+        // ویژگی‌ها، دسته‌بندی‌ها و واحدهای اندازه‌گیری
         Schema::dropIfExists('product_attributes');
-        Schema::dropIfExists('brands');
         Schema::dropIfExists('categories');
         Schema::dropIfExists('measurement_units');
-
-        // 6. سایر جداول قدیمی (در صورت وجود)
-        Schema::dropIfExists('colors');
-        Schema::dropIfExists('sizes');
-        Schema::dropIfExists('warranties');
-        Schema::dropIfExists('category_product');
-        Schema::dropIfExists('attribute_category');
     }
 };

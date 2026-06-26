@@ -5,7 +5,6 @@
             <th>عنوان</th>
             <th>SKU</th>
             <th>دسته‌بندی</th>
-            <th>برند</th>
             <th>واحد پایه</th>
             <th>حداقل موجودی</th>
             <th>وضعیت</th>
@@ -19,7 +18,6 @@
             <td>{{ $product->title }}</td>
             <td>{{ $product->sku ?? '---' }}</td>
             <td>{{ $product->category->title ?? '---' }}</td>
-            <td>{{ $product->brand->title ?? '---' }}</td>
             <td>{{ $product->baseMeasurementUnit->title ?? '---' }}</td>
             <td>{{ $product->minimum_stock }}</td>
             <td>{!! $product->is_active ? '<span class="badge bg-success">فعال</span>' : '<span class="badge bg-danger">غیرفعال</span>' !!}</td>

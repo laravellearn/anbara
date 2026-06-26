@@ -22,15 +22,6 @@
             </select>
         </div>
         <div class="col-md-4">
-            <label class="form-label">برند</label>
-            <select name="brand_id" class="form-select">
-                <option value="">انتخاب کنید</option>
-                @foreach($brands as $brand)
-                <option value="{{ $brand->id }}" {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>{{ $brand->title }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-4">
             <label class="form-label">واحد پایه</label>
             <select name="measurement_unit_id" class="form-select">
                 <option value="">انتخاب کنید</option>
@@ -66,6 +57,7 @@
 
         <div class="col-12">
             <div class="form-check">
+                <input type="hidden" name="is_active" value="0">
                 <input class="form-check-input" type="checkbox" name="is_active" value="1" id="prod_active" {{ old('is_active', $product->is_active ?? true) ? 'checked' : '' }}>
                 <label class="form-check-label" for="prod_active">فعال</label>
             </div>

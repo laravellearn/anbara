@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductAttribute extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, Auditable,LogsActivity;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, Auditable, LogsActivity;
 
     protected $fillable = [
         'tenant_id',
@@ -37,9 +37,11 @@ class ProductAttribute extends Model
         return $this->hasMany(ProductAttributeValue::class, 'attribute_id');
     }
 
+    // app/Models/ProductAttribute.php
     public function productTypes()
     {
         return $this->belongsToMany(ProductType::class, 'product_type_attribute')
-            ->withPivot('is_required', 'sort_order');
+            ->withPivot('is_required', 'sort_order')
+            ->withTimestamps();
     }
 }

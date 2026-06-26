@@ -1,3 +1,4 @@
+{{-- resources/views/warehouse/product-types/_form.blade.php --}}
 <div class="card-body">
     <div class="row g-3">
         <div class="col-md-6">
@@ -10,18 +11,22 @@
         </div>
         <div class="col-12">
             <div class="form-check">
+                <input type="hidden" name="is_active" value="0">
                 <input class="form-check-input" type="checkbox" name="is_active" value="1" id="pt_active" {{ old('is_active', $productType->is_active ?? true) ? 'checked' : '' }}>
                 <label class="form-check-label" for="pt_active">فعال</label>
             </div>
         </div>
         <div class="col-12"><hr><h6>ویژگی‌های مرتبط</h6></div>
+        <div class="col-md-4">
+            <input type="text" id="attributeSearch" class="form-control" placeholder="جستجوی ویژگی...">
+        </div>
         <div class="col-12" id="attributes-container">
             @foreach($attributes as $attr)
                 @php
                     $pivot = isset($productType) ? $productType->attributes->find($attr->id) : null;
                     $checked = old("attributes.{$attr->id}.id") ? true : ($pivot ? true : false);
                 @endphp
-                <div class="row mb-2 align-items-end">
+                <div class="row mb-2 align-items-end attribute-row" data-attr-name="{{ $attr->name }}">
                     <div class="col-md-1">
                         <div class="form-check">
                             <input class="form-check-input attr-checkbox" type="checkbox" name="attributes[{{ $attr->id }}][id]" value="{{ $attr->id }}" id="attr_{{ $attr->id }}" {{ $checked ? 'checked' : '' }}>
@@ -44,3 +49,17 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    $(function() {
+        $('#attributeSearch').on('keyup', function() {
+            var search = $(this).val().toLowerCase();
+            $('#attributes-container .attribute-row').each(function() {
+                var name = $(this).data('attr-name').toLowerCase();
+                $(this).toggle(name.indexOf(search) > -1);
+            });
+        });
+    });
+</script>
+@endpush

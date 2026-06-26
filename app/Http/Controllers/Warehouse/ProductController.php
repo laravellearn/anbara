@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Warehouse;
 
 use App\Models\Product;
 use App\Models\Category;
-use App\Models\Brand;
 use App\Models\MeasurementUnit;
 use App\Models\ProductAttribute;
 use App\Models\ProductType;
@@ -20,9 +19,8 @@ class ProductController extends BaseController
         $tenantId = $this->manager->getTenantId();
 
         $categories = Category::where('tenant_id', $tenantId)->get();
-        $brands     = Brand::where('tenant_id', $tenantId)->get();
 
-        $query = Product::with(['category', 'brand', 'baseMeasurementUnit'])
+        $query = Product::with(['category', 'baseMeasurementUnit'])
             ->where('tenant_id', $tenantId);
 
         if ($request->filled('search')) {
@@ -36,9 +34,7 @@ class ProductController extends BaseController
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->input('category_id'));
         }
-        if ($request->filled('brand_id')) {
-            $query->where('brand_id', $request->input('brand_id'));
-        }
+
         if ($request->filled('status')) {
             $query->where('is_active', $request->input('status') === 'active');
         }
@@ -71,7 +67,7 @@ class ProductController extends BaseController
             ]);
         }
 
-        return view('warehouse.products.index', compact('products', 'categories', 'brands', 'stats'));
+        return view('warehouse.products.index', compact('products', 'categories', 'stats'));
     }
 
     public function create()
@@ -79,12 +75,11 @@ class ProductController extends BaseController
         Gate::authorize('access', 'products.create');
 
         $categories       = Category::where('tenant_id', $this->manager->getTenantId())->get();
-        $brands           = Brand::where('tenant_id', $this->manager->getTenantId())->get();
         $measurementUnits = MeasurementUnit::where('tenant_id', $this->manager->getTenantId())->get();
         $attributes       = ProductAttribute::where('tenant_id', $this->manager->getTenantId())->get();
         $productTypes     = ProductType::where('tenant_id', $this->manager->getTenantId())->where('is_active', true)->get();
 
-        return view('warehouse.products.create', compact('productTypes', 'categories', 'brands', 'measurementUnits', 'attributes'));
+        return view('warehouse.products.create', compact('productTypes', 'categories', 'measurementUnits', 'attributes'));
     }
 
     public function store(Request $request)
@@ -95,7 +90,6 @@ class ProductController extends BaseController
             $data = $request->validate([
                 'product_type_id'      => 'nullable|exists:product_types,id',
                 'category_id'          => 'nullable|exists:categories,id',
-                'brand_id'             => 'nullable|exists:brands,id',
                 'measurement_unit_id'  => 'nullable|exists:measurement_units,id',
                 'title'                => 'required|string|max:255',
                 'sku'                  => 'nullable|string|max:50|unique:products,sku',
@@ -116,11 +110,30 @@ class ProductController extends BaseController
                 'attribute_values.*.value'        => 'nullable|string',
             ]);
 
+
+            // اعتبارسنجی ویژگی‌های اجباری
+            if (!empty($data['product_type_id'])) {
+                $productType = ProductType::with('attributes')->find($data['product_type_id']);
+                if ($productType) {
+                    foreach ($productType->attributes as $attr) {
+                        if ($attr->pivot->is_required) {
+                            $attrValue = $request->input("attribute_values.{$attr->id}.value");
+                            if (empty($attrValue)) {
+                                return redirect()->back()
+                                    ->withErrors(["attribute_values.{$attr->id}.value" => "ویژگی «{$attr->name}» الزامی است."])
+                                    ->withInput();
+                            }
+                        }
+                    }
+                }
+            }
+
             $data['tenant_id']  = $this->manager->getTenantId();
             $data['company_id'] = $this->manager->getCompanyId();
 
             $product = Product::create($data);
 
+            // همگام‌سازی واحدهای شمارشی
             if ($request->has('measurement_units')) {
                 $syncData = [];
                 foreach ($request->measurement_units as $unit) {
@@ -128,6 +141,7 @@ class ProductController extends BaseController
                         $syncData[$unit['id']] = [
                             'conversion_factor' => $unit['conversion_factor'] ?? 1,
                             'is_default'        => $unit['is_default'] ?? false,
+                            'tenant_id'         => $this->manager->getTenantId(),    // اضافه شد
                             'company_id'        => $this->manager->getCompanyId(),
                         ];
                     }
@@ -135,12 +149,17 @@ class ProductController extends BaseController
                 $product->measurementUnits()->sync($syncData);
             }
 
+            // ذخیره مقادیر ویژگی‌ها
             if ($request->has('attribute_values')) {
                 foreach ($request->attribute_values as $attr) {
                     if (!empty($attr['attribute_id'])) {
                         $product->attributeValues()->updateOrCreate(
                             ['attribute_id' => $attr['attribute_id']],
-                            ['value' => $attr['value'] ?? '']
+                            [
+                                'value'      => $attr['value'] ?? '',
+                                'tenant_id'  => $this->manager->getTenantId(),   // اضافه شد
+                                'company_id' => $this->manager->getCompanyId(),
+                            ]
                         );
                     }
                 }
@@ -167,14 +186,13 @@ class ProductController extends BaseController
         Gate::authorize('access', 'products.edit');
 
         $categories       = Category::where('tenant_id', $this->manager->getTenantId())->get();
-        $brands           = Brand::where('tenant_id', $this->manager->getTenantId())->get();
         $measurementUnits = MeasurementUnit::where('tenant_id', $this->manager->getTenantId())->get();
         $attributes       = ProductAttribute::where('tenant_id', $this->manager->getTenantId())->get();
         $productTypes     = ProductType::where('tenant_id', $this->manager->getTenantId())->where('is_active', true)->get();
 
         $product->load('measurementUnits', 'attributeValues');
 
-        return view('warehouse.products.edit', compact('productTypes', 'product', 'categories', 'brands', 'measurementUnits', 'attributes'));
+        return view('warehouse.products.edit', compact('productTypes', 'product', 'categories', 'measurementUnits', 'attributes'));
     }
 
     public function update(Request $request, Product $product)
@@ -185,7 +203,6 @@ class ProductController extends BaseController
             $data = $request->validate([
                 'product_type_id'      => 'nullable|exists:product_types,id',
                 'category_id'          => 'nullable|exists:categories,id',
-                'brand_id'             => 'nullable|exists:brands,id',
                 'measurement_unit_id'  => 'nullable|exists:measurement_units,id',
                 'title'                => 'required|string|max:255',
                 'sku'                  => 'nullable|string|max:50|unique:products,sku,' . $product->id,
@@ -206,8 +223,29 @@ class ProductController extends BaseController
                 'attribute_values.*.value'        => 'nullable|string',
             ]);
 
+
+            // اعتبارسنجی ویژگی‌های اجباری
+            if (!empty($data['product_type_id'])) {
+                $productType = ProductType::with('attributes')->find($data['product_type_id']);
+                if ($productType) {
+                    foreach ($productType->attributes as $attr) {
+                        if ($attr->pivot->is_required) {
+                            $attrValue = $request->input("attribute_values.{$attr->id}.value");
+                            if (empty($attrValue)) {
+                                return redirect()->back()
+                                    ->withErrors(["attribute_values.{$attr->id}.value" => "ویژگی «{$attr->name}» الزامی است."])
+                                    ->withInput();
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
             $product->update($data);
 
+            // واحدهای شمارشی
             if ($request->has('measurement_units')) {
                 $syncData = [];
                 foreach ($request->measurement_units as $unit) {
@@ -215,6 +253,7 @@ class ProductController extends BaseController
                         $syncData[$unit['id']] = [
                             'conversion_factor' => $unit['conversion_factor'] ?? 1,
                             'is_default'        => $unit['is_default'] ?? false,
+                            'tenant_id'         => $this->manager->getTenantId(),   // اضافه شد
                             'company_id'        => $this->manager->getCompanyId(),
                         ];
                     }
@@ -222,17 +261,21 @@ class ProductController extends BaseController
                 $product->measurementUnits()->sync($syncData);
             }
 
+            // ویژگی‌ها
             if ($request->has('attribute_values')) {
                 foreach ($request->attribute_values as $attr) {
                     if (!empty($attr['attribute_id'])) {
                         $product->attributeValues()->updateOrCreate(
                             ['attribute_id' => $attr['attribute_id']],
-                            ['value' => $attr['value'] ?? '']
+                            [
+                                'value'      => $attr['value'] ?? '',
+                                'tenant_id'  => $this->manager->getTenantId(),   // اضافه شد
+                                'company_id' => $this->manager->getCompanyId(),
+                            ]
                         );
                     }
                 }
             }
-
             return redirect()->route('warehouse.products.index')->with('toast', [
                 'message' => 'کالا با موفقیت ویرایش شد.',
                 'type'    => 'success',

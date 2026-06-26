@@ -53,7 +53,7 @@ class ProductTypeController extends BaseController
         Gate::authorize('access', 'product-types.create');
 
         try {
-            $data = $request->validate([
+            $validated = $request->validate([
                 'title'       => 'required|string|max:255|unique:product_types,title',
                 'description' => 'nullable|string',
                 'is_active'   => 'boolean',
@@ -63,23 +63,27 @@ class ProductTypeController extends BaseController
                 'attributes.*.sort_order'  => 'integer|min:0',
             ]);
 
-            $data['tenant_id']  = $this->manager->getTenantId();
-            $data['company_id'] = $this->manager->getCompanyId();
+            // حذف ویژگی‌ها از داده‌های مدل اصلی
+            $productTypeData = collect($validated)->except('attributes')->toArray();
+            $productTypeData['tenant_id']  = $this->manager->getTenantId();
+            $productTypeData['company_id'] = $this->manager->getCompanyId();
+            $productTypeData['is_active']  = $request->boolean('is_active', false);
 
-            $productType = ProductType::create($data);
+            $productType = ProductType::create($productTypeData);
 
-            if ($request->has('attributes')) {
-                $sync = [];
-                foreach ($request->attributes as $attr) {
-                    if (!empty($attr['id'])) {
-                        $sync[$attr['id']] = [
-                            'is_required' => $attr['is_required'] ?? false,
-                            'sort_order'  => $attr['sort_order'] ?? 0,
+            // همگام‌سازی ویژگی‌ها با استفاده از داده‌های اعتبارسنجی‌شده
+            $sync = [];
+            if (!empty($validated['attributes'])) {
+                foreach ($validated['attributes'] as $attrId => $attrData) {
+                    if (!empty($attrData['id'])) {
+                        $sync[$attrData['id']] = [
+                            'is_required' => $attrData['is_required'] ?? false,
+                            'sort_order'  => $attrData['sort_order'] ?? 0,
                         ];
                     }
                 }
-                $productType->attributes()->sync($sync);
             }
+            $productType->attributes()->sync($sync);
 
             return redirect()->route('warehouse.product-types.index')->with('toast', [
                 'message' => 'نوع کالا با موفقیت ایجاد شد.',
@@ -110,7 +114,7 @@ class ProductTypeController extends BaseController
         Gate::authorize('access', 'product-types.edit');
 
         try {
-            $data = $request->validate([
+            $validated = $request->validate([
                 'title'       => 'required|string|max:255|unique:product_types,title,' . $productType->id,
                 'description' => 'nullable|string',
                 'is_active'   => 'boolean',
@@ -120,20 +124,22 @@ class ProductTypeController extends BaseController
                 'attributes.*.sort_order'  => 'integer|min:0',
             ]);
 
-            $productType->update($data);
+            $productTypeData = collect($validated)->except('attributes')->toArray();
+            $productTypeData['is_active'] = $request->boolean('is_active', false);
+            $productType->update($productTypeData);
 
-            if ($request->has('attributes')) {
-                $sync = [];
-                foreach ($request->attributes as $attr) {
-                    if (!empty($attr['id'])) {
-                        $sync[$attr['id']] = [
-                            'is_required' => $attr['is_required'] ?? false,
-                            'sort_order'  => $attr['sort_order'] ?? 0,
+            $sync = [];
+            if (!empty($validated['attributes'])) {
+                foreach ($validated['attributes'] as $attrId => $attrData) {
+                    if (!empty($attrData['id'])) {
+                        $sync[$attrData['id']] = [
+                            'is_required' => $attrData['is_required'] ?? false,
+                            'sort_order'  => $attrData['sort_order'] ?? 0,
                         ];
                     }
                 }
-                $productType->attributes()->sync($sync);
             }
+            $productType->attributes()->sync($sync);
 
             return redirect()->route('warehouse.product-types.index')->with('toast', [
                 'message' => 'نوع کالا با موفقیت ویرایش شد.',
@@ -157,7 +163,6 @@ class ProductTypeController extends BaseController
 
         try {
             $productType->delete();
-
             return redirect()->route('warehouse.product-types.index')->with('toast', [
                 'message' => 'نوع کالا با موفقیت حذف شد.',
                 'type'    => 'success',
@@ -181,7 +186,7 @@ class ProductTypeController extends BaseController
         }
 
         $html = view('warehouse.products._dynamic_attributes', [
-            'attributes' => $productType->attributes,
+            'attributes' => $productType->attributes()->orderByPivot('sort_order')->get(),
             'oldValues'  => $oldValues,
         ])->render();
 

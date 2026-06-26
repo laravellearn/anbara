@@ -163,8 +163,6 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
 
     // =	واحدهای اندازه‌گیری (Measurement Units)
     Route::resource('measurement-units', MeasurementUnitController::class)->except(['show', 'create', 'edit']);
-    // برندها
-    Route::resource('brands', BrandController::class)->except(['show', 'create', 'edit']);
     // دسته‌بندی کالا
     Route::resource('categories', CategoryController::class)->except(['show', 'create', 'edit']);
     // ویژگی‌های کالا

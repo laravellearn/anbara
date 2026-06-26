@@ -14,15 +14,33 @@
         <tr>
             <td>{{ $loop->iteration }}</td>
             <td>{{ $attr->name }}</td>
-            <td>{{ $attr->type }}</td>
-            <td>{{ is_array($attr->options) ? implode(', ', $attr->options) : $attr->options }}</td>
-            <td>{!! $attr->is_active ? '<span class="badge bg-success">فعال</span>' : '<span class="badge bg-danger">غیرفعال</span>' !!}</td>
+            <td>
+                @if($attr->type == 'text') متن
+                @elseif($attr->type == 'number') عدد
+                @else انتخاب
+                @endif
+            </td>
+            <td>
+                @if($attr->type == 'select' && $attr->options)
+                    @foreach(json_decode($attr->options) as $opt)
+                        <span class="badge bg-label-info me-1">{{ $opt }}</span>
+                    @endforeach
+                @else
+                    <span class="text-muted">—</span>
+                @endif
+            </td>
+            <td>
+                {!! $attr->is_active ? '<span class="badge bg-success">فعال</span>' : '<span class="badge bg-danger">غیرفعال</span>' !!}
+            </td>
             <td>
                 <div class="d-flex gap-1">
                     @can('access', 'product-attributes.edit')
                     <button class="btn btn-sm btn-icon btn-outline-warning edit-attr-btn"
-                        data-id="{{ $attr->id }}" data-name="{{ $attr->name }}" data-type="{{ $attr->type }}"
-                        data-options="{{ json_encode($attr->options) }}" data-active="{{ $attr->is_active }}">
+                        data-id="{{ $attr->id }}" 
+                        data-name="{{ $attr->name }}" 
+                        data-type="{{ $attr->type }}"
+                        data-options="{{ json_encode(json_decode($attr->options)) }}"
+                        data-active="{{ $attr->is_active }}">
                         <i class="bx bx-edit"></i>
                     </button>
                     @endcan

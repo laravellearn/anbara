@@ -83,6 +83,7 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('warehouse_locations')->nullOnDelete();
             $table->string('code', 50);
             $table->string('title');
+            $table->enum('type', ['aisle','rack','shelf','bin'])->nullable();
             $table->text('description')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);

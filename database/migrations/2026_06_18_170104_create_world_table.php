@@ -30,24 +30,10 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
         });
-
-        Schema::create('cities', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('province_id')->constrained('provinces')->cascadeOnDelete();
-            $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
-            $table->string('name');
-            $table->string('slug');
-            $table->string('lat');
-            $table->string('long');
-            $table->boolean('is_active')->default(true);
-            $table->softDeletes();
-            $table->timestamps();
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('cities');
         Schema::dropIfExists('provinces');
         Schema::dropIfExists('countries');
     }

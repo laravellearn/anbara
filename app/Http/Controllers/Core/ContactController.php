@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Core;
 
 use App\Models\Contact;
+use App\Models\Country;
+use App\Models\Province;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -54,18 +56,21 @@ class ContactController extends BaseController
         return view('core.contacts.index', compact('contacts', 'stats'));
     }
 
+    public function create()
+    {
+        Gate::authorize('access', 'contacts.create');
+        $countries = Country::orderBy('name')->get();
+        return view('core.contacts.create', compact('countries'));
+    }
+
     public function store(Request $request)
     {
         Gate::authorize('access', 'contacts.create');
 
         try {
             $tenantId = $this->manager->getTenantId();
-
             $data = $request->validate([
-                'code'           => [
-                    'nullable', 'string', 'max:50',
-                    Rule::unique('contacts', 'code')->where('tenant_id', $tenantId),
-                ],
+                'code'           => ['nullable', 'string', 'max:50', Rule::unique('contacts', 'code')->where('tenant_id', $tenantId)],
                 'type'           => 'required|in:customer,supplier,both',
                 'first_name'     => 'nullable|string|max:255',
                 'last_name'      => 'nullable|string|max:255',
@@ -79,33 +84,38 @@ class ContactController extends BaseController
                 'address'        => 'nullable|string',
                 'description'    => 'nullable|string',
                 'is_active'      => 'boolean',
+                'country_id'     => 'nullable|exists:countries,id',
+                'province_id'    => 'nullable|exists:provinces,id',
+                'city'          => 'nullable|string|max:255',
             ]);
 
             $data['tenant_id'] = $tenantId;
-
-            // اگر کد به‌صورت دستی وارد نشده بود، به‌صورت خودکار تولید می‌شود.
             if (empty($data['code'])) {
                 $data['code'] = $this->generateNextCode($tenantId);
             }
 
             Contact::create($data);
 
-            return redirect()->route('core.contacts.index')->with('toast', [
+            return redirect()->route('contacts.index')->with('toast', [
                 'message' => 'مخاطب با موفقیت ایجاد شد.',
                 'type'    => 'success',
                 'title'   => 'ایجاد مخاطب'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->errors())
-                ->withInput()
-                ->with('show_create_modal', true);
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد مخاطب: ' . $e->getMessage()])
-                ->withInput()
-                ->with('show_create_modal', true);
+            return redirect()->back()->withErrors(['error' => 'خطا در ایجاد مخاطب: ' . $e->getMessage()])->withInput();
         }
+    }
+
+    // صفحه ویرایش (جدید)
+    public function edit(Contact $contact)
+    {
+        Gate::authorize('access', 'contacts.edit');
+        $countries = Country::orderBy('name')->get();
+        // استان‌های مرتبط با کشور مخاطب را بگیر
+        $provinces = Province::where('country_id', $contact->country_id)->orderBy('name')->get();
+        return view('core.contacts.edit', compact('contact', 'countries', 'provinces'));
     }
 
     public function update(Request $request, Contact $contact)
@@ -113,13 +123,8 @@ class ContactController extends BaseController
         Gate::authorize('access', 'contacts.edit');
 
         try {
-            $contact->update($request->validate([
-                'code'           => [
-                    'nullable', 'string', 'max:50',
-                    Rule::unique('contacts', 'code')
-                        ->where('tenant_id', $this->manager->getTenantId())
-                        ->ignore($contact->id),
-                ],
+            $data = $request->validate([
+                'code'           => ['nullable', 'string', 'max:50', Rule::unique('contacts', 'code')->where('tenant_id', $this->manager->getTenantId())->ignore($contact->id)],
                 'type'           => 'required|in:customer,supplier,both',
                 'first_name'     => 'nullable|string|max:255',
                 'last_name'      => 'nullable|string|max:255',
@@ -133,23 +138,22 @@ class ContactController extends BaseController
                 'address'        => 'nullable|string',
                 'description'    => 'nullable|string',
                 'is_active'      => 'boolean',
-            ]));
+                'country_id'     => 'nullable|exists:countries,id',
+                'province_id'    => 'nullable|exists:provinces,id',
+                'city'          => 'nullable|string|max:255',
+            ]);
 
-            return redirect()->route('core.contacts.index')->with('toast', [
+            $contact->update($data);
+
+            return redirect()->route('contacts.index')->with('toast', [
                 'message' => 'مخاطب با موفقیت ویرایش شد.',
                 'type'    => 'success',
                 'title'   => 'ویرایش مخاطب'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->errors())
-                ->withInput()
-                ->with('show_edit_modal', true);
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش مخاطب: ' . $e->getMessage()])
-                ->withInput()
-                ->with('show_edit_modal', true);
+            return redirect()->back()->withErrors(['error' => 'خطا در ویرایش مخاطب: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -160,7 +164,7 @@ class ContactController extends BaseController
         try {
             $contact->delete();
 
-            return redirect()->route('core.contacts.index')->with('toast', [
+            return redirect()->route('contacts.index')->with('toast', [
                 'message' => 'مخاطب با موفقیت حذف شد.',
                 'type'    => 'success',
                 'title'   => 'حذف مخاطب'
@@ -182,7 +186,7 @@ class ContactController extends BaseController
             ->where('tenant_id', $tenantId)
             ->where('code', 'like', 'C-%')
             ->get()
-            ->map(fn ($contact) => (int) str_replace('C-', '', $contact->code))
+            ->map(fn($contact) => (int) str_replace('C-', '', $contact->code))
             ->max();
 
         return 'C-' . str_pad((string) (($lastNumber ?? 0) + 1), 5, '0', STR_PAD_LEFT);

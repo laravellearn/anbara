@@ -19,7 +19,13 @@
             <td>{{ $loc->warehouse->title ?? '---' }}</td>
             <td>{{ $loc->code }}</td>
             <td>{{ $loc->title }}</td>
-            <td>{{ $loc->type }}</td>
+            <td>
+                @if($loc->type)
+                <span class="badge bg-{{ $loc->type->color() }}">{{ $loc->type->label() }}</span>
+                @else
+                ---
+                @endif
+            </td>
             <td>{{ $loc->parent->code ?? '---' }}</td>
             <td>{{ $loc->sort_order }}</td>
             <td>{!! $loc->is_active ? '<span class="badge bg-success">فعال</span>' : '<span class="badge bg-danger">غیرفعال</span>' !!}</td>
@@ -40,7 +46,9 @@
             </td>
         </tr>
         @empty
-        <tr><td colspan="9" class="text-center text-muted py-5">موقعیتی یافت نشد.</td></tr>
+        <tr>
+            <td colspan="9" class="text-center text-muted py-5">موقعیتی یافت نشد.</td>
+        </tr>
         @endforelse
     </tbody>
 </table>

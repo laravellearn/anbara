@@ -68,6 +68,7 @@ return new class extends Migration {
 
             $table->string('code')
                 ->nullable();
+            $table->text('description')->nullable();
 
             $table->foreignId('manager_user_id')
                 ->nullable();
@@ -89,7 +90,7 @@ return new class extends Migration {
                 ->nullable()
                 ->constrained()
                 ->cascadeOnDelete();
-                
+
             $table->string('name');
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')

@@ -15,23 +15,25 @@
         <tr>
             <td>{{ $loop->iteration }}</td>
             <td>{{ trim($contact->first_name . ' ' . $contact->last_name) ?: $contact->company_name ?? '---' }}</td>
-            <td>{{ $contact->type }}</td>
+            <td>
+                @if($contact->type)
+                <span class="badge bg-{{ $contact->type->color() }}">{{ $contact->type->label() }}</span>
+                @else
+                ---
+                @endif
+            </td>
             <td>{{ $contact->mobile ?? '---' }}</td>
             <td>{{ $contact->company_name ?? '---' }}</td>
             <td>{!! $contact->is_active ? '<span class="badge bg-success">فعال</span>' : '<span class="badge bg-danger">غیرفعال</span>' !!}</td>
             <td>
                 <div class="d-flex gap-1">
                     @can('access', 'contacts.edit')
-                    <button class="btn btn-sm btn-icon btn-outline-warning edit-contact-btn"
-                        data-id="{{ $contact->id }}" data-type="{{ $contact->type }}" data-first_name="{{ $contact->first_name }}"
-                        data-last_name="{{ $contact->last_name }}" data-company_name="{{ $contact->company_name }}"
-                        data-mobile="{{ $contact->mobile }}" data-phone="{{ $contact->phone }}" data-email="{{ $contact->email }}"
-                        data-active="{{ $contact->is_active }}">
+                    <a href="{{ route('contacts.edit', $contact) }}" class="btn btn-sm btn-icon btn-outline-warning">
                         <i class="bx bx-edit"></i>
-                    </button>
+                    </a>
                     @endcan
                     @can('access', 'contacts.delete')
-                    <form action="{{ route('warehouse.contacts.destroy', $contact) }}" method="POST" class="d-inline delete-form">
+                    <form action="{{ route('contacts.destroy', $contact) }}" method="POST" class="d-inline delete-form">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-icon btn-outline-danger"><i class="bx bx-trash"></i></button>
                     </form>
@@ -40,7 +42,9 @@
             </td>
         </tr>
         @empty
-        <tr><td colspan="7" class="text-center text-muted py-5">مخاطبی یافت نشد.</td></tr>
+        <tr>
+            <td colspan="7" class="text-center text-muted py-5">مخاطبی یافت نشد.</td>
+        </tr>
         @endforelse
     </tbody>
 </table>

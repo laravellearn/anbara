@@ -8,6 +8,7 @@
                 <th>ایمیل</th>
                 <th>شرکت‌ها</th>
                 <th>نقش‌ها</th>
+                <th>کارمند</th>
                 <th>وضعیت</th>
                 <th class="cursor-pointer sortable" data-sort="last_login_at">آخرین ورود <i class="bx bx-sort ms-1 text-muted sort-icon"></i></th>
                 <th class="cursor-pointer sortable" data-sort="created_at">تاریخ ثبت <i class="bx bx-sort-down ms-1 text-primary sort-icon"></i></th>
@@ -37,62 +38,77 @@
                 <td>{{ $user->email ?? '---' }}</td>
                 <td>
                     @forelse($user->companies as $company)
-                        <span class="badge bg-label-secondary me-1 mb-1">{{ $company->name }} @if($company->pivot->is_default)<i class="bx bx-star text-warning ms-1"></i>@endif</span>
+                    <span class="badge bg-label-secondary me-1 mb-1">{{ $company->name }} @if($company->pivot->is_default)<i class="bx bx-star text-warning ms-1"></i>@endif</span>
                     @empty <span class="text-muted">---</span> @endforelse
                 </td>
                 <td>
                     @php
-                        $defaultCompanyUser = $user->companyUsers()->where('is_default', true)->first();
-                        $userRoles = $defaultCompanyUser ? $defaultCompanyUser->roles : collect();
+                    $defaultCompanyUser = $user->companyUsers()->where('is_default', true)->first();
+                    $userRoles = $defaultCompanyUser ? $defaultCompanyUser->roles : collect();
                     @endphp
                     @forelse($userRoles as $role)
-                        <span class="badge bg-label-info me-1 mb-1">{{ $role->title }}</span>
+                    <span class="badge bg-label-info me-1 mb-1">{{ $role->title }}</span>
                     @empty <span class="text-muted">---</span> @endforelse
                 </td>
-                <td>@if($user->is_active)<span class="badge bg-success">فعال</span>@else<span class="badge bg-danger">غیرفعال</span>@endif</td>
+                <td>
+                    @if($user->employee)
+                    {{ $user->employee->name }}
+                    @else
+                    <button type="button" class="btn btn-sm btn-outline-info create-employee-for-user"
+                        data-user-id="{{ $user->id }}"
+                        data-user-name="{{ $user->name }}"
+                        data-user-mobile="{{ $user->mobile }}">
+                        <i class="bx bx-plus"></i> ایجاد کارمند
+                    </button>
+                    @endif
+                </td>
+                <td>
+                    @if($user->is_active)<span class="badge bg-success">فعال</span>@else<span class="badge bg-danger">غیرفعال</span>@endif</td>
                 <td>
                     @if($user->last_login_at)
-                        <small>{{ \Verta::instance($user->last_login_at)->format('Y/m/d-H:i') }}</small>
+                    <small>{{ \Verta::instance($user->last_login_at)->format('Y/m/d-H:i') }}</small>
                     @else <span class="badge bg-label-secondary">بدون ورود</span> @endif
                 </td>
                 <td><small>{{ \Verta::instance($user->created_at)->format('Y/m/d') }}</small></td>
                 <td>
                     <div class="d-flex gap-1">
                         @can('access', 'users.edit')
-                            @php
-                                $userCompanyRoles = [];
-                                foreach ($user->companyUsers as $cu) {
-                                    $userCompanyRoles[$cu->company_id] = $cu->roles->pluck('id')->toArray();
-                                }
-                            @endphp
-                            <button class="btn btn-sm btn-outline-warning edit-user-btn"
-                                data-id="{{ $user->id }}"
-                                data-name="{{ $user->name }}"
-                                data-mobile="{{ $user->mobile }}"
-                                data-email="{{ $user->email }}"
-                                data-is-active="{{ $user->is_active ? 1 : 0 }}"
-                                data-companies="{{ json_encode($user->companies->pluck('id')) }}"
-                                data-company-roles="{{ json_encode($userCompanyRoles) }}"
-                                data-available-roles="{{ json_encode($rolesByCompany) }}"
-                                data-default-company="{{ $user->companies()->wherePivot('is_default', true)->first()?->id }}">
-                                <i class="bx bx-edit"></i>
-                            </button>
+                        @php
+                        $userCompanyRoles = [];
+                        foreach ($user->companyUsers as $cu) {
+                        $userCompanyRoles[$cu->company_id] = $cu->roles->pluck('id')->toArray();
+                        }
+                        @endphp
+                        <button class="btn btn-sm btn-outline-warning edit-user-btn"
+                            data-id="{{ $user->id }}"
+                            data-name="{{ $user->name }}"
+                            data-mobile="{{ $user->mobile }}"
+                            data-email="{{ $user->email }}"
+                            data-is-active="{{ $user->is_active ? 1 : 0 }}"
+                            data-companies="{{ json_encode($user->companies->pluck('id')) }}"
+                            data-company-roles="{{ json_encode($userCompanyRoles) }}"
+                            data-available-roles="{{ json_encode($rolesByCompany) }}"
+                            data-default-company="{{ $user->companies()->wherePivot('is_default', true)->first()?->id }}">
+                            <i class="bx bx-edit"></i>
+                        </button>
                         @endcan
                         @can('access', 'users.delete')
-                            @if ($user->id !== auth()->id())
-                                <button type="button" class="btn btn-sm btn-icon btn-outline-danger delete-user-btn"
-                                    data-url="{{ route('users.destroy', $user) }}" data-name="{{ $user->name }}" data-id="{{ $user->id }}">
-                                    <i class="bx bx-trash"></i>
-                                </button>
-                            @else
-                                <button class="btn btn-sm btn-icon btn-outline-secondary" disabled><i class="bx bx-block"></i></button>
-                            @endif
+                        @if ($user->id !== auth()->id())
+                        <button type="button" class="btn btn-sm btn-icon btn-outline-danger delete-user-btn"
+                            data-url="{{ route('users.destroy', $user) }}" data-name="{{ $user->name }}" data-id="{{ $user->id }}">
+                            <i class="bx bx-trash"></i>
+                        </button>
+                        @else
+                        <button class="btn btn-sm btn-icon btn-outline-secondary" disabled><i class="bx bx-block"></i></button>
+                        @endif
                         @endcan
                     </div>
                 </td>
             </tr>
             @empty
-            <tr><td colspan="10" class="text-center text-muted py-5">هیچ کاربری یافت نشد.</td></tr>
+            <tr>
+                <td colspan="10" class="text-center text-muted py-5">هیچ کاربری یافت نشد.</td>
+            </tr>
             @endforelse
         </tbody>
     </table>

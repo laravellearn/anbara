@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Enums;
 
 enum ContactType: string
@@ -6,13 +7,15 @@ enum ContactType: string
     case CUSTOMER = 'customer';
     case SUPPLIER = 'supplier';
     case BOTH = 'both';
+    case EMPLOYEE = 'employee';
 
     public function label(): string
     {
         return match ($this) {
             self::CUSTOMER => 'مشتری',
-            self::SUPPLIER => 'تامین کننده',
-            self::BOTH => 'مشتری و تامین کننده',
+            self::SUPPLIER => 'تأمین‌کننده',
+            self::BOTH => 'هر دو',
+            self::EMPLOYEE => 'کارمند',
         };
     }
 
@@ -22,13 +25,14 @@ enum ContactType: string
             self::CUSTOMER => 'primary',
             self::SUPPLIER => 'warning',
             self::BOTH => 'success',
+            self::EMPLOYEE => 'info',
         };
     }
 
     public static function options(): array
     {
         return collect(self::cases())
-            ->mapWithKeys(fn ($case) => [
+            ->mapWithKeys(fn($case) => [
                 $case->value => $case->label(),
             ])
             ->toArray();

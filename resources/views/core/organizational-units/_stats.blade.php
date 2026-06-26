@@ -6,7 +6,7 @@
                     <span class="fw-medium text-muted">کل واحدها</span>
                     <h3 class="mb-0 mt-1">{{ $stats['total'] }}</h3>
                 </div>
-                <span class="badge bg-label-primary rounded p-2"><i class="bx bx-buildings bx-sm"></i></span>
+                <span class="badge bg-label-primary rounded p-2"><i class="bx bx-sitemap bx-sm"></i></span>
             </div>
         </div>
     </div>

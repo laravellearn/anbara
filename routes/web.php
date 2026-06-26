@@ -27,7 +27,8 @@ use App\Http\Controllers\Core\{
     PermissionController,
     OrganizationalUnitController,
     ContactController,
-    EmployeeController
+    EmployeeController,
+    LocationController
 };
 
 use App\Http\Controllers\Warehouse\{
@@ -155,7 +156,11 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
     // کارمندان (Employees) – در Core
     Route::resource('employees', EmployeeController::class)->except(['show', 'create', 'edit']);
     // مخاطبین (Contacts) – طرف‌حساب‌های تجاری (مشتری/تامین‌کننده)، در Core
-    Route::resource('contacts', ContactController::class)->except(['show', 'create', 'edit']);
+    Route::resource('contacts', ContactController::class)->except(['show']);
+
+    Route::get('/api/countries/{country}/provinces', [LocationController::class, 'provinces'])
+        ->name('api.countries.provinces');
+
 });
 
 

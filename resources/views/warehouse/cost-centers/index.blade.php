@@ -74,7 +74,7 @@
 
 @push('scripts')
 <script>
-    $(function(){
+    $(function() {
         let searchTimeout;
         const $tableWrapper = $('#tableWrapper');
         const $statsCards = $('#statsCards');
@@ -86,7 +86,11 @@
             $tableWrapper.addClass('opacity-50');
             $.ajax({
                 url: '{{ route('warehouse.cost-centers.index') }}',
-                data: { search, status, ajax: 1 },
+                data: {
+                    search,
+                    status,
+                    ajax: 1
+                },
                 success: function(response) {
                     $tableWrapper.html(response.html);
                     $statsCards.html(response.statsHtml);
@@ -95,33 +99,46 @@
             }).always(() => $tableWrapper.removeClass('opacity-50'));
         }
 
-        $('#liveSearch').on('keyup', function() { clearTimeout(searchTimeout); searchTimeout = setTimeout(performSearch, 500); });
+        $('#liveSearch').on('keyup', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 500);
+        });
         $('#filterStatus').on('change', performSearch);
-        $('#clearSearch').on('click', function() { $('#liveSearch').val('').focus(); performSearch(); });
+        $('#clearSearch').on('click', function() {
+            $('#liveSearch').val('').focus();
+            performSearch();
+        });
         $('#resetFilters').on('click', function() {
             $('#liveSearch').val('');
             $('#filterStatus').val('');
             performSearch();
         });
 
-        // ========== مودال ویرایش ==========
-        $(document).on('click', '.edit-btn', function() {
-            const btn = $(this);
-            const id = btn.data('id');
-            $('#ccForm').attr('action', `{{ route('warehouse.cost-centers.update', ':id') }}`.replace(':id', id));
-            if (!$('input[name="_method"]').length) $('#ccForm').prepend('<input type="hidden" name="_method" value="PUT">');
-            $('#cc_code').val(btn.data('code'));
-            $('#cc_title').val(btn.data('title'));
-            $('#cc_desc').val(btn.data('desc') || '');
-            $('#cc_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
+        // باز کردن مودال ایجاد
+        $('#openCreateModalBtn').on('click', function() {
+            $('#createCostCenterForm')[0].reset();
             $('#createModal').modal('show');
         });
 
-        // ========== ریست فرم هنگام بسته شدن مودال ==========
-        $('#createModal').on('hidden.bs.modal', function() {
-            $('#ccForm').attr('action', `{{ route('warehouse.cost-centers.store') }}`);
-            $('input[name="_method"]').remove();
-            $('#ccForm')[0].reset();
+        // ویرایش
+        $(document).on('click', '.edit-cost-center-btn', function() {
+            const btn = $(this);
+            const id = btn.data('id');
+            // تنظیم action
+            $('#editCostCenterForm').attr('action', '{{ route('warehouse.cost-centers.update', ':id') }}'.replace(':id', id));
+            // پر کردن فیلدها
+            $('#edit_cc_title').val(btn.data('title'));
+            $('#edit_cc_code').val(btn.data('code'));
+            $('#edit_cc_desc').val(btn.data('desc'));
+            $('#edit_cc_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
+            // نمایش مودال
+            $('#editModal').modal('show');
+        });
+
+        // ریست فرم ویرایش هنگام بسته شدن
+        $('#editModal').on('hidden.bs.modal', function() {
+            $('#editCostCenterForm')[0].reset();
+            $('#editCostCenterForm').attr('action', '');
         });
 
         // ========== حذف با تأیید ==========
@@ -149,12 +166,12 @@
 
         // ========== نمایش خطاهای اعتبارسنجی در مودال ==========
         @if($errors->any() && session('show_create_modal'))
-            $('#createModal').modal('show');
-            @foreach ($errors->all() as $error)
-                if (typeof showToast !== 'undefined') {
-                    showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
-                }
-            @endforeach
+        $('#createModal').modal('show');
+        @foreach($errors->all() as $error)
+        if (typeof showToast !== 'undefined') {
+            showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
+        }
+        @endforeach
         @endif
     });
 </script>

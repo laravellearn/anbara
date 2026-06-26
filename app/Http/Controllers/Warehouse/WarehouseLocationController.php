@@ -62,7 +62,11 @@ class WarehouseLocationController extends BaseController
         $warehouses = Warehouse::where('tenant_id', $this->manager->getTenantId())->get();
         $locations  = WarehouseLocation::where('tenant_id', $this->manager->getTenantId())->get();
 
-        return view('warehouse.warehouse-locations.create', compact('warehouses', 'locations'));
+        return view('warehouse.warehouse-locations.create', [
+            'warehouses' => $warehouses,
+            'locations'  => $locations,
+            'location'   => null,  // اضافه شد
+        ]);
     }
 
     public function store(Request $request)
@@ -75,6 +79,7 @@ class WarehouseLocationController extends BaseController
                 'parent_id'    => 'nullable|exists:warehouse_locations,id',
                 'code'         => 'required|string|max:50',
                 'title'        => 'required|string|max:255',
+                'type'         => 'nullable|string|max:50',  // اضافه شد
                 'description'  => 'nullable|string',
                 'sort_order'   => 'nullable|integer|min:0',
                 'capacity'     => 'nullable|numeric|min:0',
@@ -83,6 +88,7 @@ class WarehouseLocationController extends BaseController
 
             $data['tenant_id']  = $this->manager->getTenantId();
             $data['company_id'] = $this->manager->getCompanyId();
+            $data['is_active']  = $request->boolean('is_active', false); // تبدیل قطعی
 
             WarehouseLocation::create($data);
 
@@ -114,7 +120,7 @@ class WarehouseLocationController extends BaseController
         // تغییر نام متغیر برای هماهنگی با ویو
         return view('warehouse.warehouse-locations.edit', [
             'location'  => $warehouseLocation,
-            'warehouses'=> $warehouses,
+            'warehouses' => $warehouses,
             'locations' => $locations,
         ]);
     }
@@ -129,12 +135,14 @@ class WarehouseLocationController extends BaseController
                 'parent_id'    => 'nullable|exists:warehouse_locations,id',
                 'code'         => 'required|string|max:50',
                 'title'        => 'required|string|max:255',
+                'type'         => 'nullable|string|max:50',
                 'description'  => 'nullable|string',
                 'sort_order'   => 'nullable|integer|min:0',
                 'capacity'     => 'nullable|numeric|min:0',
                 'is_active'    => 'boolean',
             ]);
 
+            $data['is_active'] = $request->boolean('is_active', false);
             $warehouseLocation->update($data);
 
             return redirect()->route('warehouse.warehouse-locations.index')->with('toast', [

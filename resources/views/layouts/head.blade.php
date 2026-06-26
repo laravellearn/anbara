@@ -34,6 +34,8 @@
 
 <link rel="stylesheet" href="{{ asset('css/sweetalert2.min.css') }}">
 
+<link rel="stylesheet" href="{{ asset('/vendor/libs/select2/select2.css') }}">
+<link rel="stylesheet" href="{{ asset('/vendor/libs/bootstrap-select/bootstrap-select.css') }}">
 
 
 <style>
@@ -117,13 +119,14 @@
         font-size: 0.75rem;
         padding: 0.25rem 0.5rem;
     }
-    
-    .select-group-btn, .deselect-group-btn {
+
+    .select-group-btn,
+    .deselect-group-btn {
         font-size: 0.75rem;
         padding: 0.2rem 0.5rem;
     }
-    
-    .permission-checkbox:checked + label {
+
+    .permission-checkbox:checked+label {
         color: #696cff;
         font-weight: 500;
     }

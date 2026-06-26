@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('country_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('province_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('city_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('city', 255)->nullable();
             $table->string('code', 50)->nullable();
             $table->string('type')->default('customer');
             $table->string('first_name')->nullable();

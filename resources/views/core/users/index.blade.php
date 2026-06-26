@@ -192,6 +192,7 @@
 </div>
 
 @include('core.users._modals')
+@include('core.employees._modal_create_for_user', ['units' => $OrganizationalUnits])
 
 @endsection
 
@@ -488,8 +489,16 @@
                             method: 'POST',
                             action: url
                         }).append(
-                            $('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }),
-                            $('<input>', { type: 'hidden', name: '_method', value: 'DELETE' })
+                            $('<input>', {
+                                type: 'hidden',
+                                name: '_token',
+                                value: '{{ csrf_token() }}'
+                            }),
+                            $('<input>', {
+                                type: 'hidden',
+                                name: '_method',
+                                value: 'DELETE'
+                            })
                         );
                         $('body').append(form);
                         form.submit();
@@ -501,8 +510,16 @@
                         method: 'POST',
                         action: url
                     }).append(
-                        $('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }),
-                        $('<input>', { type: 'hidden', name: '_method', value: 'DELETE' })
+                        $('<input>', {
+                            type: 'hidden',
+                            name: '_token',
+                            value: '{{ csrf_token() }}'
+                        }),
+                        $('<input>', {
+                            type: 'hidden',
+                            name: '_method',
+                            value: 'DELETE'
+                        })
                     );
                     $('body').append(form);
                     form.submit();
@@ -560,7 +577,11 @@
             } else {
                 alert('{{ $error }}');
             }
-        }, {{ $loop->index * 500 }});
+        }, {
+            {
+                $loop->index * 500
+            }
+        });
         @endforeach
     });
 </script>
@@ -577,7 +598,9 @@
         createModal.show();
 
         setTimeout(function() {
-            $('#createUserModal .modal-body').animate({ scrollTop: 0 }, 300);
+            $('#createUserModal .modal-body').animate({
+                scrollTop: 0
+            }, 300);
         }, 200);
     });
     @endif
@@ -592,7 +615,9 @@
         editModal.show();
 
         setTimeout(function() {
-            $('#editUserModal .modal-body').animate({ scrollTop: 0 }, 300);
+            $('#editUserModal .modal-body').animate({
+                scrollTop: 0
+            }, 300);
         }, 200);
     });
     @endif
@@ -640,5 +665,26 @@
             }
         });
     });
+
+// باز کردن مودال ایجاد کارمند با اطلاعات کاربر
+$(document).on('click', '.create-employee-for-user', function() {
+    var userId = $(this).data('user-id');
+    var userName = $(this).data('user-name');
+    var userMobile = $(this).data('user-mobile');
+
+    // پر کردن فیلدها
+    $('#for_user_emp_name').val(userName);
+    $('#for_user_mobile').val(userMobile);
+    $('#for_user_user_id').val(userId);
+
+    // نمایش مودال
+    $('#createEmployeeForUserModal').modal('show');
+});
+
+// ریست فرم هنگام بسته شدن مودال
+$('#createEmployeeForUserModal').on('hidden.bs.modal', function() {
+    $('#createEmployeeForUserForm')[0].reset();
+    $('#for_user_user_id').val(''); // پاک کردن کاربر مخفی
+});
 </script>
 @endpush

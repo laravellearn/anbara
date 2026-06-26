@@ -12,16 +12,25 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WarehouseLocation extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes, Auditable,LogsActivity;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes, Auditable, LogsActivity;
 
     protected $fillable = [
-        'tenant_id', 'company_id', 'warehouse_id', 'parent_id',
-        'code', 'title', 'description', 'sort_order', 'is_active',
+        'tenant_id',
+        'company_id',
+        'warehouse_id',
+        'parent_id',
+        'code',
+        'title',
+        'type',
+        'description',
+        'sort_order',
+        'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'type'       => \App\Enums\WarehouseLocationType::class, // اضافه شد
     ];
 
     public function warehouse()

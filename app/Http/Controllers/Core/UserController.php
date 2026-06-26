@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\CompanyUser;
 use App\Models\Employee;
+use App\Models\OrganizationalUnit;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\TenantManager;
@@ -36,7 +37,7 @@ class UserController extends Controller
         $tenantId = $this->manager->getTenantId();
 
         $query = User::where('tenant_id', $tenantId)
-            ->with(['companies', 'companyUsers.roles']);
+            ->with(['companies', 'companyUsers.roles', 'employee']);
 
         // جستجوی زنده
         if ($request->filled('search')) {
@@ -93,7 +94,10 @@ class UserController extends Controller
             ]);
         }
 
-        return view('core.users.index', compact('users', 'companies', 'roles', 'rolesByCompany'));
+        $OrganizationalUnits = OrganizationalUnit::where('tenant_id', $tenantId)->get();
+
+
+        return view('core.users.index', compact('users', 'companies', 'roles', 'rolesByCompany','OrganizationalUnits'));
     }
 
     /**

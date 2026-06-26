@@ -54,9 +54,9 @@
                 <small class="text-muted ms-2" id="filteredCount">({{ $contacts->total() }})</small>
             </h5>
             @can('access', 'contacts.create')
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+            <a href="{{ route('contacts.create') }}" class="btn btn-primary">
                 <i class="bx bx-plus"></i> مخاطب جدید
-            </button>
+            </a>
             @endcan
         </div>
 
@@ -66,12 +66,11 @@
     </div>
 </div>
 
-@include('core.contacts._modal')
 @endsection
 
 @push('scripts')
 <script>
-    $(function(){
+    $(function() {
         let searchTimeout;
         const $tableWrapper = $('#tableWrapper');
         const $statsCards = $('#statsCards');
@@ -84,7 +83,12 @@
             $tableWrapper.addClass('opacity-50');
             $.ajax({
                 url: '{{ route('contacts.index') }}',
-                data: { search, type, status, ajax: 1 },
+                data: {
+                    search,
+                    type,
+                    status,
+                    ajax: 1
+                },
                 success: function(response) {
                     $tableWrapper.html(response.html);
                     $statsCards.html(response.statsHtml);
@@ -93,14 +97,44 @@
             }).always(() => $tableWrapper.removeClass('opacity-50'));
         }
 
-        $('#liveSearch').on('keyup', function() { clearTimeout(searchTimeout); searchTimeout = setTimeout(performSearch, 500); });
+        $('#liveSearch').on('keyup', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 500);
+        });
         $('#filterType, #filterStatus').on('change', performSearch);
-        $('#clearSearch').on('click', function() { $('#liveSearch').val('').focus(); performSearch(); });
+        $('#clearSearch').on('click', function() {
+            $('#liveSearch').val('').focus();
+            performSearch();
+        });
         $('#resetFilters').on('click', function() {
             $('#liveSearch').val('');
             $('#filterType').val('');
             $('#filterStatus').val('');
             performSearch();
+        });
+    });
+
+
+        // حذف با تأیید
+    $(document).on('submit', '.delete-form', function(e) {
+        e.preventDefault();
+        const form = this;
+        Swal.fire({
+            title: 'آیا مطمئن هستید؟',
+            text: "این مخاطب حذف خواهد شد.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله، حذف کن',
+            cancelButtonText: 'لغو',
+            customClass: {
+                confirmButton: 'btn btn-danger me-3',
+                cancelButton: 'btn btn-label-secondary'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
         });
     });
 </script>

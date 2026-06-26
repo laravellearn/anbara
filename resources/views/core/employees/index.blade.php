@@ -53,7 +53,6 @@
                 <small class="text-muted ms-2" id="filteredCount">({{ $employees->total() }})</small>
             </h5>
             <div class="d-flex gap-2 flex-wrap">
-                {{-- Export placeholder --}}
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bx bx-export"></i> خروجی
@@ -78,12 +77,23 @@
     </div>
 </div>
 
-@include('core.employees._modal', ['units' => $units])
+@include('core.employees._modal', ['units' => $units, 'users' => $users])
 @endsection
 
 @push('scripts')
 <script>
-    $(function(){
+
+// نمایش/مخفی فیلدهای کاربر در مودال ایجاد
+$('#create_user_check').on('change', function() {
+    $('#createUserFields').toggle(this.checked);
+});
+
+// نمایش/مخفی فیلدهای کاربر در مودال ویرایش
+$('#edit_create_user_check').on('change', function() {
+    $('#editUserFields').toggle(this.checked);
+});
+
+$(function(){
         let searchTimeout;
         const $tableWrapper = $('#tableWrapper');
         const $statsCards = $('#statsCards');
@@ -96,7 +106,7 @@
             $tableWrapper.addClass('opacity-50');
             $.ajax({
                 url: '{{ route('employees.index') }}',
-                data: { search, unit_id: unit, status, ajax: 1 },
+                data: { search, organizational_unit_id: unit, status, ajax: 1 },
                 success: function(response) {
                     $tableWrapper.html(response.html);
                     $statsCards.html(response.statsHtml);
@@ -115,31 +125,37 @@
             performSearch();
         });
 
-        // ========== مودال ویرایش ==========
+        // ویرایش: باز کردن مودال ویرایش با داده‌ها
         $(document).on('click', '.edit-employee-btn', function() {
             const btn = $(this);
             const id = btn.data('id');
-            $('#employeeForm').attr('action', `{{ route('employees.update', ':id') }}`.replace(':id', id));
-            if (!$('input[name="_method"]').length) $('#employeeForm').prepend('<input type="hidden" name="_method" value="PUT">');
-            $('#emp_name').val(btn.data('name'));
-            $('#emp_code').val(btn.data('code'));
-            $('#emp_unit').val(btn.data('unit'));
-            $('#emp_position').val(btn.data('position'));
-            $('#emp_mobile').val(btn.data('mobile'));
-            $('#emp_phone').val(btn.data('phone'));
-            $('#emp_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
-            $('#createModal').modal('show');
+            $('#editEmployeeForm').attr('action', '{{ route('employees.update', ':id') }}'.replace(':id', id));
+            $('#edit_emp_name').val(btn.data('name'));
+            $('#edit_emp_code').val(btn.data('code'));
+            $('#edit_emp_national_code').val(btn.data('national_code'));
+            $('#edit_emp_unit').val(btn.data('unit'));
+            $('#edit_emp_user').val(btn.data('user'));
+            $('#edit_emp_position').val(btn.data('position'));
+            $('#edit_emp_mobile').val(btn.data('mobile'));
+            $('#edit_emp_phone').val(btn.data('phone'));
+            $('#edit_emp_email').val(btn.data('email'));
+            $('#edit_emp_employment_date').val(btn.data('employment_date'));
+            $('#edit_emp_address').val(btn.data('address'));
+            $('#edit_emp_desc').val(btn.data('desc'));
+            $('#edit_emp_active').prop('checked', btn.data('active') == '1' || btn.data('active') == true);
+            $('#editModal').modal('show');
         });
 
-        // ========== ریست فرم هنگام بسته شدن مودال ==========
+        // ریست فرم‌ها
         $('#createModal').on('hidden.bs.modal', function() {
-            $('#employeeForm').attr('action', `{{ route('employees.store') }}`);
-            $('input[name="_method"]').remove();
             $('#employeeForm')[0].reset();
         });
+        $('#editModal').on('hidden.bs.modal', function() {
+            $('#editEmployeeForm')[0].reset();
+        });
 
-        // ========== حذف با تأیید ==========
-        $('.delete-form').on('submit', function(e) {
+        // حذف با تأیید
+        $(document).on('submit', '.delete-form', function(e) {
             e.preventDefault();
             const form = this;
             Swal.fire({
@@ -161,14 +177,11 @@
             });
         });
 
-        // ========== نمایش خطاهای اعتبارسنجی در مودال ==========
         @if($errors->any() && session('show_create_modal'))
             $('#createModal').modal('show');
-            @foreach ($errors->all() as $error)
-                if (typeof showToast !== 'undefined') {
-                    showToast('{{ $error }}', 'error', 'خطای اعتبارسنجی');
-                }
-            @endforeach
+        @endif
+        @if($errors->any() && session('show_edit_modal'))
+            $('#editModal').modal('show');
         @endif
     });
 </script>

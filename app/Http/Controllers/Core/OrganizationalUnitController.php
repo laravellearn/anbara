@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Core;
 
 use App\Models\OrganizationalUnit;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -14,18 +15,13 @@ class OrganizationalUnitController extends BaseController
         Gate::authorize('access', 'organizational-units.view');
         $tenantId = $this->manager->getTenantId();
 
-        $allUnits = OrganizationalUnit::where('tenant_id', $tenantId)->get();
-
         $query = OrganizationalUnit::with('parent')->where('tenant_id', $tenantId);
-
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', "%{$request->search}%")
-                    ->orWhere('description', 'like', "%{$request->search}%");
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
             });
-        }
-        if ($request->filled('parent_id')) {
-            $query->where('parent_id', $request->parent_id);
         }
         if ($request->filled('status')) {
             $query->where('is_active', $request->status === 'active');
@@ -48,7 +44,10 @@ class OrganizationalUnitController extends BaseController
             ]);
         }
 
-        return view('core.organizational-units.index', compact('units', 'allUnits', 'stats'));
+        $allUnits = OrganizationalUnit::where('tenant_id', $tenantId)->get();
+        $users = User::where('tenant_id', $tenantId)->get(); // برای انتخاب مدیر
+
+        return view('core.organizational-units.index', compact('units', 'stats', 'allUnits', 'users'));
     }
 
     public function store(Request $request)
@@ -56,22 +55,25 @@ class OrganizationalUnitController extends BaseController
         Gate::authorize('access', 'organizational-units.create');
 
         try {
+            $tenantId = $this->manager->getTenantId();
             $data = $request->validate([
-                'title'       => 'required|string|max:255',
-                'parent_id'   => 'nullable|exists:organizational_units,id',
-                'description' => 'nullable|string',
-                'is_active'   => 'boolean',
+                'name'            => 'required|string|max:255',
+                'code'            => 'nullable|string|max:50|unique:organizational_units,code',
+                'parent_id'       => 'nullable|exists:organizational_units,id',
+                'manager_user_id' => 'nullable|exists:users,id',
+                'description'     => 'nullable|string',
+                'is_active'       => 'boolean',
             ]);
 
-            $data['tenant_id']  = $this->manager->getTenantId();
+            $data['tenant_id'] = $tenantId;
             $data['company_id'] = $this->manager->getCompanyId();
 
             OrganizationalUnit::create($data);
 
-            return redirect()->route('core.organizational-units.index')->with('toast', [
+            return redirect()->route('organizational-units.index')->with('toast', [
                 'message' => 'واحد سازمانی با موفقیت ایجاد شد.',
                 'type'    => 'success',
-                'title'   => 'ایجاد واحد سازمانی'
+                'title'   => 'ایجاد واحد'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
@@ -80,36 +82,33 @@ class OrganizationalUnitController extends BaseController
                 ->with('show_create_modal', true);
         } catch (\Exception $e) {
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد واحد سازمانی: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد واحد: ' . $e->getMessage()])
                 ->withInput()
                 ->with('show_create_modal', true);
         }
     }
 
-    public function update(Request $request, OrganizationalUnit $unit)
+    public function update(Request $request, OrganizationalUnit $organizationalUnit)
     {
         Gate::authorize('access', 'organizational-units.edit');
 
         try {
-            $request->validate([
-                'title'       => 'required|string|max:255',
-                'parent_id'   => [
-                    'nullable',
-                    'exists:organizational_units,id',
-                    Rule::notIn([$unit->id]),
-                ],
-                'description' => 'nullable|string',
-                'is_active'   => 'boolean',
-            ], [
-                'parent_id.not_in' => 'یک واحد سازمانی نمی‌تواند والد خودش باشد.',
+            $data = $request->validate([
+                'name'            => 'required|string|max:255',
+                'code'            => 'nullable|string|max:50|unique:organizational_units,code,' . $organizationalUnit->id,
+                'parent_id'       => 'nullable|exists:organizational_units,id',
+                'manager_user_id' => 'nullable|exists:users,id',
+                'description'     => 'nullable|string',
+                'is_active'       => 'boolean',
             ]);
 
-            $unit->update($request->only('title', 'parent_id', 'description', 'is_active'));
+            $data['is_active'] = $request->boolean('is_active', false);
+            $organizationalUnit->update($data);
 
-            return redirect()->route('core.organizational-units.index')->with('toast', [
+            return redirect()->route('organizational-units.index')->with('toast', [
                 'message' => 'واحد سازمانی با موفقیت ویرایش شد.',
                 'type'    => 'success',
-                'title'   => 'ویرایش واحد سازمانی'
+                'title'   => 'ویرایش واحد'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
@@ -118,27 +117,27 @@ class OrganizationalUnitController extends BaseController
                 ->with('show_edit_modal', true);
         } catch (\Exception $e) {
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش واحد سازمانی: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش واحد: ' . $e->getMessage()])
                 ->withInput()
                 ->with('show_edit_modal', true);
         }
     }
 
-    public function destroy(OrganizationalUnit $unit)
+    public function destroy(OrganizationalUnit $organizationalUnit)
     {
         Gate::authorize('access', 'organizational-units.delete');
 
         try {
-            $unit->delete();
+            $organizationalUnit->delete();
 
-            return redirect()->route('core.organizational-units.index')->with('toast', [
+            return redirect()->route('organizational-units.index')->with('toast', [
                 'message' => 'واحد سازمانی با موفقیت حذف شد.',
                 'type'    => 'success',
-                'title'   => 'حذف واحد سازمانی'
+                'title'   => 'حذف واحد'
             ]);
         } catch (\Exception $e) {
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف واحد سازمانی: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف واحد: ' . $e->getMessage()]);
         }
     }
 }

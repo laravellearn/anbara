@@ -12,13 +12,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Employee extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes,Auditable,LogsActivity;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes, Auditable, LogsActivity;
 
     protected $fillable = [
-        'tenant_id', 'company_id', 'organizational_unit_id', 'user_id',
-        'employee_code', 'name', 'national_code', 'mobile', 'phone',
-        'position', 'employment_date', 'address', 'description', 'is_active',
+        'tenant_id',
+        'company_id',
+        'organizational_unit_id',
+        'user_id',
+        'contact_id',
+        'employee_code',
+        'name',
+        'national_code',
+        'mobile',
+        'phone',
+        'position',
+        'employment_date',
+        'address',
+        'description',
+        'is_active',
     ];
+
+    public function contact()
+    {
+        return $this->belongsTo(Contact::class);
+    }
 
     protected $casts = [
         'employment_date' => 'date',

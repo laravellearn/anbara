@@ -15,8 +15,10 @@
 
 <!-- SweetAlert2 JS -->
 <script src="{{ asset('js/sweetalert2.js') }}"></script>
-  {{-- مطمئن شوید فایل موجود است یا از CDN استفاده کنید --}}
+{{-- مطمئن شوید فایل موجود است یا از CDN استفاده کنید --}}
 
-
+<script src="{{ asset('vendor/libs/select2/select2.js') }}"></script>
+<script src="{{ asset('vendor/libs/bootstrap-select/bootstrap-select.js') }}"></script>
+<script src="{{ asset('js/forms-selects.js') }}"></script>
 
 @stack('scripts')

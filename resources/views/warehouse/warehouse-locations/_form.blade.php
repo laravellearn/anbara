@@ -1,3 +1,4 @@
+{{-- resources/views/warehouse/warehouse-locations/_form.blade.php --}}
 <div class="card-body">
     <div class="row g-3">
         <div class="col-md-6">
@@ -5,7 +6,7 @@
             <select name="warehouse_id" class="form-select" required>
                 <option value="">انتخاب کنید</option>
                 @foreach($warehouses as $wh)
-                    <option value="{{ $wh->id }}" {{ old('warehouse_id', $location->warehouse_id ?? '') == $wh->id ? 'selected' : '' }}>{{ $wh->title }}</option>
+                <option value="{{ $wh->id }}" {{ old('warehouse_id', $location->warehouse_id ?? '') == $wh->id ? 'selected' : '' }}>{{ $wh->title }}</option>
                 @endforeach
             </select>
         </div>
@@ -14,7 +15,7 @@
             <select name="parent_id" class="form-select">
                 <option value="">بدون والد</option>
                 @foreach($locations as $loc)
-                    <option value="{{ $loc->id }}" {{ old('parent_id', $location->parent_id ?? '') == $loc->id ? 'selected' : '' }}>{{ $loc->code }} - {{ $loc->title }}</option>
+                <option value="{{ $loc->id }}" {{ old('parent_id', $location->parent_id ?? '') == $loc->id ? 'selected' : '' }}>{{ $loc->code }} - {{ $loc->title }}</option>
                 @endforeach
             </select>
         </div>
@@ -29,10 +30,10 @@
         <div class="col-md-6">
             <label class="form-label">نوع</label>
             <select name="type" class="form-select">
-                <option value="aisle" {{ old('type', $location->type ?? '') == 'aisle' ? 'selected' : '' }}>راهرو</option>
-                <option value="rack" {{ old('type', $location->type ?? '') == 'rack' ? 'selected' : '' }}>قفسه</option>
-                <option value="shelf" {{ old('type', $location->type ?? '') == 'shelf' ? 'selected' : '' }}>طبقه</option>
-                <option value="bin" {{ old('type', $location->type ?? '') == 'bin' ? 'selected' : '' }}>پالت</option>
+                <option value="">انتخاب کنید</option>
+                @foreach(\App\Enums\WarehouseLocationType::options() as $value => $label)
+                <option value="{{ $value }}" {{ old('type', $location->type->value ?? '') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
             </select>
         </div>
         <div class="col-md-6">
@@ -45,6 +46,7 @@
         </div>
         <div class="col-md-6">
             <div class="form-check form-switch mt-4">
+                <input type="hidden" name="is_active" value="0"> {{-- کلید حل مشکل --}}
                 <input class="form-check-input" type="checkbox" name="is_active" value="1" id="loc_active" {{ old('is_active', $location->is_active ?? true) ? 'checked' : '' }}>
                 <label class="form-check-label" for="loc_active">فعال</label>
             </div>

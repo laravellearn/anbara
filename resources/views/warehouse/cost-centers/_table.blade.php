@@ -20,9 +20,12 @@
             <td>
                 <div class="d-flex gap-1">
                     @can('access', 'cost-centers.edit')
-                    <button class="btn btn-sm btn-icon btn-outline-warning edit-btn"
-                        data-id="{{ $cc->id }}" data-code="{{ $cc->code }}" data-title="{{ $cc->title }}"
-                        data-desc="{{ $cc->description }}" data-active="{{ $cc->is_active }}">
+                    <button class="btn btn-sm btn-icon btn-outline-warning edit-cost-center-btn"
+                        data-id="{{ $cc->id }}"
+                        data-title="{{ $cc->title }}"
+                        data-code="{{ $cc->code }}"
+                        data-desc="{{ $cc->description }}"
+                        data-active="{{ $cc->is_active }}">
                         <i class="bx bx-edit"></i>
                     </button>
                     @endcan
@@ -36,7 +39,9 @@
             </td>
         </tr>
         @empty
-        <tr><td colspan="6" class="text-center text-muted py-5">مرکز هزینه‌ای یافت نشد.</td></tr>
+        <tr>
+            <td colspan="6" class="text-center text-muted py-5">مرکز هزینه‌ای یافت نشد.</td>
+        </tr>
         @endforelse
     </tbody>
 </table>

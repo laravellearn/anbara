@@ -29,7 +29,8 @@ class SetCompanyContext
                 $manager->setCompany($company);
             } else {
                 session()->forget('current_company_id');
-                return redirect()->route('companies.select'); // اگر صفحه انتخاب شرکت دارید
+                // شرکت نامعتبر؛ به صفحه انتخاب شرکت هدایت می‌شود
+                return redirect()->route('companies.index');
             }
         }
 

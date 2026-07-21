@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Core;
 
 use App\Models\FiscalYear;
+use App\Http\Requests\Core\StoreFiscalYearRequest;
+use App\Http\Requests\Core\UpdateFiscalYearRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -58,15 +60,10 @@ class FiscalYearController extends BaseController
         return view('core.fiscal-years.index', compact('fiscalYears', 'stats'));
     }
 
-    public function store(Request $request)
+    public function store(StoreFiscalYearRequest $request)
     {
         try {
-            $data = $request->validate([
-                'name'       => 'required|string|max:255',
-                'start_date' => 'required|date',
-                'end_date'   => 'required|date|after:start_date',
-                'is_active'  => 'sometimes|boolean',
-            ]);
+            $data = $request->validated();
 
             $data['tenant_id']  = auth()->user()->tenant_id;
             $data['company_id'] = $this->manager->getCompanyId();
@@ -113,15 +110,10 @@ class FiscalYearController extends BaseController
         }
     }
 
-    public function update(Request $request, FiscalYear $fiscalYear)
+    public function update(UpdateFiscalYearRequest $request, FiscalYear $fiscalYear)
     {
         try {
-            $data = $request->validate([
-                'name'       => 'required|string|max:255',
-                'start_date' => 'required|date',
-                'end_date'   => 'required|date|after:start_date',
-                'is_active'  => 'sometimes|boolean',
-            ]);
+            $data = $request->validated();
 
             // بررسی تداخل (به جز خودش)
             $overlap = FiscalYear::where('company_id', $fiscalYear->company_id)

@@ -7,8 +7,11 @@ use App\Concerns\BelongsToTenant;
 use App\Concerns\BelongsToCompany;
 use App\Concerns\AutoFillTenantAndCompany;
 use App\Concerns\LogsActivity;
+use App\Enums\InventoryTransactionStatus;
+use App\Enums\InventoryTransactionType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -84,5 +87,93 @@ class Product extends Model
     public function productType()
     {
         return $this->belongsTo(ProductType::class);
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function stockTransactions()
+    {
+        return $this->hasMany(StockTransaction::class);
+    }
+
+    // ─── محاسبه موجودی لایو ───────────────────────────────────────────────────
+
+    /**
+     * موجودی کالا در یک انبار مشخص (یا تمام انبارها اگر null باشد)
+     * داده مستقیم از stock_transactions خوانده می‌شود — بدون کش
+     */
+    public function currentStock(?int $warehouseId = null): float
+    {
+        $inbound = $this->inboundTypes();
+
+        return (float) DB::table('stock_transactions')
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN type IN (' . $inbound . ') THEN quantity ELSE -quantity END), 0) as stock'
+            )
+            ->where('product_id', $this->id)
+            ->where('status', InventoryTransactionStatus::APPROVED->value)
+            ->when($warehouseId, fn($q) => $q->where('warehouse_id', $warehouseId))
+            ->whereNull('deleted_at')
+            ->value('stock');
+    }
+
+    /**
+     * موجودی به تفکیک انبار — برای نمایش در صفحه جزئیات کالا
+     * خروجی: Collection از [warehouse_id, warehouse_title, quantity]
+     */
+    public function stockByWarehouse(): \Illuminate\Support\Collection
+    {
+        $inbound = $this->inboundTypes();
+
+        return DB::table('stock_transactions as st')
+            ->join('warehouses as w', 'w.id', '=', 'st.warehouse_id')
+            ->selectRaw(
+                'st.warehouse_id,
+                 w.title as warehouse_title,
+                 COALESCE(SUM(CASE WHEN st.type IN (' . $inbound . ') THEN st.quantity ELSE -st.quantity END), 0) as quantity'
+            )
+            ->where('st.product_id', $this->id)
+            ->where('st.status', InventoryTransactionStatus::APPROVED->value)
+            ->whereNull('st.deleted_at')
+            ->groupBy('st.warehouse_id', 'w.title')
+            ->orderBy('w.title')
+            ->get();
+    }
+
+    /**
+     * آیا موجودی زیر حداقل است؟
+     */
+    public function isBelowMinimumStock(?int $warehouseId = null): bool
+    {
+        return $this->currentStock($warehouseId) < (float) $this->minimum_stock;
+    }
+
+    /**
+     * آیا موجودی بالای حداکثر است؟
+     */
+    public function isAboveMaximumStock(?int $warehouseId = null): bool
+    {
+        if ($this->maximum_stock === null) {
+            return false;
+        }
+
+        return $this->currentStock($warehouseId) > (float) $this->maximum_stock;
+    }
+
+    // ─── private helper ───────────────────────────────────────────────────────
+
+    private function inboundTypes(): string
+    {
+        return collect([
+            InventoryTransactionType::OPENING,
+            InventoryTransactionType::PURCHASE,
+            InventoryTransactionType::TRANSFER_IN,
+            InventoryTransactionType::ADJUSTMENT_IN,
+            InventoryTransactionType::RETURN_SALE,
+            InventoryTransactionType::ASSET_RETURN,
+        ])->map(fn($t) => "'{$t->value}'")->implode(',');
     }
 }

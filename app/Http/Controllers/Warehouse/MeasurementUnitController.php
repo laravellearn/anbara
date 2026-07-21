@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Warehouse;
 
 use App\Models\MeasurementUnit;
+use App\Http\Requests\Warehouse\StoreMeasurementUnitRequest;
+use App\Http\Requests\Warehouse\UpdateMeasurementUnitRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -48,20 +50,12 @@ class MeasurementUnitController extends BaseController
         return view('warehouse.measurement-units.index', compact('units', 'allUnits', 'stats'));
     }
 
-    public function store(Request $request)
+    public function store(StoreMeasurementUnitRequest $request)
     {
         Gate::authorize('access', 'measurement-units.create');
 
         try {
-            $data = $request->validate([
-                'title'             => 'required|string|max:255',
-                'symbol'            => 'nullable|string|max:20',
-                'parent_id'         => 'nullable|exists:measurement_units,id',
-                'conversion_factor' => 'nullable|numeric|min:0',
-                'description'       => 'nullable|string',
-                'is_active'         => 'boolean',
-            ]);
-
+            $data = $request->validated();
             $data['tenant_id'] = $this->manager->getTenantId();
 
             MeasurementUnit::create($data);
@@ -84,21 +78,12 @@ class MeasurementUnitController extends BaseController
         }
     }
 
-    public function update(Request $request, MeasurementUnit $measurementUnit)
+    public function update(UpdateMeasurementUnitRequest $request, MeasurementUnit $measurementUnit)
     {
         Gate::authorize('access', 'measurement-units.edit');
 
         try {
-            $data = $request->validate([
-                'title'             => 'required|string|max:255',
-                'symbol'            => 'nullable|string|max:20',
-                'parent_id'         => 'nullable|exists:measurement_units,id',
-                'conversion_factor' => 'nullable|numeric|min:0',
-                'description'       => 'nullable|string',
-                'is_active'         => 'boolean',
-            ]);
-
-            $measurementUnit->update($data);
+            $measurementUnit->update($request->validated());
 
             return redirect()->route('warehouse.measurement-units.index')->with('toast', [
                 'message' => 'واحد اندازه‌گیری با موفقیت ویرایش شد.',

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Profile\UpdateProfileRequest;
+use App\Http\Requests\Profile\ChangePasswordRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -17,22 +19,12 @@ class ProfileController extends Controller
         return view('profile.edit', compact('user'));
     }
 
-    public function update(Request $request)
+    public function update(UpdateProfileRequest $request)
     {
         $user = auth()->user();
 
         try {
-            $rules = [
-                'name'          => ['required', 'string', 'max:255'],
-                'email'         => ['nullable', 'email', Rule::unique('users')->ignore($user->id)],
-                'avatar_base64' => ['nullable', 'string'],   // رشته Base64
-            ];
-
-            if (! $user->employee) {
-                $rules['national_code'] = ['nullable', 'string', 'max:20'];
-            }
-
-            $data = $request->validate($rules);
+            $data = $request->validated();
 
             // پردازش آواتار از Base64
             $avatarPath = $this->saveAvatarFromBase64($data['avatar_base64'] ?? null, $user);
@@ -55,19 +47,10 @@ class ProfileController extends Controller
         }
     }
 
-    public function changePassword(Request $request)
+    public function changePassword(ChangePasswordRequest $request)
     {
         try {
-            $request->validate([
-                'current_password' => 'required|current_password',
-                'password'         => [
-                    'required',
-                    'confirmed',
-                    \Illuminate\Validation\Rules\Password::min(8)->mixedCase()->numbers()
-                ],
-            ]);
-
-            auth()->user()->update(['password' => Hash::make($request->password)]);
+            auth()->user()->update(['password' => Hash::make($request->validated()['password'])]);
 
             return redirect()->route('profile.edit')->with('toast', [
                 'message' => 'رمز عبور با موفقیت تغییر کرد.',

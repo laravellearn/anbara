@@ -16,6 +16,8 @@ class StockTransaction extends Model
     protected $fillable = [
         'tenant_id',
         'company_id',
+        'fiscal_year_id',
+        'cost_center_id',
         'warehouse_id',
         'warehouse_location_id',
         'product_id',
@@ -44,6 +46,16 @@ class StockTransaction extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function fiscalYear()
+    {
+        return $this->belongsTo(FiscalYear::class);
+    }
+
+    public function costCenter()
+    {
+        return $this->belongsTo(CostCenter::class);
     }
 
     public function warehouse()

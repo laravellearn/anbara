@@ -35,7 +35,6 @@ class User extends Authenticatable
         'email_verified_at',
         'mobile_verified_at',
         'last_login_at',
-        'last_ip',
         'is_active',
     ];
 
@@ -58,7 +57,7 @@ class User extends Authenticatable
 
     public function otpCodes()
     {
-        return $this->hasmany(otpCode::class);
+        return $this->hasMany(OtpCode::class);
     }
 
     // اما چون هر کاربر می‌تواند در چند شرکت باشد، بهتر است نقش‌ها را از طریق company_user استخراج کنیم.
@@ -96,7 +95,7 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function defaultCompany()
+    public function defaultCompany(): ?Company
     {
         return $this->belongsToMany(Company::class, 'company_user', 'user_id', 'company_id')
             ->wherePivot('is_default', true)

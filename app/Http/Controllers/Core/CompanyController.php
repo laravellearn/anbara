@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Core;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Http\Requests\Core\StoreCompanyRequest;
+use App\Http\Requests\Core\UpdateCompanyRequest;
 use App\Services\TenantManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -73,22 +75,12 @@ class CompanyController extends Controller
         return view('core.companies.index', compact('companies', 'stats', 'parentCompanies'));
     }
 
-    public function store(Request $request)
+    public function store(StoreCompanyRequest $request)
     {
         Gate::authorize('access', 'companies.create');
 
         try {
-            $data = $request->validate([
-                'name'           => 'required|string|max:255',
-                'code'           => 'nullable|string|max:50',
-                'type'           => 'nullable|string|max:50',
-                'national_id'    => 'nullable|string|max:20',
-                'economic_code'  => 'nullable|string|max:20',
-                'description'    => 'nullable|string',
-                'parent_id'      => 'nullable|exists:companies,id',
-                'is_active'      => 'boolean',
-                'logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ]);
+            $data = $request->validated();
 
             // کد خودکار
             if (empty($data['code'])) {
@@ -150,7 +142,7 @@ class CompanyController extends Controller
         }
     }
 
-    public function update(Request $request, Company $company)
+    public function update(UpdateCompanyRequest $request, Company $company)
     {
         Gate::authorize('access', 'companies.edit');
 
@@ -159,17 +151,7 @@ class CompanyController extends Controller
         }
 
         try {
-            $data = $request->validate([
-                'name'           => 'required|string|max:255',
-                'code'           => 'nullable|string|max:50|unique:companies,code,' . $company->id,
-                'type'           => 'nullable|string|max:50',
-                'national_id'    => 'nullable|string|max:20',
-                'economic_code'  => 'nullable|string|max:20',
-                'description'    => 'nullable|string',
-                'parent_id'      => 'nullable|exists:companies,id',
-                'is_active'      => 'boolean',
-                'logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ]);
+            $data = $request->validated();
 
             // ========== مدیریت دقیق لوگو ==========
             $logoPath = $this->storeLogo($request);

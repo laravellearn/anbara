@@ -30,29 +30,26 @@ class LoginController extends Controller
     // لاگین با رمز عبور
     public function login(LoginRequest $request)
     {
-
-        $user = $this->authService->loginWithPassword($request->mobile, $request->password);
-
         $credentials = [
-            'mobile' => $request->mobile,
-            'password' => $request->password,
+            'mobile'    => $request->mobile,
+            'password'  => $request->password,
             'is_active' => true,
         ];
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
-
             return back()
                 ->withInput()
                 ->withErrors([
                     'mobile' => 'اطلاعات ورود صحیح نیست.'
                 ]);
         }
+
         auth()->user()->update([
             'last_login_at' => now(),
-            'last_ip' => request()->ip()
+            'last_ip'       => request()->ip(),
         ]);
 
-        Auth::login($user, $request->filled('remember'));
+        $request->session()->regenerate();
 
         return redirect()->intended('/dashboard');
     }

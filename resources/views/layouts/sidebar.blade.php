@@ -16,10 +16,10 @@
   <ul class="menu-inner py-1">
 
     {{-- ==================== داشبورد ==================== --}}
-    <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-      <a href="{{ route('dashboard') }}" class="menu-link">
-        <i class="menu-icon tf-icons bx bx-home-circle"></i>
-        <div>داشبورد</div>
+    <li class="menu-item {{ request()->routeIs('warehouse.dashboard') ? 'active' : '' }}">
+      <a href="{{ route('warehouse.dashboard') }}" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-tachometer"></i>
+        <div>داشبورد انبار</div>
       </a>
     </li>
     {{-- ==================== اطلاعات پایه ==================== --}}
@@ -72,6 +72,14 @@
         <li class="menu-item {{ request()->routeIs('warehouse.product-types.*') ? 'active' : '' }}">
           <a href="{{ route('warehouse.product-types.index') }}" class="menu-link">
             <div>نوع کالاها</div>
+          </a>
+        </li>
+        @endcan
+
+        @can('access', 'brands.view')
+        <li class="menu-item {{ request()->routeIs('warehouse.brands.*') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.brands.index') }}" class="menu-link">
+            <div>برندها</div>
           </a>
         </li>
         @endcan
@@ -288,128 +296,114 @@
     {{-- ==================== عملیات انبار ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">عملیات انبار</span></li>
 
-    <li class="menu-item {{ request()->routeIs('goods-receipt.*') ? 'active open' : '' }}">
+    {{-- سفارش خرید --}}
+    @can('access', 'purchase-orders.view')
+    <li class="menu-item {{ request()->routeIs('warehouse.purchase-orders.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-log-in-circle"></i>
-        <div>ورود کالا</div>
+        <i class="menu-icon tf-icons bx bx-cart"></i>
+        <div>سفارش خرید</div>
+        @php $openPo = \App\Models\PurchaseOrder::where('tenant_id', auth()->user()?->tenant_id ?? 0)->whereIn('status',['confirmed','sent','partial_received'])->count(); @endphp
+        @if($openPo > 0)
+        <span class="badge bg-warning rounded-pill ms-auto">{{ $openPo }}</span>
+        @endif
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>رسید خرید</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>رسید امانی</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>رسید انتقالی</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>مرجوعی از مشتری</div>
-          </a></li>
+        <li class="menu-item {{ request()->routeIs('warehouse.purchase-orders.index') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.purchase-orders.index') }}" class="menu-link"><div>همه سفارشات</div></a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.purchase-orders.index') && request('status') === 'confirmed' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.purchase-orders.index', ['status' => 'confirmed']) }}" class="menu-link"><div>تأیید‌شده / باز</div></a>
+        </li>
+        @can('access', 'purchase-orders.create')
+        <li class="menu-item {{ request()->routeIs('warehouse.purchase-orders.create') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.purchase-orders.create') }}" class="menu-link"><div>سفارش جدید</div></a>
+        </li>
+        @endcan
       </ul>
     </li>
+    @endcan
 
-    <li class="menu-item {{ request()->routeIs('goods-issue.*') ? 'active open' : '' }}">
+    {{-- اسناد انبار (رسید / حواله / انتقال / تعدیل) --}}
+    @can('access', 'warehouse-documents.view')
+    <li class="menu-item {{ request()->routeIs('warehouse.documents.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-log-out-circle"></i>
-        <div>خروج کالا</div>
+        <i class="menu-icon tf-icons bx bx-file"></i>
+        <div>اسناد انبار</div>
+        @php $pendingDocs = \App\Models\WarehouseDocument::where('tenant_id', auth()->user()?->tenant_id ?? 0)->where('status','pending')->count(); @endphp
+        @if($pendingDocs > 0)
+        <span class="badge bg-danger rounded-pill ms-auto">{{ $pendingDocs }}</span>
+        @endif
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>حواله خروج</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>خروج مصرفی</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>خروج امانی</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>خروج انتقالی</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>مرجوعی به تأمین‌کننده</div>
-          </a></li>
+        <li class="menu-item {{ request()->routeIs('warehouse.documents.index') && !request('type') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.documents.index') }}" class="menu-link">
+            <div>همه اسناد</div>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.documents.index') && request('status') === 'pending' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.documents.index', ['status' => 'pending']) }}" class="menu-link">
+            <div>در انتظار تأیید</div>
+          </a>
+        </li>
+        @can('access', 'warehouse-documents.create')
+        <li class="menu-item {{ request()->routeIs('warehouse.documents.create') && request('type') === 'receipt' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.documents.create', ['type' => 'receipt']) }}" class="menu-link">
+            <div>رسید انبار</div>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.documents.create') && request('type') === 'issue' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.documents.create', ['type' => 'issue']) }}" class="menu-link">
+            <div>حواله انبار</div>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.documents.create') && request('type') === 'transfer' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.documents.create', ['type' => 'transfer']) }}" class="menu-link">
+            <div>انتقال کالا</div>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.documents.create') && request('type') === 'adjustment' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.documents.create', ['type' => 'adjustment']) }}" class="menu-link">
+            <div>تعدیل موجودی</div>
+          </a>
+        </li>
+        @endcan
       </ul>
     </li>
+    @endcan
 
-    <li class="menu-item {{ request()->routeIs('transfers.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-transfer-alt"></i>
-        <div>انتقال کالا</div>
+    {{-- موجودی اولیه --}}
+    @can('access', 'stock-transactions.create')
+    <li class="menu-item {{ request()->routeIs('warehouse.opening-balance.*') ? 'active' : '' }}">
+      <a href="{{ route('warehouse.opening-balance.index') }}" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-import"></i>
+        <div>موجودی اولیه</div>
       </a>
-      <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>انتقال بین انبارها</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>انتقال داخلی (بین موقعیت‌ها)</div>
-          </a></li>
-      </ul>
     </li>
+    @endcan
 
-    <li class="menu-item {{ request()->routeIs('adjustments.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-edit-alt"></i>
-        <div>اصلاحات و تنظیمات</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>اصلاح موجودی</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>ثبت ضایعات و خسارت</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>انبارگردانی (شمارش فیزیکی)</div>
-          </a></li>
-      </ul>
-    </li>
-
-    {{-- ==================== موجودی و کنترل ==================== --}}
+    {{-- موجودی و کنترل ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">موجودی و کنترل</span></li>
 
-    <li class="menu-item {{ request()->routeIs('inventory.*') ? 'active open' : '' }}">
+    @can('access', 'inventory.view')
+    <li class="menu-item {{ request()->routeIs('warehouse.inventory.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-layer"></i>
-        <div>وضعیت موجودی</div>
+        <div>موجودی انبار</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
+        <li class="menu-item {{ request()->routeIs('warehouse.inventory.index') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.inventory.index') }}" class="menu-link">
             <div>موجودی لحظه‌ای</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>موجودی رزرو شده</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>موجودی در گردش</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>کالاهای راکد / کندگردان</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>کالاهای رو به انقضا</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>نقطه سفارش مجدد (Reorder Point)</div>
-          </a></li>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.inventory.below-minimum') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.inventory.below-minimum') }}" class="menu-link">
+            <div>زیر حداقل موجودی <span class="badge bg-danger badge-sm ms-auto">هشدار</span></div>
+          </a>
+        </li>
       </ul>
     </li>
-
-    <li class="menu-item {{ request()->routeIs('valuation.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-dollar-circle"></i>
-        <div>ارزش‌گذاری موجودی</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>ارزش موجودی فعلی</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>روش ارزش‌گذاری (FIFO / میانگین)</div>
-          </a></li>
-      </ul>
-    </li>
+    @endcan
 
     {{-- ==================== دارایی ثابت ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">دارایی ثابت</span></li>
@@ -441,27 +435,47 @@
     {{-- ==================== گزارشات و تحلیل ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">گزارشات و تحلیل</span></li>
 
-    <li class="menu-item {{ request()->routeIs('reports.warehouse.*') ? 'active open' : '' }}">
+    <li class="menu-item {{ request()->routeIs('warehouse.reports.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-bar-chart-square"></i>
         <div>گزارشات انبار</div>
+        @php $belowCount = \Illuminate\Support\Facades\DB::table('stock_transactions as st')->join('products as p','p.id','=','st.product_id')->where('st.tenant_id', auth()->user()?->tenant_id ?? 0)->where('st.status','approved')->where('p.minimum_stock','>',0)->groupBy('p.id','st.warehouse_id')->havingRaw('SUM(CASE WHEN st.type IN ("purchase_receipt","return_from_customer","opening","transfer_in","adjustment_in","receipt","return_in") THEN st.quantity ELSE 0 END) - SUM(CASE WHEN st.type IN ("issue","return_to_supplier","transfer_out","adjustment_out","return_out") THEN st.quantity ELSE 0 END) < p.minimum_stock')->get()->count() ?? 0; @endphp
+        @if($belowCount > 0)
+        <span class="badge bg-warning rounded-pill ms-auto">{{ $belowCount }}</span>
+        @endif
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>کاردکس کالا</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>گردش ورود و خروج</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>موجودی انبارها</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>مغایرت انبار</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>ریز تراکنش‌ها</div>
-          </a></li>
+        @can('access', 'reports.inventory')
+        <li class="menu-item {{ request()->routeIs('warehouse.reports.inventory') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.reports.inventory') }}" class="menu-link">
+            <div>موجودی لحظه‌ای</div>
+          </a>
+        </li>
+        @endcan
+        @can('access', 'reports.ledger')
+        <li class="menu-item {{ request()->routeIs('warehouse.reports.ledger') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.reports.ledger') }}" class="menu-link">
+            <div>کارتکس کالا</div>
+          </a>
+        </li>
+        @endcan
+        @can('access', 'reports.summary')
+        <li class="menu-item {{ request()->routeIs('warehouse.reports.in-out-summary') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.reports.in-out-summary') }}" class="menu-link">
+            <div>خلاصه ورود و خروج</div>
+          </a>
+        </li>
+        @endcan
+        @can('access', 'reports.inventory')
+        <li class="menu-item {{ request()->routeIs('warehouse.reports.below-minimum') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.reports.below-minimum') }}" class="menu-link">
+            <div>زیر حداقل موجودی</div>
+            @if($belowCount > 0)
+            <span class="badge bg-danger rounded-pill ms-auto">{{ $belowCount }}</span>
+            @endif
+          </a>
+        </li>
+        @endcan
       </ul>
     </li>
 

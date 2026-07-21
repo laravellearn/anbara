@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Core;
 
 use App\Models\OrganizationalUnit;
 use App\Models\User;
+use App\Http\Requests\Core\StoreOrganizationalUnitRequest;
+use App\Http\Requests\Core\UpdateOrganizationalUnitRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -50,20 +52,13 @@ class OrganizationalUnitController extends BaseController
         return view('core.organizational-units.index', compact('units', 'stats', 'allUnits', 'users'));
     }
 
-    public function store(Request $request)
+    public function store(StoreOrganizationalUnitRequest $request)
     {
         Gate::authorize('access', 'organizational-units.create');
 
         try {
             $tenantId = $this->manager->getTenantId();
-            $data = $request->validate([
-                'name'            => 'required|string|max:255',
-                'code'            => 'nullable|string|max:50|unique:organizational_units,code',
-                'parent_id'       => 'nullable|exists:organizational_units,id',
-                'manager_user_id' => 'nullable|exists:users,id',
-                'description'     => 'nullable|string',
-                'is_active'       => 'boolean',
-            ]);
+            $data = $request->validated();
 
             $data['tenant_id'] = $tenantId;
             $data['company_id'] = $this->manager->getCompanyId();
@@ -88,19 +83,12 @@ class OrganizationalUnitController extends BaseController
         }
     }
 
-    public function update(Request $request, OrganizationalUnit $organizationalUnit)
+    public function update(UpdateOrganizationalUnitRequest $request, OrganizationalUnit $organizationalUnit)
     {
         Gate::authorize('access', 'organizational-units.edit');
 
         try {
-            $data = $request->validate([
-                'name'            => 'required|string|max:255',
-                'code'            => 'nullable|string|max:50|unique:organizational_units,code,' . $organizationalUnit->id,
-                'parent_id'       => 'nullable|exists:organizational_units,id',
-                'manager_user_id' => 'nullable|exists:users,id',
-                'description'     => 'nullable|string',
-                'is_active'       => 'boolean',
-            ]);
+            $data = $request->validated();
 
             $data['is_active'] = $request->boolean('is_active', false);
             $organizationalUnit->update($data);

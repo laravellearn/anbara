@@ -8,6 +8,8 @@ use App\Models\Contact;
 use App\Models\OrganizationalUnit;
 use App\Models\Role;
 use App\Models\User;
+use App\Http\Requests\Core\StoreEmployeeRequest;
+use App\Http\Requests\Core\UpdateEmployeeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -73,34 +75,15 @@ class EmployeeController extends BaseController
         return view('core.employees.index', compact('employees', 'units', 'users', 'stats', 'roles'));
     }
 
-public function store(Request $request)
+public function store(StoreEmployeeRequest $request)
 {
     Gate::authorize('access', 'employees.create');
 
     try {
-        $tenantId = $this->manager->getTenantId();
+        $tenantId  = $this->manager->getTenantId();
         $companyId = $this->manager->getCompanyId();
 
-        $validated = $request->validate([
-            'organizational_unit_id' => 'nullable|exists:organizational_units,id',
-            'employee_code'          => 'nullable|string|max:50|unique:employees,employee_code',
-            'name'                   => 'required|string|max:255',
-            'national_code'          => 'nullable|string|max:20',
-            'mobile'                 => 'nullable|string|max:20',
-            'phone'                  => 'nullable|string|max:20',
-            'email'                  => 'nullable|email|max:255',
-            'position'               => 'nullable|string|max:255',
-            'employment_date'        => 'nullable|date',
-            'address'                => 'nullable|string',
-            'description'            => 'nullable|string',
-            'is_active'              => 'boolean',
-
-            // فیلدهای ایجاد کاربر
-            'create_user'            => 'boolean',
-            'username'               => 'required_if:create_user,1|string|max:50|unique:users,username',
-            'password'               => 'required_if:create_user,1|string|min:6',
-            'role_id'                => 'required_if:create_user,1|exists:roles,id',
-        ]);
+        $validated = $request->validated();
 
         // ۱. ساخت Contact از نوع کارمند
         $contactData = [
@@ -170,35 +153,15 @@ public function store(Request $request)
     }
 }
 
-public function update(Request $request, Employee $employee)
+public function update(UpdateEmployeeRequest $request, Employee $employee)
 {
     Gate::authorize('access', 'employees.edit');
 
     try {
-        $tenantId = $this->manager->getTenantId();
+        $tenantId  = $this->manager->getTenantId();
         $companyId = $this->manager->getCompanyId();
 
-        $validated = $request->validate([
-            'organizational_unit_id' => 'nullable|exists:organizational_units,id',
-            'user_id'                => 'nullable|exists:users,id',
-            'employee_code'          => 'nullable|string|max:50|unique:employees,employee_code,' . $employee->id,
-            'name'                   => 'required|string|max:255',
-            'national_code'          => 'nullable|string|max:20',
-            'mobile'                 => 'nullable|string|max:20',
-            'phone'                  => 'nullable|string|max:20',
-            'email'                  => 'nullable|email|max:255',
-            'position'               => 'nullable|string|max:255',
-            'employment_date'        => 'nullable|date',
-            'address'                => 'nullable|string',
-            'description'            => 'nullable|string',
-            'is_active'              => 'boolean',
-
-            // ایجاد کاربر جدید (فقط در صورت نداشتن کاربر)
-            'create_user'            => 'boolean',
-            'username'               => 'required_if:create_user,1|string|max:50|unique:users,username',
-            'password'               => 'required_if:create_user,1|string|min:6',
-            'role_id'                => 'required_if:create_user,1|exists:roles,id',
-        ]);
+        $validated = $request->validated();
 
         // بروزرسانی Contact
         $contactData = [

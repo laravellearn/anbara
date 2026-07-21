@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Warehouse;
 use App\Models\Product;
 use App\Models\ProductType;
 use App\Models\ProductAttribute;
+use App\Http\Requests\Warehouse\StoreProductTypeRequest;
+use App\Http\Requests\Warehouse\UpdateProductTypeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -48,20 +50,12 @@ class ProductTypeController extends BaseController
         return view('warehouse.product-types.create', compact('attributes'));
     }
 
-    public function store(Request $request)
+    public function store(StoreProductTypeRequest $request)
     {
         Gate::authorize('access', 'product-types.create');
 
         try {
-            $validated = $request->validate([
-                'title'       => 'required|string|max:255|unique:product_types,title',
-                'description' => 'nullable|string',
-                'is_active'   => 'boolean',
-                'attributes'  => 'nullable|array',
-                'attributes.*.id'          => 'exists:product_attributes,id',
-                'attributes.*.is_required' => 'boolean',
-                'attributes.*.sort_order'  => 'integer|min:0',
-            ]);
+            $validated = $request->validated();
 
             // حذف ویژگی‌ها از داده‌های مدل اصلی
             $productTypeData = collect($validated)->except('attributes')->toArray();
@@ -109,20 +103,12 @@ class ProductTypeController extends BaseController
         return view('warehouse.product-types.edit', compact('productType', 'attributes'));
     }
 
-    public function update(Request $request, ProductType $productType)
+    public function update(UpdateProductTypeRequest $request, ProductType $productType)
     {
         Gate::authorize('access', 'product-types.edit');
 
         try {
-            $validated = $request->validate([
-                'title'       => 'required|string|max:255|unique:product_types,title,' . $productType->id,
-                'description' => 'nullable|string',
-                'is_active'   => 'boolean',
-                'attributes'  => 'nullable|array',
-                'attributes.*.id'          => 'exists:product_attributes,id',
-                'attributes.*.is_required' => 'boolean',
-                'attributes.*.sort_order'  => 'integer|min:0',
-            ]);
+            $validated = $request->validated();
 
             $productTypeData = collect($validated)->except('attributes')->toArray();
             $productTypeData['is_active'] = $request->boolean('is_active', false);

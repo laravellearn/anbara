@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Core;
 use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Province;
+use App\Http\Requests\Core\StoreContactRequest;
+use App\Http\Requests\Core\UpdateContactRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -63,31 +65,13 @@ class ContactController extends BaseController
         return view('core.contacts.create', compact('countries'));
     }
 
-    public function store(Request $request)
+    public function store(StoreContactRequest $request)
     {
         Gate::authorize('access', 'contacts.create');
 
         try {
             $tenantId = $this->manager->getTenantId();
-            $data = $request->validate([
-                'code'           => ['nullable', 'string', 'max:50', Rule::unique('contacts', 'code')->where('tenant_id', $tenantId)],
-                'type'           => 'required|in:customer,supplier,both',
-                'first_name'     => 'nullable|string|max:255',
-                'last_name'      => 'nullable|string|max:255',
-                'company_name'   => 'nullable|string|max:255',
-                'national_code'  => 'nullable|string|max:20',
-                'economic_code'  => 'nullable|string|max:20',
-                'mobile'         => 'nullable|string|max:20',
-                'phone'          => 'nullable|string|max:20',
-                'email'          => 'nullable|email|max:255',
-                'website'        => 'nullable|string|max:255',
-                'address'        => 'nullable|string',
-                'description'    => 'nullable|string',
-                'is_active'      => 'boolean',
-                'country_id'     => 'nullable|exists:countries,id',
-                'province_id'    => 'nullable|exists:provinces,id',
-                'city'          => 'nullable|string|max:255',
-            ]);
+            $data = $request->validated();
 
             $data['tenant_id'] = $tenantId;
             if (empty($data['code'])) {
@@ -118,30 +102,12 @@ class ContactController extends BaseController
         return view('core.contacts.edit', compact('contact', 'countries', 'provinces'));
     }
 
-    public function update(Request $request, Contact $contact)
+    public function update(UpdateContactRequest $request, Contact $contact)
     {
         Gate::authorize('access', 'contacts.edit');
 
         try {
-            $data = $request->validate([
-                'code'           => ['nullable', 'string', 'max:50', Rule::unique('contacts', 'code')->where('tenant_id', $this->manager->getTenantId())->ignore($contact->id)],
-                'type'           => 'required|in:customer,supplier,both',
-                'first_name'     => 'nullable|string|max:255',
-                'last_name'      => 'nullable|string|max:255',
-                'company_name'   => 'nullable|string|max:255',
-                'national_code'  => 'nullable|string|max:20',
-                'economic_code'  => 'nullable|string|max:20',
-                'mobile'         => 'nullable|string|max:20',
-                'phone'          => 'nullable|string|max:20',
-                'email'          => 'nullable|email|max:255',
-                'website'        => 'nullable|string|max:255',
-                'address'        => 'nullable|string',
-                'description'    => 'nullable|string',
-                'is_active'      => 'boolean',
-                'country_id'     => 'nullable|exists:countries,id',
-                'province_id'    => 'nullable|exists:provinces,id',
-                'city'          => 'nullable|string|max:255',
-            ]);
+            $data = $request->validated();
 
             $contact->update($data);
 

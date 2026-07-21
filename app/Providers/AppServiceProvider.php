@@ -36,44 +36,38 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
         Product::observe(ProductObserver::class);
         Warehouse::observe(WarehouseObserver::class);
         User::observe(UserObserver::class);
-        Employee::observe(EmployeeObserver::class);     // جدید
-        Company::observe(CompanyObserver::class);        // جدید
+        Employee::observe(EmployeeObserver::class);
+        Company::observe(CompanyObserver::class);
 
         $this->app->singleton(TenantManager::class);
+
+        $this->configurePhpUploadTempDirectory();
 
         View::composer('*', function ($view) {
             $view->with('userLogin', Auth::user());
         });
 
-
         View::composer('*', function ($view) {
             if (Auth::check()) {
                 $user = Auth::user();
-
                 $view->with([
-                    'currentRole' => $user->getCurrentRole(),
+                    'currentRole'     => $user->getCurrentRole(),
                     'currentRoleName' => $user->getCurrentRoleName(),
-                    'allRoles' => $user->getRolesWithCompanies(),
-                    'isSuperAdmin' => $user->isSuperAdmin(),
+                    'allRoles'        => $user->getRolesWithCompanies(),
+                    'isSuperAdmin'    => $user->isSuperAdmin(),
                 ]);
             } else {
                 $view->with([
-                    'currentRole' => null,
+                    'currentRole'     => null,
                     'currentRoleName' => 'مهمان',
-                    'allRoles' => collect(),
-                    'isSuperAdmin' => false,
+                    'allRoles'        => collect(),
+                    'isSuperAdmin'    => false,
                 ]);
             }
         });
-
-
-        User::observe(UserObserver::class);
-
-        //Permission
         Gate::define('access', function (?User $user, string $permissionName) {
             if (!$user) {
                 return false;

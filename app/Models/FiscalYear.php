@@ -45,7 +45,13 @@ class FiscalYear extends Model
      */
     public function activate(): void
     {
-        $this->tenant->fiscalYears()->update(['is_active' => false]);
+        $companyId = app(\App\Services\TenantManager::class)->getCompanyId();
+
+        // فقط سال‌های مالی همان شرکت جاری غیرفعال می‌شوند
+        $this->tenant->fiscalYears()
+            ->where('company_id', $companyId ?? $this->company_id)
+            ->update(['is_active' => false]);
+
         $this->update(['is_active' => true]);
     }
 

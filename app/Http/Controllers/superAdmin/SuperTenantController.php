@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use App\Http\Requests\SuperAdmin\StoreTenantRequest;
+use App\Http\Requests\SuperAdmin\UpdateTenantRequest;
 use Illuminate\Http\Request;
 
 class SuperTenantController extends Controller
@@ -18,15 +20,9 @@ class SuperTenantController extends Controller
         return view('super-admin.tenants.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreTenantRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|alpha_dash|unique:tenants,slug',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+        $data = $request->validated();
         $data['data'] = json_encode([]);
         Tenant::create($data);
         return redirect()->route('super-admin.tenants.index')->with('success', 'Tenant ایجاد شد.');
@@ -37,15 +33,9 @@ class SuperTenantController extends Controller
         return view('super-admin.tenants.edit', compact('tenant'));
     }
 
-    public function update(Request $request, Tenant $tenant)
+    public function update(UpdateTenantRequest $request, Tenant $tenant)
     {
-        $tenant->update($request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|alpha_dash|unique:tenants,slug,'.$tenant->id,
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]));
+        $tenant->update($request->validated());
         return redirect()->route('super-admin.tenants.index')->with('success', 'Tenant ویرایش شد.');
     }
 

@@ -74,13 +74,17 @@ class TenantRegistrationService
             // 7. ایجاد اشتراک آزمایشی ۱۴ روزه (Plan trial)
             $trialPlan = Plan::where('code', 'trial')->first();
             if ($trialPlan) {
+                $trialDays = config('app.trial_days', 14);
+                $trialEndsAt = now()->addDays($trialDays);
+
                 $subscription = Subscription::create([
-                    'tenant_id'  => $tenant->id,
-                    'plan_id'    => $trialPlan->id,
-                    'starts_at'  => now(),
-                    'ends_at'    => now()->addDays(config('app.trial_days', 14)),
-                    'status'     => 'active',
-                    'auto_renew' => false,
+                    'tenant_id'      => $tenant->id,
+                    'plan_id'        => $trialPlan->id,
+                    'starts_at'      => now(),
+                    'ends_at'        => null,
+                    'trial_ends_at'  => $trialEndsAt,
+                    'status'         => 'trial',
+                    'auto_renew'     => false,
                 ]);
 
                 // مقداردهی مصرف اولیه

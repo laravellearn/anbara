@@ -109,6 +109,44 @@ class PermissionSeeder extends Seeder
             ['name' => 'product-types.create', 'title' => 'ایجاد نوع کالا',     'group' => 'کالا و اقلام'],
             ['name' => 'product-types.edit',   'title' => 'ویرایش نوع کالا',    'group' => 'کالا و اقلام'],
             ['name' => 'product-types.delete', 'title' => 'حذف نوع کالا',      'group' => 'کالا و اقلام'],
+
+            // ==================== ۱۱. تراکنش‌های انبار ====================
+            ['name' => 'stock-transactions.view',    'title' => 'مشاهده تراکنش‌های انبار',      'group' => 'تراکنش‌های انبار'],
+            ['name' => 'stock-transactions.create',  'title' => 'ثبت تراکنش انبار جدید',        'group' => 'تراکنش‌های انبار'],
+            ['name' => 'stock-transactions.edit',    'title' => 'ویرایش تراکنش انبار',          'group' => 'تراکنش‌های انبار'],
+            ['name' => 'stock-transactions.delete',  'title' => 'حذف تراکنش انبار',             'group' => 'تراکنش‌های انبار'],
+            ['name' => 'stock-transactions.submit',  'title' => 'ارسال تراکنش برای تأیید',      'group' => 'تراکنش‌های انبار'],
+            ['name' => 'stock-transactions.approve', 'title' => 'تأیید / رد تراکنش انبار',      'group' => 'تراکنش‌های انبار'],
+
+            // ==================== ۱۲. موجودی انبار ====================
+            ['name' => 'inventory.view', 'title' => 'مشاهده موجودی انبار و کارتکس', 'group' => 'موجودی انبار'],
+
+            // ==================== ۱۳. برندها ====================
+            ['name' => 'brands.view',   'title' => 'مشاهده برندها',  'group' => 'کالا و اقلام'],
+            ['name' => 'brands.create', 'title' => 'ایجاد برند',     'group' => 'کالا و اقلام'],
+            ['name' => 'brands.edit',   'title' => 'ویرایش برند',    'group' => 'کالا و اقلام'],
+            ['name' => 'brands.delete', 'title' => 'حذف برند',       'group' => 'کالا و اقلام'],
+
+            // ==================== ۱۴. اسناد انبار ====================
+            ['name' => 'warehouse-documents.view',    'title' => 'مشاهده اسناد انبار',          'group' => 'اسناد انبار'],
+            ['name' => 'warehouse-documents.create',  'title' => 'ثبت سند انبار جدید',          'group' => 'اسناد انبار'],
+            ['name' => 'warehouse-documents.edit',    'title' => 'ویرایش سند انبار (پیش‌نویس)', 'group' => 'اسناد انبار'],
+            ['name' => 'warehouse-documents.delete',  'title' => 'حذف سند انبار (پیش‌نویس)',    'group' => 'اسناد انبار'],
+            ['name' => 'warehouse-documents.submit',  'title' => 'ارسال سند برای تأیید',        'group' => 'اسناد انبار'],
+            ['name' => 'warehouse-documents.approve', 'title' => 'تأیید / رد / لغو سند انبار', 'group' => 'اسناد انبار'],
+
+            // ==================== ۱۵. گزارشات انبار ====================
+            ['name' => 'reports.inventory', 'title' => 'گزارش موجودی لحظه‌ای',    'group' => 'گزارشات انبار'],
+            ['name' => 'reports.ledger',    'title' => 'کارتکس کالا',             'group' => 'گزارشات انبار'],
+            ['name' => 'reports.summary',   'title' => 'خلاصه ورود و خروج',       'group' => 'گزارشات انبار'],
+
+            // ==================== ۱۶. سفارش خرید ====================
+            ['name' => 'purchase-orders.view',    'title' => 'مشاهده سفارشات خرید',   'group' => 'سفارش خرید'],
+            ['name' => 'purchase-orders.create',  'title' => 'ثبت سفارش خرید جدید',   'group' => 'سفارش خرید'],
+            ['name' => 'purchase-orders.edit',    'title' => 'ویرایش سفارش خرید',     'group' => 'سفارش خرید'],
+            ['name' => 'purchase-orders.delete',  'title' => 'حذف سفارش خرید',        'group' => 'سفارش خرید'],
+            ['name' => 'purchase-orders.confirm', 'title' => 'تأیید / ارسال / بستن',  'group' => 'سفارش خرید'],
+            ['name' => 'purchase-orders.receive', 'title' => 'ثبت دریافت کالا',       'group' => 'سفارش خرید'],
         ];
 
 

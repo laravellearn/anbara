@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Core;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\Permission;
+use App\Http\Requests\Core\StoreRoleRequest;
+use App\Http\Requests\Core\UpdateRoleRequest;
 use App\Services\TenantManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -47,20 +49,12 @@ class RoleController extends Controller
         return view('core.roles.index', compact('roles', 'stats'));
     }
 
-    public function store(Request $request)
+    public function store(StoreRoleRequest $request)
     {
         Gate::authorize('access', 'roles.create');
 
         try {
-            $data = $request->validate([
-                'code' => 'required|string|unique:roles,code,NULL,id,tenant_id,' . $this->manager->getTenantId(),
-                'title' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'permissions' => 'nullable|array',
-                'permissions.*' => 'exists:permissions,id',
-                'scope'       => 'required|in:tenant,company',   // انتخاب کاربر
-
-            ]);
+            $data = $request->validated();
 
             $role = Role::create([
                 'tenant_id' => $this->manager->getTenantId(),
@@ -90,22 +84,14 @@ class RoleController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateRoleRequest $request, $id)
     {
         Gate::authorize('access', 'roles.edit');
 
         try {
             $role = Role::where('tenant_id', $this->manager->getTenantId())->findOrFail($id);
 
-            $data = $request->validate([
-                'code' => 'required|string|unique:roles,code,' . $role->id . ',id,tenant_id,' . $this->manager->getTenantId(),
-                'title' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'permissions' => 'nullable|array',
-                'permissions.*' => 'exists:permissions,id',
-                'scope'       => 'required|in:tenant,company',
-
-            ]);
+            $data = $request->validated();
 
             $role->update([
                 'code'        => $data['code'],

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Warehouse;
 
 use App\Models\Category;
+use App\Http\Requests\Warehouse\StoreCategoryRequest;
+use App\Http\Requests\Warehouse\UpdateCategoryRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -55,18 +57,12 @@ class CategoryController extends BaseController
         return view('warehouse.categories.index', compact('categories', 'allCategories', 'stats'));
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
         Gate::authorize('access', 'product-categories.create');
 
         try {
-            $data = $request->validate([
-                'title'       => 'required|string|max:255',
-                'parent_id'   => 'nullable|exists:categories,id',
-                'description' => 'nullable|string',
-                'is_active'   => 'boolean',
-            ]);
-
+            $data = $request->validated();
             $data['tenant_id'] = $this->manager->getTenantId();
 
             Category::create($data);
@@ -89,19 +85,12 @@ class CategoryController extends BaseController
         }
     }
 
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
         Gate::authorize('access', 'product-categories.edit');
 
         try {
-            $data = $request->validate([
-                'title'       => 'required|string|max:255',
-                'parent_id'   => 'nullable|exists:categories,id',
-                'description' => 'nullable|string',
-                'is_active'   => 'boolean',
-            ]);
-
-            $category->update($data);
+            $category->update($request->validated());
 
             return redirect()->route('warehouse.categories.index')->with('toast', [
                 'message' => 'دسته‌بندی با موفقیت ویرایش شد.',

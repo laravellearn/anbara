@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Warehouse;
 
 use App\Models\WarehouseLocation;
 use App\Models\Warehouse;
+use App\Http\Requests\Warehouse\StoreWarehouseLocationRequest;
+use App\Http\Requests\Warehouse\UpdateWarehouseLocationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -69,22 +71,12 @@ class WarehouseLocationController extends BaseController
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreWarehouseLocationRequest $request)
     {
         Gate::authorize('access', 'warehouse-locations.create');
 
         try {
-            $data = $request->validate([
-                'warehouse_id' => 'required|exists:warehouses,id',
-                'parent_id'    => 'nullable|exists:warehouse_locations,id',
-                'code'         => 'required|string|max:50',
-                'title'        => 'required|string|max:255',
-                'type'         => 'nullable|string|max:50',  // اضافه شد
-                'description'  => 'nullable|string',
-                'sort_order'   => 'nullable|integer|min:0',
-                'capacity'     => 'nullable|numeric|min:0',
-                'is_active'    => 'boolean',
-            ]);
+            $data = $request->validated();
 
             $data['tenant_id']  = $this->manager->getTenantId();
             $data['company_id'] = $this->manager->getCompanyId();
@@ -125,22 +117,12 @@ class WarehouseLocationController extends BaseController
         ]);
     }
 
-    public function update(Request $request, WarehouseLocation $warehouseLocation)
+    public function update(UpdateWarehouseLocationRequest $request, WarehouseLocation $warehouseLocation)
     {
         Gate::authorize('access', 'warehouse-locations.edit');
 
         try {
-            $data = $request->validate([
-                'warehouse_id' => 'required|exists:warehouses,id',
-                'parent_id'    => 'nullable|exists:warehouse_locations,id',
-                'code'         => 'required|string|max:50',
-                'title'        => 'required|string|max:255',
-                'type'         => 'nullable|string|max:50',
-                'description'  => 'nullable|string',
-                'sort_order'   => 'nullable|integer|min:0',
-                'capacity'     => 'nullable|numeric|min:0',
-                'is_active'    => 'boolean',
-            ]);
+            $data = $request->validated();
 
             $data['is_active'] = $request->boolean('is_active', false);
             $warehouseLocation->update($data);

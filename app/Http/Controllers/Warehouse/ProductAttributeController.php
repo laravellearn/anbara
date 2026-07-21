@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Warehouse;
 
 use App\Models\ProductAttribute;
+use App\Http\Requests\Warehouse\StoreProductAttributeRequest;
+use App\Http\Requests\Warehouse\UpdateProductAttributeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -43,17 +45,12 @@ class ProductAttributeController extends BaseController
         return view('warehouse.product-attributes.index', compact('attributes', 'stats'));
     }
 
-    public function store(Request $request)
+    public function store(StoreProductAttributeRequest $request)
     {
         Gate::authorize('access', 'product-attributes.create');
 
         try {
-            $data = $request->validate([
-                'name'      => 'required|string|max:255',
-                'type'      => 'required|in:text,number,select',
-                'options'   => 'nullable|string',   // کاما-جدا از hidden input
-                'is_active' => 'boolean',
-            ]);
+            $data = $request->validated();
 
             // تبدیل رشتهٔ کاما-جدا (مثلاً "قرمز,آبی") به JSON آرایه
             if (!empty($data['options'])) {
@@ -86,17 +83,12 @@ class ProductAttributeController extends BaseController
         }
     }
 
-    public function update(Request $request, ProductAttribute $productAttribute)
+    public function update(UpdateProductAttributeRequest $request, ProductAttribute $productAttribute)
     {
         Gate::authorize('access', 'product-attributes.edit');
 
         try {
-            $data = $request->validate([
-                'name'      => 'required|string|max:255',
-                'type'      => 'required|in:text,number,select',
-                'options'   => 'nullable|string',
-                'is_active' => 'boolean',
-            ]);
+            $data = $request->validated();
 
             if (!empty($data['options'])) {
                 $optionsArray = array_filter(array_map('trim', explode(',', $data['options'])), fn($v) => $v !== '');

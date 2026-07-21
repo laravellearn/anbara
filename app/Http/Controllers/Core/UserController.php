@@ -9,6 +9,8 @@ use App\Models\Employee;
 use App\Models\OrganizationalUnit;
 use App\Models\Role;
 use App\Models\User;
+use App\Http\Requests\Core\StoreUserRequest;
+use App\Http\Requests\Core\UpdateUserRequest;
 use App\Services\TenantManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -103,28 +105,12 @@ class UserController extends Controller
     /**
      * ذخیره کاربر جدید (از طریق مودال).
      */
-    public function store(Request $request): \Illuminate\Http\RedirectResponse
+    public function store(StoreUserRequest $request): \Illuminate\Http\RedirectResponse
     {
         Gate::authorize('access', 'users.create');
 
         try {
-            $validated = $request->validate([
-                'name'            => 'required|string|max:255',
-                'mobile'          => [
-                    'required',
-                    Rule::unique('users')->whereNotNull('mobile_verified_at'),
-                    'regex:/^09[0-9]{9}$/',
-                ],
-                'email'           => ['nullable', 'email', 'unique:users,email'],
-                'password'        => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
-                'companies'       => 'required|array|min:1',
-                'companies.*'     => 'exists:companies,id',
-                'default_company' => 'required|in:' . implode(',', $request->companies),
-                'company_roles'   => 'nullable|array',
-                'company_roles.*' => 'array',
-                'company_roles.*.*' => 'exists:roles,id',
-                'create_employee' => 'nullable|boolean',
-            ]);
+            $validated = $request->validated();
 
             $tenantId = $this->manager->getTenantId();
 
@@ -185,29 +171,14 @@ class UserController extends Controller
     /**
      * به‌روزرسانی کاربر (از طریق مودال).
      */
-    public function update(Request $request, $id): \Illuminate\Http\RedirectResponse
+    public function update(UpdateUserRequest $request, $id): \Illuminate\Http\RedirectResponse
     {
         Gate::authorize('access', 'users.edit');
 
         $user = User::where('tenant_id', $this->manager->getTenantId())->findOrFail($id);
 
         try {
-            $validated = $request->validate([
-                'name'            => 'required|string|max:255',
-                'mobile'          => [
-                    'required',
-                    Rule::unique('users')->ignore($user->id),
-                    'regex:/^09[0-9]{9}$/',
-                ],
-                'email'           => ['nullable', 'email', Rule::unique('users')->ignore($user->id)],
-                'password'        => ['nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()],
-                'companies'       => 'required|array|min:1',
-                'companies.*'     => 'exists:companies,id',
-                'default_company' => 'required|in:' . implode(',', $request->companies),
-                'company_roles'   => 'nullable|array',
-                'company_roles.*' => 'array',
-                'company_roles.*.*' => 'exists:roles,id',
-            ]);
+            $validated = $request->validated();
 
             $tenantId = $this->manager->getTenantId();
 

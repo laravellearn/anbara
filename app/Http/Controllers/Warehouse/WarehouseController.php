@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Warehouse;
 
 use App\Models\Warehouse;
 use App\Models\User;
+use App\Http\Requests\Warehouse\StoreWarehouseRequest;
+use App\Http\Requests\Warehouse\UpdateWarehouseRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -54,21 +56,12 @@ class WarehouseController extends BaseController
         return view('warehouse.warehouses.create', compact('users'));
     }
 
-    public function store(Request $request)
+    public function store(StoreWarehouseRequest $request)
     {
         Gate::authorize('access', 'warehouses.create');
 
         try {
-            $data = $request->validate([
-                'code'                 => 'required|string|max:50|unique:warehouses,code',
-                'title'                => 'required|string|max:255',
-                'description'          => 'nullable|string',
-                'address'              => 'nullable|string',
-                'allow_negative_stock' => 'boolean',
-                'is_active'            => 'boolean',
-                'users'                => 'nullable|array',
-                'users.*'              => 'exists:users,id',
-            ]);
+            $data = $request->validated();
 
             $data['tenant_id']  = $this->manager->getTenantId();
             $data['company_id'] = $this->manager->getCompanyId();
@@ -76,7 +69,11 @@ class WarehouseController extends BaseController
             $warehouse = Warehouse::create($data);
 
             if ($request->has('users')) {
-                $warehouse->users()->sync($request->users);
+                $tenantId = $this->manager->getTenantId();
+                $syncData = collect($request->users)->mapWithKeys(fn($userId) => [
+                    $userId => ['tenant_id' => $tenantId],
+                ])->all();
+                $warehouse->users()->sync($syncData);
             }
 
             return redirect()->route('warehouse.warehouses.index')->with('toast', [
@@ -103,26 +100,21 @@ class WarehouseController extends BaseController
         return view('warehouse.warehouses.edit', compact('warehouse', 'users'));
     }
 
-    public function update(Request $request, Warehouse $warehouse)
+    public function update(UpdateWarehouseRequest $request, Warehouse $warehouse)
     {
         Gate::authorize('access', 'warehouses.edit');
 
         try {
-            $data = $request->validate([
-                'code'                 => 'required|string|max:50|unique:warehouses,code,' . $warehouse->id,
-                'title'                => 'required|string|max:255',
-                'description'          => 'nullable|string',
-                'address'              => 'nullable|string',
-                'allow_negative_stock' => 'boolean',
-                'is_active'            => 'boolean',
-                'users'                => 'nullable|array',
-                'users.*'              => 'exists:users,id',
-            ]);
+            $data = $request->validated();
 
             $warehouse->update($data);
 
             if ($request->has('users')) {
-                $warehouse->users()->sync($request->users);
+                $tenantId = $this->manager->getTenantId();
+                $syncData = collect($request->users)->mapWithKeys(fn($userId) => [
+                    $userId => ['tenant_id' => $tenantId],
+                ])->all();
+                $warehouse->users()->sync($syncData);
             }
 
             return redirect()->route('warehouse.warehouses.index')->with('toast', [

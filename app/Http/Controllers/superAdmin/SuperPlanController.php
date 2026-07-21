@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use App\Http\Requests\SuperAdmin\StorePlanRequest;
+use App\Http\Requests\SuperAdmin\UpdatePlanRequest;
 use Illuminate\Http\Request;
 
 class SuperPlanController extends Controller
@@ -18,19 +20,9 @@ class SuperPlanController extends Controller
         return view('super-admin.plans.create');
     }
 
-    public function store(Request $request)
+    public function store(StorePlanRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required',
-            'slug' => 'required|unique:plans',
-            'monthly_price' => 'numeric',
-            'yearly_price' => 'numeric',
-            'duration_days' => 'nullable|integer',
-            'limits' => 'nullable|array',
-            'features' => 'nullable|array',
-            'is_active' => 'boolean',
-            'sort_order' => 'integer',
-        ]);
+        $data = $request->validated();
         $data['limits'] = json_encode($data['limits'] ?? []);
         $data['features'] = json_encode($data['features'] ?? []);
         Plan::create($data);

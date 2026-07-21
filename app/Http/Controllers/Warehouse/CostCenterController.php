@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Warehouse;
 
 use App\Models\CostCenter;
+use App\Http\Requests\Warehouse\StoreCostCenterRequest;
+use App\Http\Requests\Warehouse\UpdateCostCenterRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -48,18 +50,12 @@ class CostCenterController extends BaseController
         return view('warehouse.cost-centers.index', compact('costCenters', 'stats'));
     }
 
-    public function store(Request $request)
+    public function store(StoreCostCenterRequest $request)
     {
         Gate::authorize('access', 'cost-centers.create');
 
         try {
-            $data = $request->validate([
-                'code'        => 'required|string|max:50|unique:cost_centers,code',
-                'title'       => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'is_active'   => 'boolean',
-            ]);
-
+            $data = $request->validated();
             $data['tenant_id']  = $this->manager->getTenantId();
             $data['company_id'] = $this->manager->getCompanyId();
 
@@ -83,19 +79,12 @@ class CostCenterController extends BaseController
         }
     }
 
-    public function update(Request $request, CostCenter $costCenter)
+    public function update(UpdateCostCenterRequest $request, CostCenter $costCenter)
     {
         Gate::authorize('access', 'cost-centers.edit');
 
         try {
-            $data = $request->validate([
-                'code'        => 'required|string|max:50|unique:cost_centers,code,' . $costCenter->id,
-                'title'       => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'is_active'   => 'boolean',
-            ]);
-
-            $costCenter->update($data);
+            $costCenter->update($request->validated());
 
             return redirect()->route('warehouse.cost-centers.index')->with('toast', [
                 'message' => 'مرکز هزینه با موفقیت ویرایش شد.',

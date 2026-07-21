@@ -33,9 +33,13 @@ class Role extends Model
     }
     public function users()
     {
-        return $this->belongsToMany(
+        return $this->hasManyThrough(
             User::class,
-            'role_user'
+            CompanyUser::class,
+            'role_id',
+            'id',
+            'id',
+            'user_id'
         );
     }
 

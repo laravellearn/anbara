@@ -37,10 +37,16 @@ use App\Http\Controllers\Warehouse\{
     WarehouseController,
     WarehouseLocationController,
     MeasurementUnitController,
-    BrandController,
     CategoryController,
     CostCenterController,
     ProductTypeController,
+    StockTransactionController,
+    InventoryController,
+    BrandController,
+    OpeningBalanceController,
+    WarehouseDocumentController,
+    ReportController,
+    PurchaseOrderController,
 };
 
 
@@ -71,8 +77,6 @@ Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superad
     Route::get('subscriptions', [SuperSubscriptionController::class, 'index'])->name('subscriptions.index');
     Route::post('subscriptions/{subscription}/cancel', [SuperSubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
     Route::post('subscriptions/{subscription}/renew', [SuperSubscriptionController::class, 'renew'])->name('subscriptions.renew');
-
-    Route::get('/subscriptions', fn() => view('super-admin.placeholder'))->name('subscriptions.index');
     Route::get('/payments', fn() => view('super-admin.placeholder'))->name('payments.index');
     Route::get('/licenses', fn() => view('super-admin.placeholder'))->name('licenses.index');
     Route::get('activity-logs', [SuperActivityLogController::class, 'index'])->name('activity-logs.index');
@@ -125,7 +129,7 @@ Route::middleware(['guest', 'throttle:7,1'])->group(function () {
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('warehouse.dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
@@ -166,7 +170,7 @@ Route::middleware(['auth', 'require.tenant'])->group(function () {
 
 Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.tenant'])->group(function () {
 
-    // =	واحدهای اندازه‌گیری (Measurement Units)
+    // =    واحدهای اندازه‌گیری (Measurement Units)
     Route::resource('measurement-units', MeasurementUnitController::class)->except(['show', 'create', 'edit']);
     // دسته‌بندی کالا
     Route::resource('categories', CategoryController::class)->except(['show', 'create', 'edit']);
@@ -184,6 +188,55 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
     // در گروه warehouse
     Route::resource('product-types', ProductTypeController::class)->except(['show']);
     Route::get('product-types/{productType}/attributes', [ProductTypeController::class, 'attributes'])->name('product-types.attributes');
+
+    // ─── برندها ───────────────────────────────────────────────────────────────
+    Route::resource('brands', BrandController::class)->except(['create', 'edit', 'show']);
+
+    // ─── موجودی اولیه ────────────────────────────────────────────────────────
+    Route::get('opening-balance',  [OpeningBalanceController::class, 'index'])->name('opening-balance.index');
+    Route::post('opening-balance', [OpeningBalanceController::class, 'store'])->name('opening-balance.store');
+
+    // ─── تراکنش‌های انبار (رسید / حواله / تعدیل / ...) ───────────────────────
+    Route::resource('stock-transactions', StockTransactionController::class);
+    Route::post('stock-transactions/{stockTransaction}/submit',  [StockTransactionController::class, 'submit'])->name('stock-transactions.submit');
+    Route::post('stock-transactions/{stockTransaction}/approve', [StockTransactionController::class, 'approve'])->name('stock-transactions.approve');
+    Route::post('stock-transactions/{stockTransaction}/reject',  [StockTransactionController::class, 'reject'])->name('stock-transactions.reject');
+    // AJAX: موقعیت‌های یک انبار
+    Route::get('warehouses/{warehouse}/locations', [StockTransactionController::class, 'locations'])->name('warehouses.locations');
+
+    // ─── سفارش خرید (Purchase Order) ────────────────────────────────────────
+    Route::resource('purchase-orders', PurchaseOrderController::class);
+    Route::post('purchase-orders/{purchaseOrder}/confirm',   [PurchaseOrderController::class, 'confirm'])->name('purchase-orders.confirm');
+    Route::post('purchase-orders/{purchaseOrder}/mark-sent', [PurchaseOrderController::class, 'markSent'])->name('purchase-orders.mark-sent');
+    Route::get( 'purchase-orders/{purchaseOrder}/receive',   [PurchaseOrderController::class, 'receiveForm'])->name('purchase-orders.receive-form');
+    Route::post('purchase-orders/{purchaseOrder}/receive',   [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
+    Route::post('purchase-orders/{purchaseOrder}/close',     [PurchaseOrderController::class, 'close'])->name('purchase-orders.close');
+    Route::post('purchase-orders/{purchaseOrder}/cancel',    [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
+    Route::get( 'purchase-orders/{purchaseOrder}/print',     [PurchaseOrderController::class, 'print'])->name('purchase-orders.print');
+
+    // ─── چاپ سند انبار ───────────────────────────────────────────────────────
+    Route::get('documents/{document}/print', [WarehouseDocumentController::class, 'print'])->name('documents.print');
+
+    // ─── گزارشات انبار ───────────────────────────────────────────────────────
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('inventory',       [ReportController::class, 'inventory'])->name('inventory');
+        Route::get('ledger',          [ReportController::class, 'ledger'])->name('ledger');
+        Route::get('in-out-summary',  [ReportController::class, 'inOutSummary'])->name('in-out-summary');
+        Route::get('below-minimum',   [ReportController::class, 'belowMinimum'])->name('below-minimum');
+    });
+
+    // ─── اسناد انبار ────────────────────────────────────────────────────────────
+    Route::resource('documents', WarehouseDocumentController::class);
+    Route::post('documents/{document}/submit',  [WarehouseDocumentController::class, 'submit'])->name('documents.submit');
+    Route::post('documents/{document}/approve', [WarehouseDocumentController::class, 'approve'])->name('documents.approve');
+    Route::post('documents/{document}/reject',  [WarehouseDocumentController::class, 'reject'])->name('documents.reject');
+    Route::post('documents/{document}/cancel',  [WarehouseDocumentController::class, 'cancel'])->name('documents.cancel');
+
+    // ─── موجودی انبار (لایو) ──────────────────────────────────────────────────
+    Route::get('inventory',                        [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('inventory/below-minimum',          [InventoryController::class, 'belowMinimum'])->name('inventory.below-minimum');
+    Route::get('inventory/products/{product}',     [InventoryController::class, 'productStock'])->name('inventory.product-stock');
+    Route::get('inventory/ledger/{product}',       [InventoryController::class, 'ledger'])->name('inventory.ledger');
 });
 
 

@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\MeasurementUnit;
 use App\Models\ProductAttribute;
 use App\Models\ProductType;
+use App\Http\Requests\Warehouse\StoreProductRequest;
+use App\Http\Requests\Warehouse\UpdateProductRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -82,33 +84,12 @@ class ProductController extends BaseController
         return view('warehouse.products.create', compact('productTypes', 'categories', 'measurementUnits', 'attributes'));
     }
 
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
         Gate::authorize('access', 'products.create');
 
         try {
-            $data = $request->validate([
-                'product_type_id'      => 'nullable|exists:product_types,id',
-                'category_id'          => 'nullable|exists:categories,id',
-                'measurement_unit_id'  => 'nullable|exists:measurement_units,id',
-                'title'                => 'required|string|max:255',
-                'sku'                  => 'nullable|string|max:50|unique:products,sku',
-                'barcode'              => 'nullable|string|max:50',
-                'model'                => 'nullable|string|max:255',
-                'part_number'          => 'nullable|string|max:255',
-                'description'          => 'nullable|string',
-                'minimum_stock'        => 'nullable|numeric|min:0',
-                'maximum_stock'        => 'nullable|numeric|min:0',
-                'is_asset'             => 'boolean',
-                'is_active'            => 'boolean',
-                'measurement_units'    => 'nullable|array',
-                'measurement_units.*.id'              => 'exists:measurement_units,id',
-                'measurement_units.*.conversion_factor' => 'nullable|numeric|min:0',
-                'measurement_units.*.is_default'       => 'boolean',
-                'attribute_values'     => 'nullable|array',
-                'attribute_values.*.attribute_id' => 'exists:product_attributes,id',
-                'attribute_values.*.value'        => 'nullable|string',
-            ]);
+            $data = $request->validated();
 
 
             // اعتبارسنجی ویژگی‌های اجباری
@@ -195,33 +176,12 @@ class ProductController extends BaseController
         return view('warehouse.products.edit', compact('productTypes', 'product', 'categories', 'measurementUnits', 'attributes'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
         Gate::authorize('access', 'products.edit');
 
         try {
-            $data = $request->validate([
-                'product_type_id'      => 'nullable|exists:product_types,id',
-                'category_id'          => 'nullable|exists:categories,id',
-                'measurement_unit_id'  => 'nullable|exists:measurement_units,id',
-                'title'                => 'required|string|max:255',
-                'sku'                  => 'nullable|string|max:50|unique:products,sku,' . $product->id,
-                'barcode'              => 'nullable|string|max:50',
-                'model'                => 'nullable|string|max:255',
-                'part_number'          => 'nullable|string|max:255',
-                'description'          => 'nullable|string',
-                'minimum_stock'        => 'nullable|numeric|min:0',
-                'maximum_stock'        => 'nullable|numeric|min:0',
-                'is_asset'             => 'boolean',
-                'is_active'            => 'boolean',
-                'measurement_units'    => 'nullable|array',
-                'measurement_units.*.id'              => 'exists:measurement_units,id',
-                'measurement_units.*.conversion_factor' => 'nullable|numeric|min:0',
-                'measurement_units.*.is_default'       => 'boolean',
-                'attribute_values'     => 'nullable|array',
-                'attribute_values.*.attribute_id' => 'exists:product_attributes,id',
-                'attribute_values.*.value'        => 'nullable|string',
-            ]);
+            $data = $request->validated();
 
 
             // اعتبارسنجی ویژگی‌های اجباری

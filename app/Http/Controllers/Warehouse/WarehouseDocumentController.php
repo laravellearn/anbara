@@ -117,8 +117,9 @@ class WarehouseDocumentController extends BaseController
                 'title'   => 'ثبت سند',
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ثبت سند: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ثبت سند'])
                 ->withInput();
         }
     }
@@ -196,8 +197,9 @@ class WarehouseDocumentController extends BaseController
                 'type'    => 'success', 'title' => 'ویرایش سند',
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش'])
                 ->withInput();
         }
     }
@@ -222,7 +224,8 @@ class WarehouseDocumentController extends BaseController
                 'type'    => 'success', 'title' => 'حذف سند',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 
@@ -256,7 +259,8 @@ class WarehouseDocumentController extends BaseController
                 'type'    => 'success', 'title' => 'تأیید سند',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 
@@ -272,7 +276,8 @@ class WarehouseDocumentController extends BaseController
                 'message' => 'سند رد شد.', 'type' => 'danger', 'title' => 'رد سند',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 
@@ -289,7 +294,8 @@ class WarehouseDocumentController extends BaseController
                 'type'    => 'warning', 'title' => 'لغو سند',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 

@@ -47,14 +47,24 @@ class ImpersonateController extends Controller
             abort(403);
         }
 
+        // اطمینان از اینکه کاربر ذخیره‌شده واقعاً سوپرادمین است (جلوگیری از privilege escalation)
+        $originalUser = User::find($impersonatorId);
+        if (!$originalUser || !$originalUser->isSuperAdmin()) {
+            // جلوگیری از جعل هویت از طریق دستکاری session
+            session()->forget('impersonator_id');
+            auth()->logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            abort(403, 'درخواست نامعتبر.');
+        }
+
         // لاگین سوپرادمین اصلی
-        auth()->loginUsingId($impersonatorId);
+        auth()->login($originalUser);
 
         // پاک‌سازی کامل session
         session()->forget('impersonator_id');
         session()->forget('current_organization_id');
-        app()->forgetInstance('currentTenantId');
-        app()->forgetInstance('currentOrganizationId');
+        session()->forget('current_company_id');
 
         session()->regenerate();
 

@@ -29,7 +29,12 @@ class SetCompanyContext
                 $manager->setCompany($company);
             } else {
                 session()->forget('current_company_id');
-                // شرکت نامعتبر؛ به صفحه انتخاب شرکت هدایت می‌شود
+
+                // برای درخواست‌های AJAX فقط خطا برگردانید، نه redirect
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json(['error' => 'شرکت انتخابی نامعتبر است.'], 403);
+                }
+
                 return redirect()->route('companies.index');
             }
         }

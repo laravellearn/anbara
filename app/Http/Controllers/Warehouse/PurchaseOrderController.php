@@ -103,7 +103,8 @@ class PurchaseOrderController extends BaseController
                 'message' => 'سفارش خرید با موفقیت ثبت شد.', 'type' => 'success', 'title' => 'ثبت PO',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()])->withInput();
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.'])->withInput();
         }
     }
 
@@ -180,7 +181,8 @@ class PurchaseOrderController extends BaseController
                 'message' => 'سفارش ویرایش شد.', 'type' => 'success', 'title' => '',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()])->withInput();
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.'])->withInput();
         }
     }
 
@@ -211,7 +213,8 @@ class PurchaseOrderController extends BaseController
                 'message' => 'سفارش تأیید شد.', 'type' => 'success', 'title' => 'تأیید PO',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 
@@ -225,7 +228,8 @@ class PurchaseOrderController extends BaseController
                 'message' => 'سفارش به تأمین‌کننده ارسال شد.', 'type' => 'info', 'title' => 'ارسال PO',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 
@@ -267,7 +271,8 @@ class PurchaseOrderController extends BaseController
                 'type'    => 'success', 'title' => 'ثبت دریافت',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 
@@ -281,7 +286,8 @@ class PurchaseOrderController extends BaseController
                 'message' => 'سفارش بسته شد.', 'type' => 'dark', 'title' => 'بستن PO',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 
@@ -295,7 +301,8 @@ class PurchaseOrderController extends BaseController
                 'message' => 'سفارش لغو شد.', 'type' => 'danger', 'title' => 'لغو PO',
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 

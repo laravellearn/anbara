@@ -156,8 +156,9 @@ class ProductController extends BaseController
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد کالا: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد کالا'])
                 ->withInput();
         }
     }
@@ -246,8 +247,9 @@ class ProductController extends BaseController
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش کالا: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش کالا'])
                 ->withInput();
         }
     }
@@ -265,8 +267,9 @@ class ProductController extends BaseController
                 'title'   => 'حذف کالا'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف کالا: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف کالا']);
         }
     }
 }

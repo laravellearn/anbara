@@ -114,6 +114,7 @@ class Product extends Model
                 'COALESCE(SUM(CASE WHEN type IN (' . $inbound . ') THEN quantity ELSE -quantity END), 0) as stock'
             )
             ->where('product_id', $this->id)
+            ->where('tenant_id', $this->tenant_id)
             ->where('status', InventoryTransactionStatus::APPROVED->value)
             ->when($warehouseId, fn($q) => $q->where('warehouse_id', $warehouseId))
             ->whereNull('deleted_at')
@@ -136,6 +137,7 @@ class Product extends Model
                  COALESCE(SUM(CASE WHEN st.type IN (' . $inbound . ') THEN st.quantity ELSE -st.quantity END), 0) as quantity'
             )
             ->where('st.product_id', $this->id)
+            ->where('st.tenant_id', $this->tenant_id)
             ->where('st.status', InventoryTransactionStatus::APPROVED->value)
             ->whereNull('st.deleted_at')
             ->groupBy('st.warehouse_id', 'w.title')

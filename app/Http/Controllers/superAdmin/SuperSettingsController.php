@@ -49,6 +49,7 @@ class SuperSettingsController extends Controller
             DB::connection()->getPdo();
             return true;
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return false;
         }
     }

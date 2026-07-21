@@ -115,8 +115,9 @@ class StockTransactionController extends BaseController
                 'title'   => 'ثبت تراکنش',
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ثبت تراکنش: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ثبت تراکنش'])
                 ->withInput();
         }
     }
@@ -180,8 +181,9 @@ class StockTransactionController extends BaseController
                 'title'   => 'ویرایش تراکنش',
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش تراکنش: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش تراکنش'])
                 ->withInput();
         }
     }
@@ -208,8 +210,9 @@ class StockTransactionController extends BaseController
                 'title'   => 'حذف تراکنش',
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف تراکنش: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف تراکنش']);
         }
     }
 

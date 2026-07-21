@@ -60,8 +60,9 @@ class BrandController extends BaseController
                 'title'   => 'ایجاد برند',
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد برند: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد برند'])
                 ->withInput();
         }
     }
@@ -80,8 +81,9 @@ class BrandController extends BaseController
                 'title'   => 'ویرایش برند',
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش برند: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش برند'])
                 ->withInput();
         }
     }
@@ -100,8 +102,9 @@ class BrandController extends BaseController
                 'title'   => 'حذف برند',
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف برند: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف برند']);
         }
     }
 

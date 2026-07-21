@@ -47,24 +47,23 @@ class AuthService
     public function sendLoginOtp(string $mobile): bool
     {
         $user = User::where('mobile', $mobile)->first();
-    
+
         if (!$user) {
             return false;
         }
-    
+
+        // کاربران غیرفعال نمی‌توانند با OTP وارد شوند — فعال‌سازی خودکار ممنوع
         if ($user->is_active === false) {
-            $user->update([
-                'is_active' => true
-            ]);
+            return false;
         }
-    
+
         $code = $this->otpService->generate($user);
-    
+
         dispatch(function () use ($user, $code) {
             app(\App\Services\Sms\IPPanelService::class)
                 ->sendOtp($user->mobile, $code);
         })->afterResponse();
-    
+
         return true;
     }    /**
      * تأیید کد یکبار مصرف

@@ -72,8 +72,9 @@ class CostCenterController extends BaseController
                 ->withInput()
                 ->with('show_create_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد مرکز هزینه: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد مرکز هزینه'])
                 ->withInput()
                 ->with('show_create_modal', true);
         }
@@ -97,8 +98,9 @@ class CostCenterController extends BaseController
                 ->withInput()
                 ->with('show_edit_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش مرکز هزینه: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش مرکز هزینه'])
                 ->withInput()
                 ->with('show_edit_modal', true);
         }
@@ -117,8 +119,9 @@ class CostCenterController extends BaseController
                 'title'   => 'حذف مرکز هزینه'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف مرکز هزینه: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف مرکز هزینه']);
         }
     }
 }

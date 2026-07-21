@@ -88,7 +88,8 @@ class ContactController extends BaseController
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'خطا در ایجاد مخاطب: ' . $e->getMessage()])->withInput();
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطا در ایجاد مخاطب'])->withInput();
         }
     }
 
@@ -119,7 +120,8 @@ class ContactController extends BaseController
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'خطا در ویرایش مخاطب: ' . $e->getMessage()])->withInput();
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطا در ویرایش مخاطب'])->withInput();
         }
     }
 
@@ -136,8 +138,9 @@ class ContactController extends BaseController
                 'title'   => 'حذف مخاطب'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف مخاطب: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف مخاطب']);
         }
     }
 

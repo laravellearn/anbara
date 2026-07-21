@@ -196,6 +196,37 @@ class PermissionSeeder extends Seeder
             ['name' => 'fixed-assets.assign',   'title' => 'تخصیص دارایی به پرسنل / عودت',  'group' => 'دارایی ثابت'],
             ['name' => 'fixed-assets.maintain', 'title' => 'ثبت تعمیر و نگهداری دارایی',    'group' => 'دارایی ثابت'],
             ['name' => 'fixed-assets.scrap',    'title' => 'اسقاط و خروج از خدمت دارایی',   'group' => 'دارایی ثابت'],
+
+            // ==================== ۲۳. اعلان‌ها ====================
+            ['name' => 'notifications.view',    'title' => 'مشاهده اعلان‌ها',                'group' => 'اعلان‌ها'],
+            ['name' => 'notifications.manage',  'title' => 'مدیریت و حذف اعلان‌ها',          'group' => 'اعلان‌ها'],
+
+            // ==================== ۲۴. فاکتور فروش ====================
+            ['name' => 'sales-invoices.view',    'title' => 'مشاهده فاکتورهای فروش',         'group' => 'فاکتور فروش'],
+            ['name' => 'sales-invoices.create',  'title' => 'ثبت فاکتور فروش جدید',          'group' => 'فاکتور فروش'],
+            ['name' => 'sales-invoices.edit',    'title' => 'ویرایش فاکتور فروش',            'group' => 'فاکتور فروش'],
+            ['name' => 'sales-invoices.delete',  'title' => 'حذف فاکتور فروش',               'group' => 'فاکتور فروش'],
+            ['name' => 'sales-invoices.confirm', 'title' => 'تأیید فاکتور فروش',             'group' => 'فاکتور فروش'],
+            ['name' => 'sales-invoices.pay',     'title' => 'ثبت پرداخت فاکتور فروش',        'group' => 'فاکتور فروش'],
+            ['name' => 'sales-invoices.cancel',  'title' => 'لغو فاکتور فروش',               'group' => 'فاکتور فروش'],
+
+            // ==================== ۲۵. خروجی (Export) ====================
+            ['name' => 'export.inventory',       'title' => 'خروجی موجودی انبار (CSV)',       'group' => 'خروجی داده'],
+            ['name' => 'export.products',        'title' => 'خروجی لیست کالاها (CSV)',        'group' => 'خروجی داده'],
+            ['name' => 'export.sales-invoices',  'title' => 'خروجی فاکتورهای فروش (CSV)',     'group' => 'خروجی داده'],
+            ['name' => 'export.purchase-orders', 'title' => 'خروجی سفارشات خرید (CSV)',       'group' => 'خروجی داده'],
+
+            // ==================== ۲۶. بارکد / QR ====================
+            ['name' => 'barcode.view',           'title' => 'مشاهده و چاپ بارکد / QR',       'group' => 'بارکد و QR'],
+            ['name' => 'barcode.scan',           'title' => 'اسکن بارکد برای جستجوی کالا',   'group' => 'بارکد و QR'],
+
+            // ==================== ۲۷. API ====================
+            ['name' => 'api.access',             'title' => 'دسترسی به API (Sanctum Token)',  'group' => 'API'],
+            ['name' => 'api.token.manage',       'title' => 'مدیریت توکن‌های API',            'group' => 'API'],
+
+            // ==================== ۲۸. پرداخت ====================
+            ['name' => 'billing.pay',            'title' => 'پرداخت اشتراک از طریق درگاه',   'group' => 'اشتراک و صورتحساب'],
+            ['name' => 'billing.payment.history','title' => 'مشاهده تاریخچه پرداخت‌ها',       'group' => 'اشتراک و صورتحساب'],
         ];
 
 

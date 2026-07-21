@@ -38,8 +38,14 @@ return [
     'ippanel' => [
         'username' => env('IPPANEL_USERNAME'),
         'password' => env('IPPANEL_PASSWORD'),
-        'from' => env('IPPANEL_FROM'),
-        'pattern' => env('IPPANEL_PATTERN'),
+        'from'     => env('IPPANEL_FROM'),
+        'pattern'  => env('IPPANEL_PATTERN'),
+    ],
+
+    // ─── زرین‌پال ─────────────────────────────────────────────────────────────
+    'zarinpal' => [
+        'merchant_id' => env('ZARINPAL_MERCHANT_ID', ''),
+        'sandbox'     => env('ZARINPAL_SANDBOX', true),   // در محیط production روی false قرار دهید
     ],
 
 ];

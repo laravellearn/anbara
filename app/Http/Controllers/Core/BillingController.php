@@ -65,8 +65,9 @@ class BillingController extends Controller
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ارتقا اشتراک: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ارتقا اشتراک'])
                 ->withInput();
         }
     }

@@ -94,8 +94,9 @@ class WarehouseLocationController extends BaseController
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد موقعیت: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد موقعیت'])
                 ->withInput();
         }
     }
@@ -137,8 +138,9 @@ class WarehouseLocationController extends BaseController
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش موقعیت: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش موقعیت'])
                 ->withInput();
         }
     }
@@ -156,8 +158,9 @@ class WarehouseLocationController extends BaseController
                 'title'   => 'حذف موقعیت'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف موقعیت: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف موقعیت']);
         }
     }
 }

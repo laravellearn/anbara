@@ -18,8 +18,14 @@ class TenantScope implements Scope
         }
 
         $manager = app(TenantManager::class);
-        if ($tenantId = $manager->getTenantId()) {
-            $builder->where($model->getTable().'.'.$column, $tenantId);
+        $tenantId = $manager->getTenantId();
+
+        // اگر tenant_id تنظیم نشده، هیچ رکوردی برنگردان تا از نشت داده جلوگیری شود
+        if (!$tenantId) {
+            $builder->whereRaw('1 = 0');
+            return;
         }
+
+        $builder->where($model->getTable().'.'.$column, $tenantId);
     }
 }

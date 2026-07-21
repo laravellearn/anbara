@@ -164,7 +164,8 @@ class UserController extends Controller
         } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput()->with('show_create_modal', true);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'خطا در ایجاد کاربر: ' . $e->getMessage()])->withInput()->with('show_create_modal', true);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطا در ایجاد کاربر'])->withInput()->with('show_create_modal', true);
         }
     }
 
@@ -229,7 +230,8 @@ class UserController extends Controller
         } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput()->with('show_edit_modal', true);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'خطا در ویرایش کاربر: ' . $e->getMessage()])->withInput()->with('show_edit_modal', true);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطا در ویرایش کاربر'])->withInput()->with('show_edit_modal', true);
         }
     }
 

@@ -321,17 +321,53 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
 });
 
 
+// ─── اعلان‌ها (همه کاربران احراز هویت‌شده) ───────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications',               [\App\Http\Controllers\Core\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/latest',        [\App\Http\Controllers\Core\NotificationController::class, 'latest'])->name('notifications.latest');
+    Route::post('/notifications/read-all',     [\App\Http\Controllers\Core\NotificationController::class, 'markRead'])->name('notifications.read-all');
+    Route::post('/notifications/{id}/read',    [\App\Http\Controllers\Core\NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::delete('/notifications/{notification}', [\App\Http\Controllers\Core\NotificationController::class, 'destroy'])->name('notifications.destroy');
+});
+
 //مسیرهایی که مالک فقط باید دسترسی داشته باشد
 Route::middleware(['auth', 'require.tenant', 'owner', 'check.subscription'])->group(function () {
     //مدیریت اشتراک ها
-    Route::get('/billing/plans', [BillingController::class, 'plans'])->name('billing.plans');
-    Route::post('/billing/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
-    Route::get('/billing/license', [BillingController::class, 'license'])->name('billing.license');
-    Route::get('/billing/history', [BillingController::class, 'history'])->name('billing.history');
+    Route::get('/billing/plans', [\App\Http\Controllers\Core\BillingController::class, 'plans'])->name('billing.plans');
+    Route::post('/billing/subscribe', [\App\Http\Controllers\Core\BillingController::class, 'subscribe'])->name('billing.subscribe');
+    Route::get('/billing/license', [\App\Http\Controllers\Core\BillingController::class, 'license'])->name('core.billing.license');
+    Route::get('/billing/history', [\App\Http\Controllers\Core\BillingController::class, 'history'])->name('billing.history');
+
+    // ─── پرداخت زرین‌پال ──────────────────────────────────────────────────────
+    Route::post('/billing/payment/initiate',  [\App\Http\Controllers\Core\PaymentController::class, 'initiate'])->name('billing.payment.initiate');
+    Route::get('/billing/payment/callback',   [\App\Http\Controllers\Core\PaymentController::class, 'callback'])->name('billing.payment.callback');
+    Route::get('/billing/payment/history',    [\App\Http\Controllers\Core\PaymentController::class, 'history'])->name('billing.payment.history');
 
     //لاگ های سیستمی
-    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/activity-logs', [\App\Http\Controllers\Core\ActivityLogController::class, 'index'])->name('activity-logs.index');
 
     //مدیریت سازمان
-    Route::resource('companies', CompanyController::class)->except('show');
+    Route::resource('companies', \App\Http\Controllers\Core\CompanyController::class)->except('show');
+});
+
+// ─── فاکتور فروش ──────────────────────────────────────────────────────────────
+Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.tenant'])->group(function () {
+    Route::resource('sales-invoices', \App\Http\Controllers\Warehouse\SalesInvoiceController::class);
+    Route::post('sales-invoices/{salesInvoice}/confirm',  [\App\Http\Controllers\Warehouse\SalesInvoiceController::class, 'confirm'])->name('sales-invoices.confirm');
+    Route::post('sales-invoices/{salesInvoice}/pay',      [\App\Http\Controllers\Warehouse\SalesInvoiceController::class, 'registerPayment'])->name('sales-invoices.pay');
+    Route::post('sales-invoices/{salesInvoice}/cancel',   [\App\Http\Controllers\Warehouse\SalesInvoiceController::class, 'cancel'])->name('sales-invoices.cancel');
+    Route::get('sales-invoices/{salesInvoice}/print',     [\App\Http\Controllers\Warehouse\SalesInvoiceController::class, 'print'])->name('sales-invoices.print');
+
+    // ─── بارکد / QR ────────────────────────────────────────────────────────────
+    Route::get('barcode',           [\App\Http\Controllers\Warehouse\BarcodeController::class, 'index'])->name('barcode.index');
+    Route::get('barcode/print',     [\App\Http\Controllers\Warehouse\BarcodeController::class, 'print'])->name('barcode.print');
+    Route::get('barcode/scan',      [\App\Http\Controllers\Warehouse\BarcodeController::class, 'scan'])->name('barcode.scan');
+
+    // ─── خروجی CSV ─────────────────────────────────────────────────────────────
+    Route::prefix('export')->name('export.')->group(function () {
+        Route::get('inventory',        [\App\Http\Controllers\Warehouse\ExportController::class, 'inventoryCsv'])->name('inventory-csv');
+        Route::get('products',         [\App\Http\Controllers\Warehouse\ExportController::class, 'productsCsv'])->name('products-csv');
+        Route::get('sales-invoices',   [\App\Http\Controllers\Warehouse\ExportController::class, 'salesInvoicesCsv'])->name('sales-invoices-csv');
+        Route::get('purchase-orders',  [\App\Http\Controllers\Warehouse\ExportController::class, 'purchaseOrdersCsv'])->name('purchase-orders-csv');
+    });
 });

@@ -64,7 +64,7 @@ class OtpService
             $otp->increment('attempts');
 
             // بعد از پنجمین خطا OTP باطل شود
-            if (($otp->attempts + 1) >= 5) {
+            if ($otp->attempts >= 5) {
                 $otp->update([
                     'is_used' => true
                 ]);

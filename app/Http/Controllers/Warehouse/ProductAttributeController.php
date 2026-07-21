@@ -76,8 +76,9 @@ class ProductAttributeController extends BaseController
                 ->withInput()
                 ->with('show_create_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد ویژگی: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد ویژگی'])
                 ->withInput()
                 ->with('show_create_modal', true);
         }
@@ -112,8 +113,9 @@ class ProductAttributeController extends BaseController
                 ->withInput()
                 ->with('show_edit_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش ویژگی: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش ویژگی'])
                 ->withInput()
                 ->with('show_edit_modal', true);
         }
@@ -132,8 +134,9 @@ class ProductAttributeController extends BaseController
                 'title'   => 'حذف ویژگی'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف ویژگی: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف ویژگی']);
         }
     }
 }

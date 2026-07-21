@@ -103,8 +103,9 @@ class FiscalYearController extends BaseController
                 ->withInput()
                 ->with('show_create_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد سال مالی: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد سال مالی'])
                 ->withInput()
                 ->with('show_create_modal', true);
         }
@@ -151,8 +152,9 @@ class FiscalYearController extends BaseController
                 ->withInput()
                 ->with('show_edit_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش سال مالی: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش سال مالی'])
                 ->withInput()
                 ->with('show_edit_modal', true);
         }
@@ -169,8 +171,9 @@ class FiscalYearController extends BaseController
                 'title'   => 'حذف سال مالی'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف سال مالی: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف سال مالی']);
         }
     }
 

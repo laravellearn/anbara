@@ -149,7 +149,8 @@ public function store(StoreEmployeeRequest $request)
     } catch (\Illuminate\Validation\ValidationException $e) {
         return redirect()->back()->withErrors($e->errors())->withInput()->with('show_create_modal', true);
     } catch (\Exception $e) {
-        return redirect()->back()->withErrors(['error' => 'خطا در ایجاد کارمند: ' . $e->getMessage()])->withInput()->with('show_create_modal', true);
+        \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+        return redirect()->back()->withErrors(['error' => 'خطا در ایجاد کارمند'])->withInput()->with('show_create_modal', true);
     }
 }
 
@@ -235,7 +236,8 @@ public function update(UpdateEmployeeRequest $request, Employee $employee)
     } catch (\Illuminate\Validation\ValidationException $e) {
         return redirect()->back()->withErrors($e->errors())->withInput()->with('show_edit_modal', true);
     } catch (\Exception $e) {
-        return redirect()->back()->withErrors(['error' => 'خطا در ویرایش کارمند: ' . $e->getMessage()])->withInput()->with('show_edit_modal', true);
+        \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+        return redirect()->back()->withErrors(['error' => 'خطا در ویرایش کارمند'])->withInput()->with('show_edit_modal', true);
     }
 }
 
@@ -256,8 +258,9 @@ public function update(UpdateEmployeeRequest $request, Employee $employee)
                 'title'   => 'حذف کارمند'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف کارمند: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف کارمند']);
         }
     }
 }

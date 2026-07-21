@@ -192,29 +192,25 @@ class RegisterController extends Controller
             ->latest()
             ->first();
 
-        if (
-            !$otp ||
-            !Hash::check(
-                $request->otp,
-                $otp->code
-            )
-        ) {
+        // بررسی وجود OTP
+        if (!$otp) {
+            return back()->withErrors([
+                'otp' => 'کد تاییدی یافت نشد. لطفاً مجدداً درخواست کنید.'
+            ]);
+        }
+
+        // بررسی انقضا قبل از هر کار دیگری
+        if ($otp->expires_at->isPast()) {
+            return back()->withErrors([
+                'otp' => 'کد منقضی شده است. لطفاً کد جدید درخواست کنید.'
+            ]);
+        }
+
+        // بررسی صحت کد
+        if (!Hash::check($request->otp, $otp->code)) {
             return back()->withErrors([
                 'otp' => 'کد تایید صحیح نیست.'
             ]);
-        }
-        if (!$otp) {
-            return back()
-                ->withErrors([
-                    'code' => 'کد نامعتبر است'
-                ]);
-        }
-
-        if ($otp->expires_at->isPast()) {
-            return back()
-                ->withErrors([
-                    'code' => 'کد منقضی شده است'
-                ]);
         }
 
         $otp->update([

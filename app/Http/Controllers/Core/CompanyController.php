@@ -135,8 +135,9 @@ class CompanyController extends Controller
                 ->withInput()
                 ->with('show_create_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد سازمان: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد سازمان'])
                 ->withInput()
                 ->with('show_create_modal', true);
         }
@@ -180,8 +181,9 @@ class CompanyController extends Controller
                 ->withInput()
                 ->with('show_edit_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش سازمان: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش سازمان'])
                 ->withInput()
                 ->with('show_edit_modal', true);
         }
@@ -212,8 +214,9 @@ class CompanyController extends Controller
                 'title'   => 'حذف سازمان'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف سازمان: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف سازمان']);
         }
     }
 
@@ -265,7 +268,7 @@ class CompanyController extends Controller
 
             return $path;
         } catch (\Exception $e) {
-            \Log::error('آپلود لوگو ناموفق', ['error' => $e->getMessage()]);
+            \Log::error('آپلود لوگو ناموفق', ['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
             return null;
         }
     }

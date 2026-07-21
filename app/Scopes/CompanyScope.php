@@ -12,8 +12,14 @@ class CompanyScope implements Scope
     public function apply(Builder $builder, Model $model): void
     {
         $manager = app(TenantManager::class);
-        if ($companyId = $manager->getCompanyId()) {
-            $builder->where($model->getTable().'.company_id', $companyId);
+        $companyId = $manager->getCompanyId();
+
+        // اگر company_id تنظیم نشده، هیچ رکوردی برنگردان تا از نشت داده جلوگیری شود
+        if (!$companyId) {
+            $builder->whereRaw('1 = 0');
+            return;
         }
+
+        $builder->where($model->getTable().'.company_id', $companyId);
     }
 }

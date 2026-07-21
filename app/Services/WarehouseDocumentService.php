@@ -125,11 +125,13 @@ class WarehouseDocumentService
             default                            => [],
         };
 
+        $firstTxLinked = false;
         foreach ($transactions as $txData) {
             $tx = StockTransaction::create($txData);
-            // ارجاع اولین tran به ردیف سند
-            if (!isset($mainTxId)) {
+            // ارجاع اولین transaction به ردیف سند
+            if (!$firstTxLinked) {
                 $item->update(['stock_transaction_id' => $tx->id]);
+                $firstTxLinked = true;
             }
         }
     }

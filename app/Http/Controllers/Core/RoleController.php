@@ -78,8 +78,9 @@ class RoleController extends Controller
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد نقش: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد نقش'])
                 ->withInput();
         }
     }
@@ -111,8 +112,9 @@ class RoleController extends Controller
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش نقش: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش نقش'])
                 ->withInput();
         }
     }
@@ -131,8 +133,9 @@ class RoleController extends Controller
                 'title' => 'حذف نقش'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف نقش: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف نقش']);
         }
     }
 

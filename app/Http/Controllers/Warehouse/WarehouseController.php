@@ -86,8 +86,9 @@ class WarehouseController extends BaseController
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد انبار: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد انبار'])
                 ->withInput();
         }
     }
@@ -127,8 +128,9 @@ class WarehouseController extends BaseController
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش انبار: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش انبار'])
                 ->withInput();
         }
     }
@@ -146,8 +148,9 @@ class WarehouseController extends BaseController
                 'title'   => 'حذف انبار'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف انبار: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف انبار']);
         }
     }
 }

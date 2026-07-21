@@ -43,7 +43,8 @@ class ProfileController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()])->withInput();
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.'])->withInput();
         }
     }
 
@@ -60,7 +61,8 @@ class ProfileController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()->withErrors($e->errors());
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return redirect()->back()->withErrors(['error' => 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.']);
         }
     }
 

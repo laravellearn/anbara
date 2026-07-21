@@ -13,16 +13,18 @@ class PurchaseOrderService
         private WarehouseDocumentService $docService
     ) {}
 
-    /** تولید شماره PO یکتا */
+    /** تولید شماره PO یکتا — داخل تراکنش با قفل برای جلوگیری از race condition */
     public function generatePoNumber(int $tenantId): string
     {
-        $year = now()->format('Y');
-        $last = PurchaseOrder::where('tenant_id', $tenantId)
-            ->whereYear('created_at', $year)
-            ->lockForUpdate()
-            ->count();
-        $seq = str_pad($last + 1, 5, '0', STR_PAD_LEFT);
-        return "PO-{$year}-{$seq}";
+        return DB::transaction(function () use ($tenantId) {
+            $year = now()->format('Y');
+            $last = PurchaseOrder::where('tenant_id', $tenantId)
+                ->whereYear('created_at', $year)
+                ->lockForUpdate()
+                ->count();
+            $seq = str_pad($last + 1, 5, '0', STR_PAD_LEFT);
+            return "PO-{$year}-{$seq}";
+        });
     }
 
     /** تأیید سفارش */

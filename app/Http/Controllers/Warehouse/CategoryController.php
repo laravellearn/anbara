@@ -78,8 +78,9 @@ class CategoryController extends BaseController
                 ->withInput()
                 ->with('show_create_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد دسته‌بندی: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد دسته‌بندی'])
                 ->withInput()
                 ->with('show_create_modal', true);
         }
@@ -103,8 +104,9 @@ class CategoryController extends BaseController
                 ->withInput()
                 ->with('show_edit_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش دسته‌بندی: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش دسته‌بندی'])
                 ->withInput()
                 ->with('show_edit_modal', true);
         }
@@ -123,8 +125,9 @@ class CategoryController extends BaseController
                 'title'   => 'حذف دسته‌بندی'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف دسته‌بندی: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف دسته‌بندی']);
         }
     }
 }

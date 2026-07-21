@@ -30,8 +30,9 @@ class FiscalYearSwitcherController extends Controller
             return redirect()->back()
                 ->withErrors($e->errors());
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در تغییر سال مالی: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در تغییر سال مالی']);
         }
     }
 }

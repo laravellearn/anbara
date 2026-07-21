@@ -71,8 +71,9 @@ class MeasurementUnitController extends BaseController
                 ->withInput()
                 ->with('show_create_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ایجاد واحد: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ایجاد واحد'])
                 ->withInput()
                 ->with('show_create_modal', true);
         }
@@ -96,8 +97,9 @@ class MeasurementUnitController extends BaseController
                 ->withInput()
                 ->with('show_edit_modal', true);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در ویرایش واحد: ' . $e->getMessage()])
+                ->withErrors(['error' => 'خطا در ویرایش واحد'])
                 ->withInput()
                 ->with('show_edit_modal', true);
         }
@@ -116,8 +118,9 @@ class MeasurementUnitController extends BaseController
                 'title'   => 'حذف واحد'
             ]);
         } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             return redirect()->back()
-                ->withErrors(['error' => 'خطا در حذف واحد: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'خطا در حذف واحد']);
         }
     }
 }

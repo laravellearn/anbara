@@ -222,6 +222,9 @@ class LoginController extends Controller
     public function logout()
     {
         Auth::logout();
+        // باطل کردن کامل session برای جلوگیری از session fixation
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
         return redirect()->route('login');
     }
 }

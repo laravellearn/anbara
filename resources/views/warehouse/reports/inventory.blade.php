@@ -76,9 +76,14 @@
     <div class="card shadow-none border">
         <div class="card-header border-bottom d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0"><i class="bx bx-layer me-1"></i> موجودی لحظه‌ای</h5>
-            <a href="{{ request()->fullUrlWithQuery(['export' => 'excel']) }}" class="btn btn-sm btn-success">
-                <i class="bx bx-download me-1"></i> خروجی Excel
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ request()->fullUrlWithQuery(['export' => 'excel']) }}" class="btn btn-sm btn-success">
+                    <i class="bx bx-download me-1"></i> خروجی Excel
+                </a>
+                <a href="{{ route('warehouse.reports.inventory.pdf') }}?{{ http_build_query(request()->except('page')) }}" target="_blank" class="btn btn-sm btn-danger">
+                    <i class="bx bx-file-pdf me-1"></i> خروجی PDF
+                </a>
+            </div>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">

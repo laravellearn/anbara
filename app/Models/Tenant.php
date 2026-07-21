@@ -28,7 +28,8 @@ class Tenant extends Model
         'theme_color',
         'data',
         'settings',
-        'is_active'
+        'is_active',
+        'trial_ends_at',
     ];
 
     public static function getCustomColumns(): array
@@ -46,8 +47,9 @@ class Tenant extends Model
     }
 
     protected $casts = [
-        'settings' => 'array',
-        'is_active' => 'boolean',
+        'settings'      => 'array',
+        'is_active'     => 'boolean',
+        'trial_ends_at' => 'datetime',
     ];
 
     // Business Layer
@@ -98,11 +100,26 @@ class Tenant extends Model
 
     /**
      * آخرین اشتراک فعال یا آزمایشی (رابطه)
+     * فقط اشتراک‌هایی که هنوز منقضی نشده‌اند برگردانده می‌شوند.
      */
     public function activeSubscription(): HasOne
     {
         return $this->hasOne(Subscription::class)
-            ->whereIn('status', ['active', 'trial'])
+            ->where(function ($q) {
+                // اشتراک فعال: بدون تاریخ پایان یا هنوز معتبر
+                $q->where(function ($active) {
+                    $active->where('status', 'active')
+                           ->where(function ($d) {
+                               $d->whereNull('ends_at')
+                                 ->orWhere('ends_at', '>=', now());
+                           });
+                })
+                // اشتراک آزمایشی: trial_ends_at هنوز نگذشته
+                ->orWhere(function ($trial) {
+                    $trial->where('status', 'trial')
+                          ->where('trial_ends_at', '>=', now());
+                });
+            })
             ->orderByDesc('id');
     }
 

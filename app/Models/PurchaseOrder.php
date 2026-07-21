@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Concerns\AutoFillTenantAndCompany;
+use App\Concerns\BelongsToCompany;
+use App\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PurchaseOrder extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany;
 
     protected $fillable = [
         'tenant_id', 'company_id', 'po_number', 'status',

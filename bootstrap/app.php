@@ -9,6 +9,8 @@ return Application::configure(basePath: dirname(__DIR__))
     // bootstrap/app.php
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
         $schedule->job(new \App\Jobs\HandleExpiredTrials)->daily();
+        $schedule->command('subscriptions:notify-expiring --days=7')->dailyAt('08:00');
+        $schedule->command('subscriptions:notify-expiring --days=1')->dailyAt('09:00');
     })
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',

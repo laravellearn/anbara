@@ -34,12 +34,26 @@ class SubscriptionService
 
     protected function getActiveSubscription(Tenant $tenant): ?Subscription
     {
+        // اشتراک‌های «فعال» و «آزمایشی» هر دو مجاز به استفاده از امکانات هستند
         return $tenant->subscriptions()
-                      ->where('status', 'active')
+                      ->whereIn('status', ['active', 'trial'])
                       ->where('starts_at', '<=', now())
                       ->where(function ($q) {
-                          $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+                          // فعال: بدون تاریخ پایان یا هنوز منقضی نشده
+                          $q->where(function ($active) {
+                              $active->where('status', 'active')
+                                     ->where(function ($d) {
+                                         $d->whereNull('ends_at')
+                                           ->orWhere('ends_at', '>=', now());
+                                     });
+                          })
+                          // آزمایشی: trial_ends_at هنوز نگذشته
+                          ->orWhere(function ($trial) {
+                              $trial->where('status', 'trial')
+                                    ->where('trial_ends_at', '>=', now());
+                          });
                       })
+                      ->orderByDesc('id')
                       ->first();
     }
 }

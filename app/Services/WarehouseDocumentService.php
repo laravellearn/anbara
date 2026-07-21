@@ -137,8 +137,8 @@ class WarehouseDocumentService
     private function buildInbound(array $base, WarehouseDocument $doc): array
     {
         $type = $doc->type === WarehouseDocument::TYPE_RETURN_IN
-            ? InventoryTransactionType::RETURN_FROM_CUSTOMER
-            : InventoryTransactionType::PURCHASE_RECEIPT;
+            ? InventoryTransactionType::RETURN_SALE   // مرجوعی از مشتری
+            : InventoryTransactionType::PURCHASE;     // رسید خرید / ورود به انبار
 
         return [array_merge($base, ['type' => $type->value])];
     }
@@ -146,8 +146,8 @@ class WarehouseDocumentService
     private function buildOutbound(array $base, WarehouseDocument $doc): array
     {
         $type = $doc->type === WarehouseDocument::TYPE_RETURN_OUT
-            ? InventoryTransactionType::RETURN_TO_SUPPLIER
-            : InventoryTransactionType::ISSUE;
+            ? InventoryTransactionType::RETURN_PURCHASE  // مرجوعی به تأمین‌کننده
+            : InventoryTransactionType::SALE;            // حواله خروج از انبار
 
         return [array_merge($base, ['type' => $type->value])];
     }

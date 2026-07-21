@@ -143,7 +143,7 @@ class WarehouseDocumentController extends BaseController
         $this->authorizeDoc($document);
 
         $document->load(['items.product', 'items.measurementUnit',
-            'warehouse', 'sourceWarehouse', 'contact', 'fiscalYear', 'costCenter', 'creator', 'approver']);
+            'warehouse', 'destinationWarehouse', 'contact', 'fiscalYear', 'costCenter', 'creator', 'approver']);
 
         return view('warehouse.documents.print', compact('document'));
     }

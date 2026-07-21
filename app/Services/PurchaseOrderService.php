@@ -60,7 +60,8 @@ class PurchaseOrderService
             throw new \RuntimeException('سفارش در وضعیت مجاز برای دریافت نیست.');
         }
 
-        $doc = DB::transaction(function () use ($po, $received, $userId) {
+        // تمام عملیات (ساخت سند + تأیید + به‌روزرسانی PO) در یک تراکنش
+        return DB::transaction(function () use ($po, $received, $userId) {
 
             // ساخت سند رسید انبار
             $doc = WarehouseDocument::create([
@@ -88,7 +89,6 @@ class PurchaseOrderService
                 $qty = min((float)$entry['quantity'], $item->remaining_qty);
                 if ($qty <= 0) continue;
 
-                // ردیف سند انبار
                 $doc->items()->create([
                     'product_id'          => $item->product_id,
                     'measurement_unit_id' => $item->measurement_unit_id,
@@ -97,7 +97,6 @@ class PurchaseOrderService
                     'sort_order'          => $i,
                 ]);
 
-                // به‌روز‌رسانی مقدار دریافت‌شده
                 $item->increment('quantity_received', $qty);
                 $item->update(['warehouse_document_id' => $doc->id]);
 
@@ -106,7 +105,10 @@ class PurchaseOrderService
                 }
             }
 
-            // به‌روزرسانی وضعیت PO
+            // تأیید سند رسید انبار (ایجاد stock_transactions) داخل همین تراکنش
+            $this->docService->approve($doc, $userId);
+
+            // به‌روزرسانی وضعیت PO پس از تأیید موفق سند
             $po->update([
                 'status' => $allReceived
                     ? PurchaseOrder::STATUS_RECEIVED
@@ -116,11 +118,6 @@ class PurchaseOrderService
 
             return $doc;
         });
-
-        // تأیید خودکار سند رسید
-        $this->docService->approve($doc, $userId);
-
-        return $doc;
     }
 
     /** بستن سفارش */

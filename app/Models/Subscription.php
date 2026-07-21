@@ -16,8 +16,16 @@ class Subscription extends Model
         'plan_id',
         'starts_at',
         'ends_at',
+        'trial_ends_at',
         'status',
         'auto_renew',
+    ];
+
+    protected $casts = [
+        'starts_at'      => 'datetime',
+        'ends_at'        => 'datetime',
+        'trial_ends_at'  => 'datetime',
+        'auto_renew'     => 'boolean',
     ];
 
     public function tenant()

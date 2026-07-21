@@ -147,6 +147,55 @@ class PermissionSeeder extends Seeder
             ['name' => 'purchase-orders.delete',  'title' => 'حذف سفارش خرید',        'group' => 'سفارش خرید'],
             ['name' => 'purchase-orders.confirm', 'title' => 'تأیید / ارسال / بستن',  'group' => 'سفارش خرید'],
             ['name' => 'purchase-orders.receive', 'title' => 'ثبت دریافت کالا',       'group' => 'سفارش خرید'],
+
+            // ==================== ۱۷. درخواست خرید ====================
+            ['name' => 'purchase-requests.view',    'title' => 'مشاهده درخواست‌های خرید',   'group' => 'درخواست خرید'],
+            ['name' => 'purchase-requests.create',  'title' => 'ثبت درخواست خرید جدید',     'group' => 'درخواست خرید'],
+            ['name' => 'purchase-requests.edit',    'title' => 'ویرایش درخواست خرید',       'group' => 'درخواست خرید'],
+            ['name' => 'purchase-requests.delete',  'title' => 'حذف درخواست خرید',          'group' => 'درخواست خرید'],
+            ['name' => 'purchase-requests.submit',  'title' => 'ارسال درخواست خرید برای تأیید', 'group' => 'درخواست خرید'],
+            ['name' => 'purchase-requests.approve', 'title' => 'تأیید / رد درخواست خرید',   'group' => 'درخواست خرید'],
+            ['name' => 'purchase-requests.convert', 'title' => 'تبدیل درخواست خرید به PO',  'group' => 'درخواست خرید'],
+
+            // ==================== ۱۸. فاکتور خرید ====================
+            ['name' => 'purchase-invoices.view',    'title' => 'مشاهده فاکتورهای خرید',     'group' => 'فاکتور خرید'],
+            ['name' => 'purchase-invoices.create',  'title' => 'ثبت فاکتور خرید جدید',      'group' => 'فاکتور خرید'],
+            ['name' => 'purchase-invoices.edit',    'title' => 'ویرایش فاکتور خرید',        'group' => 'فاکتور خرید'],
+            ['name' => 'purchase-invoices.delete',  'title' => 'حذف فاکتور خرید',           'group' => 'فاکتور خرید'],
+            ['name' => 'purchase-invoices.approve', 'title' => 'تأیید / ثبت فاکتور خرید',  'group' => 'فاکتور خرید'],
+            ['name' => 'purchase-invoices.pay',     'title' => 'ثبت پرداخت فاکتور',         'group' => 'فاکتور خرید'],
+
+            // ==================== ۱۹. درخواست کالا ====================
+            ['name' => 'item-requests.view',    'title' => 'مشاهده درخواست‌های کالا',       'group' => 'درخواست کالا'],
+            ['name' => 'item-requests.create',  'title' => 'ثبت درخواست کالا جدید',         'group' => 'درخواست کالا'],
+            ['name' => 'item-requests.edit',    'title' => 'ویرایش درخواست کالا',           'group' => 'درخواست کالا'],
+            ['name' => 'item-requests.delete',  'title' => 'حذف درخواست کالا',              'group' => 'درخواست کالا'],
+            ['name' => 'item-requests.submit',  'title' => 'ارسال درخواست کالا برای تأیید', 'group' => 'درخواست کالا'],
+            ['name' => 'item-requests.approve', 'title' => 'تأیید / رد درخواست کالا',      'group' => 'درخواست کالا'],
+            ['name' => 'item-requests.dispatch','title' => 'صدور حواله تحویل کالا',         'group' => 'درخواست کالا'],
+
+            // ==================== ۲۰. تنظیمات ====================
+            ['name' => 'settings.view',          'title' => 'مشاهده تنظیمات سیستم',              'group' => 'تنظیمات'],
+            ['name' => 'settings.edit',          'title' => 'ویرایش تنظیمات سیستم',              'group' => 'تنظیمات'],
+            ['name' => 'settings.organization',  'title' => 'تنظیمات سازمان و شرکت',             'group' => 'تنظیمات'],
+            ['name' => 'settings.warehouse',     'title' => 'تنظیمات انبار',                     'group' => 'تنظیمات'],
+            ['name' => 'settings.workflow',      'title' => 'تنظیمات گردش کار (workflow)',        'group' => 'تنظیمات'],
+            ['name' => 'settings.numbering',     'title' => 'تنظیمات شماره‌گذاری اسناد',         'group' => 'تنظیمات'],
+            ['name' => 'settings.notifications', 'title' => 'تنظیمات اعلان‌ها و هشدارها',        'group' => 'تنظیمات'],
+
+            // ==================== ۲۱. گزارشات خرید و مدیریتی ====================
+            ['name' => 'reports.purchase',          'title' => 'گزارش خلاصه خرید',           'group' => 'گزارشات خرید'],
+            ['name' => 'reports.supplier',          'title' => 'گزارش عملکرد تامین‌کنندگان',  'group' => 'گزارشات خرید'],
+            ['name' => 'reports.stock-value',       'title' => 'گزارش ارزش موجودی',          'group' => 'گزارشات انبار'],
+
+            // ==================== ۲۲. دارایی ثابت ====================
+            ['name' => 'fixed-assets.view',     'title' => 'مشاهده دارایی‌های ثابت',         'group' => 'دارایی ثابت'],
+            ['name' => 'fixed-assets.create',   'title' => 'ثبت دارایی ثابت جدید',           'group' => 'دارایی ثابت'],
+            ['name' => 'fixed-assets.edit',     'title' => 'ویرایش دارایی ثابت',             'group' => 'دارایی ثابت'],
+            ['name' => 'fixed-assets.delete',   'title' => 'حذف دارایی ثابت',                'group' => 'دارایی ثابت'],
+            ['name' => 'fixed-assets.assign',   'title' => 'تخصیص دارایی به پرسنل / عودت',  'group' => 'دارایی ثابت'],
+            ['name' => 'fixed-assets.maintain', 'title' => 'ثبت تعمیر و نگهداری دارایی',    'group' => 'دارایی ثابت'],
+            ['name' => 'fixed-assets.scrap',    'title' => 'اسقاط و خروج از خدمت دارایی',   'group' => 'دارایی ثابت'],
         ];
 
 

@@ -173,26 +173,31 @@
     {{-- ==================== تدارکات و خرید ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">تدارکات و خرید</span></li>
 
-    <li class="menu-item {{ request()->routeIs('purchase-requests.*') ? 'active open' : '' }}">
+    @can('access', 'purchase-requests.view')
+    <li class="menu-item {{ request()->routeIs('warehouse.purchase-requests.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-cart-add"></i>
         <div>درخواست خرید</div>
+        @php $pendingPr = \App\Models\PurchaseRequest::where('tenant_id', auth()->user()?->tenant_id ?? 0)->where('status','submitted')->count(); @endphp
+        @if($pendingPr > 0)
+        <span class="badge bg-info rounded-pill ms-auto">{{ $pendingPr }}</span>
+        @endif
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>ثبت درخواست خرید</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>درخواست‌های من</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>بررسی و تأیید</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>پیگیری درخواست‌ها</div>
-          </a></li>
+        <li class="menu-item {{ request()->routeIs('warehouse.purchase-requests.index') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.purchase-requests.index') }}" class="menu-link"><div>همه درخواست‌ها</div></a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.purchase-requests.index') && request('status') === 'submitted' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.purchase-requests.index', ['status' => 'submitted']) }}" class="menu-link"><div>در انتظار بررسی</div></a>
+        </li>
+        @can('access', 'purchase-requests.create')
+        <li class="menu-item {{ request()->routeIs('warehouse.purchase-requests.create') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.purchase-requests.create') }}" class="menu-link"><div>درخواست جدید</div></a>
+        </li>
+        @endcan
       </ul>
     </li>
+    @endcan
 
     <li class="menu-item {{ request()->routeIs('price-inquiries.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -233,23 +238,27 @@
       </ul>
     </li>
 
-    <li class="menu-item {{ request()->routeIs('purchase-invoices.*') ? 'active open' : '' }}">
+    @can('access', 'purchase-invoices.view')
+    <li class="menu-item {{ request()->routeIs('warehouse.purchase-invoices.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-receipt"></i>
         <div>فاکتور خرید</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>ثبت فاکتور</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>لیست فاکتورها</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>تطبیق با سفارش خرید</div>
-          </a></li>
+        <li class="menu-item {{ request()->routeIs('warehouse.purchase-invoices.index') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.purchase-invoices.index') }}" class="menu-link"><div>همه فاکتورها</div></a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.purchase-invoices.index') && request('status') === 'registered' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.purchase-invoices.index', ['status' => 'registered']) }}" class="menu-link"><div>پرداخت‌نشده</div></a>
+        </li>
+        @can('access', 'purchase-invoices.create')
+        <li class="menu-item {{ request()->routeIs('warehouse.purchase-invoices.create') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.purchase-invoices.create') }}" class="menu-link"><div>فاکتور جدید</div></a>
+        </li>
+        @endcan
       </ul>
     </li>
+    @endcan
 
     <li class="menu-item {{ request()->routeIs('quality-control.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -272,26 +281,34 @@
     {{-- ==================== درخواست کالا (داخلی) ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">درخواست کالا</span></li>
 
-    <li class="menu-item {{ request()->routeIs('item-requests.*') ? 'active open' : '' }}">
+    @can('access', 'item-requests.view')
+    <li class="menu-item {{ request()->routeIs('warehouse.item-requests.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-task"></i>
         <div>درخواست کالا از انبار</div>
+        @php $pendingIr = \App\Models\ItemRequest::where('tenant_id', auth()->user()?->tenant_id ?? 0)->where('status','submitted')->count(); @endphp
+        @if($pendingIr > 0)
+        <span class="badge bg-info rounded-pill ms-auto">{{ $pendingIr }}</span>
+        @endif
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>ثبت درخواست جدید</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>درخواست‌های من</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>تأیید و بررسی</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>پیگیری درخواست‌ها</div>
-          </a></li>
+        <li class="menu-item {{ request()->routeIs('warehouse.item-requests.index') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.item-requests.index') }}" class="menu-link"><div>همه درخواست‌ها</div></a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.item-requests.index') && request('status') === 'submitted' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.item-requests.index', ['status' => 'submitted']) }}" class="menu-link"><div>در انتظار بررسی</div></a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.item-requests.index') && request('status') === 'approved' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.item-requests.index', ['status' => 'approved']) }}" class="menu-link"><div>تأیید‌شده / در انتظار حواله</div></a>
+        </li>
+        @can('access', 'item-requests.create')
+        <li class="menu-item {{ request()->routeIs('warehouse.item-requests.create') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.item-requests.create') }}" class="menu-link"><div>درخواست جدید</div></a>
+        </li>
+        @endcan
       </ul>
     </li>
+    @endcan
 
     {{-- ==================== عملیات انبار ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">عملیات انبار</span></li>
@@ -406,31 +423,45 @@
     @endcan
 
     {{-- ==================== دارایی ثابت ==================== --}}
+    @canany(['access:fixed-assets.view', 'access:fixed-assets.create'])
     <li class="menu-header small text-uppercase"><span class="menu-header-text">دارایی ثابت</span></li>
 
-    <li class="menu-item {{ request()->routeIs('assets.*') ? 'active open' : '' }}">
+    @can('access', 'fixed-assets.view')
+    <li class="menu-item {{ request()->routeIs('warehouse.fixed-assets.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-briefcase"></i>
         <div>مدیریت دارایی</div>
+        @if(isset($pendingDocs) && $pendingDocs > 0)
+        <span class="badge bg-danger rounded-pill ms-auto">{{ $pendingDocs }}</span>
+        @endif
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
+        <li class="menu-item {{ request()->routeIs('warehouse.fixed-assets.index') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.fixed-assets.index') }}" class="menu-link">
             <div>لیست دارایی‌ها</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>تخصیص به پرسنل</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>عودت دارایی</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>تعمیر و نگهداری</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>اسقاط و خروج از خدمت</div>
-          </a></li>
+          </a>
+        </li>
+        @can('access', 'fixed-assets.create')
+        <li class="menu-item {{ request()->routeIs('warehouse.fixed-assets.create') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.fixed-assets.create') }}" class="menu-link">
+            <div>ثبت دارایی جدید</div>
+          </a>
+        </li>
+        @endcan
+        <li class="menu-item {{ request()->routeIs('warehouse.fixed-assets.index') && request('status') === 'under_maintenance' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.fixed-assets.index', ['status' => 'under_maintenance']) }}" class="menu-link">
+            <div>در تعمیر</div>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.fixed-assets.index') && request('status') === 'assigned' ? 'active' : '' }}">
+          <a href="{{ route('warehouse.fixed-assets.index', ['status' => 'assigned']) }}" class="menu-link">
+            <div>تخصیص‌یافته</div>
+          </a>
+        </li>
       </ul>
     </li>
+    @endcan
+    @endcanany
 
     {{-- ==================== گزارشات و تحلیل ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">گزارشات و تحلیل</span></li>
@@ -476,33 +507,25 @@
           </a>
         </li>
         @endcan
-      </ul>
-    </li>
-
-    <li class="menu-item {{ request()->routeIs('reports.management.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-trending-up"></i>
-        <div>گزارشات مدیریتی</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>تحلیل ABC</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>کالاهای پرمصرف / کم‌مصرف</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>پیش‌بینی تقاضا</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>عملکرد انبار</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>عملکرد تدارکات</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>عملکرد تأمین‌کنندگان</div>
-          </a></li>
+        @can('access', 'reports.inventory')
+        <li class="menu-item {{ request()->routeIs('warehouse.reports.stock-value') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.reports.stock-value') }}" class="menu-link">
+            <div>ارزش موجودی</div>
+          </a>
+        </li>
+        @endcan
+        @can('access', 'reports.purchase')
+        <li class="menu-item {{ request()->routeIs('warehouse.reports.purchase-summary') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.reports.purchase-summary') }}" class="menu-link">
+            <div>خلاصه خرید</div>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.reports.supplier-performance') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.reports.supplier-performance') }}" class="menu-link">
+            <div>عملکرد تامین‌کنندگان</div>
+          </a>
+        </li>
+        @endcan
       </ul>
     </li>
 
@@ -532,37 +555,36 @@
     {{-- ==================== تنظیمات ==================== --}}
     <li class="menu-header small text-uppercase"><span class="menu-header-text">تنظیمات</span></li>
 
-    <li class="menu-item {{ request()->routeIs('settings.*','billing.license.*') ? 'active open' : '' }}">
+    @can('access', 'settings.organization')
+    <li class="menu-item {{ request()->routeIs('warehouse.settings.*','billing.license.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-cog"></i>
         <div>تنظیمات سیستم</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>اطلاعات سازمان</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>تنظیمات انبار</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>گردش کار و تأییدیه‌ها</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>شماره‌گذاری اسناد</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>اعلان‌ها (ایمیل / پیامک)</div>
-          </a></li>
-        <li class="menu-item"><a href="#" class="menu-link">
-            <div>روش ارزش‌گذاری پیش‌فرض</div>
-          </a></li>
+        <li class="menu-item {{ request()->routeIs('warehouse.settings.organization') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.settings.organization') }}" class="menu-link"><div>اطلاعات سازمان</div></a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.settings.warehouse') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.settings.warehouse') }}" class="menu-link"><div>تنظیمات انبار</div></a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.settings.workflow') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.settings.workflow') }}" class="menu-link"><div>گردش‌کار و تأییدیه‌ها</div></a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.settings.numbering') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.settings.numbering') }}" class="menu-link"><div>شماره‌گذاری اسناد</div></a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('warehouse.settings.notifications') ? 'active' : '' }}">
+          <a href="{{ route('warehouse.settings.notifications') }}" class="menu-link"><div>اعلان‌ها</div></a>
+        </li>
         @can('license.view')
-        <li class="menu-item"><a href="{{ route('billing.license') }}" class="menu-link">
-            <div>وضعیت لایسنس</div>
-          </a></li>
+        <li class="menu-item {{ request()->routeIs('billing.license') ? 'active' : '' }}">
+          <a href="{{ route('billing.license') }}" class="menu-link"><div>وضعیت لایسنس</div></a>
+        </li>
         @endcan
       </ul>
     </li>
+    @endcan
 
     <li class="menu-item {{ request()->routeIs('logs.*', 'activity-logs.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">

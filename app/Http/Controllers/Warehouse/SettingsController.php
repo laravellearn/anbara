@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Warehouse;
 use App\Models\TenantSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends BaseController
 {
@@ -19,7 +20,6 @@ class SettingsController extends BaseController
         Gate::authorize('access', 'settings.organization');
         $tenantId  = $this->manager->getTenantId();
         $settings  = TenantSetting::where('tenant_id', $tenantId)
-            ->where('group', 'organization')
             ->pluck('value', 'key')
             ->toArray();
         return view('warehouse.settings.organization', compact('settings'));
@@ -29,24 +29,60 @@ class SettingsController extends BaseController
     {
         Gate::authorize('access', 'settings.organization');
         $data = $request->validate([
-            'org_name'     => 'required|string|max:200',
-            'org_address'  => 'nullable|string|max:500',
-            'org_phone'    => 'nullable|string|max:50',
-            'org_email'    => 'nullable|email|max:150',
-            'org_website'  => 'nullable|url|max:200',
-            'org_national_code' => 'nullable|string|max:20',
-            'org_economic_code' => 'nullable|string|max:20',
-            'org_registration_number' => 'nullable|string|max:50',
+            'org_name'               => 'required|string|max:200',
+            'org_address'            => 'nullable|string|max:500',
+            'org_phone'              => 'nullable|string|max:50',
+            'org_email'              => 'nullable|email|max:150',
+            'org_website'            => 'nullable|url|max:200',
+            'org_national_code'      => 'nullable|string|max:20',
+            'org_economic_code'      => 'nullable|string|max:20',
+            'org_registration_number'=> 'nullable|string|max:50',
+            'org_brand_color'        => 'nullable|string|max:20',
+            'org_logo'               => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
         ]);
 
         $tenantId  = $this->manager->getTenantId();
         $companyId = $this->manager->getCompanyId();
 
-        foreach ($data as $key => $value) {
-            TenantSetting::set($tenantId, $companyId, 'organization', $key, $value ?? '');
+        // آپلود لوگو
+        if ($request->hasFile('org_logo')) {
+            // حذف لوگوی قبلی
+            $oldLogo = TenantSetting::get($tenantId, 'org_logo');
+            if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
+                Storage::disk('public')->delete($oldLogo);
+            }
+            $path = $request->file('org_logo')->store("logos/tenant_{$tenantId}", 'public');
+            TenantSetting::set($tenantId, $companyId, 'organization', 'org_logo', $path);
         }
 
-        return back()->with('success', 'اطلاعات سازمان ذخیره شد.');
+        // ذخیره بقیه فیلدها
+        $textFields = ['org_name', 'org_address', 'org_phone', 'org_email',
+                       'org_website', 'org_national_code', 'org_economic_code',
+                       'org_registration_number', 'org_brand_color'];
+
+        foreach ($textFields as $key) {
+            if (array_key_exists($key, $data)) {
+                TenantSetting::set($tenantId, $companyId, 'organization', $key, $data[$key] ?? '');
+            }
+        }
+
+        return back()->with('success', 'اطلاعات و هویت بصری سازمان ذخیره شد.');
+    }
+
+    // ─── حذف لوگو ────────────────────────────────────────────────────────────
+    public function deleteLogo()
+    {
+        Gate::authorize('access', 'settings.organization');
+        $tenantId  = $this->manager->getTenantId();
+        $companyId = $this->manager->getCompanyId();
+
+        $oldLogo = TenantSetting::get($tenantId, 'org_logo');
+        if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
+            Storage::disk('public')->delete($oldLogo);
+        }
+        TenantSetting::set($tenantId, $companyId, 'organization', 'org_logo', '');
+
+        return back()->with('success', 'لوگو حذف شد.');
     }
 
     // ─── تنظیمات انبار ────────────────────────────────────────────────────────

@@ -71,7 +71,18 @@
     {{-- هدر --}}
     <div class="header">
         <div class="company-info">
-            <h1>{{ config('app.name', 'سیستم انبار') }}</h1>
+            @php
+                $tenantId   = app(\App\Services\TenantManager::class)->getTenantId();
+                $orgName    = \App\Models\TenantSetting::get($tenantId, 'org_name', config('app.name'));
+                $orgLogo    = \App\Models\TenantSetting::get($tenantId, 'org_logo', '');
+                $brandColor = \App\Models\TenantSetting::get($tenantId, 'org_brand_color', '#1a56db');
+                $orgPhone   = \App\Models\TenantSetting::get($tenantId, 'org_phone', '');
+            @endphp
+            @if($orgLogo)
+                <img src="{{ asset('storage/'.$orgLogo) }}" style="max-height:55px;max-width:140px;margin-bottom:6px;display:block" alt="{{ $orgName }}">
+            @endif
+            <h1 style="color:{{ $brandColor }}">{{ $orgName }}</h1>
+            @if($orgPhone)<p>📞 {{ $orgPhone }}</p>@endif
             <p>سفارش رسمی خرید</p>
         </div>
         <div class="doc-info">

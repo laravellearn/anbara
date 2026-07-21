@@ -49,7 +49,18 @@
 <div class="page">
     <div class="header">
         <div class="company-info">
-            <h1>{{ config('app.name', 'سیستم انبار') }}</h1>
+            @php
+                $tenantId   = app(\App\Services\TenantManager::class)->getTenantId();
+                $orgName    = \App\Models\TenantSetting::get($tenantId, 'org_name', config('app.name'));
+                $orgLogo    = \App\Models\TenantSetting::get($tenantId, 'org_logo', '');
+                $brandColor = \App\Models\TenantSetting::get($tenantId, 'org_brand_color', '#059669');
+                $orgPhone   = \App\Models\TenantSetting::get($tenantId, 'org_phone', '');
+            @endphp
+            @if($orgLogo)
+                <img src="{{ asset('storage/'.$orgLogo) }}" style="max-height:55px;max-width:140px;margin-bottom:6px;display:block" alt="{{ $orgName }}">
+            @endif
+            <h1 style="color:{{ $brandColor }}">{{ $orgName }}</h1>
+            @if($orgPhone)<p style="font-size:10px;color:#555">📞 {{ $orgPhone }}</p>@endif
             <p>{{ $doc->type_label ?? $doc->type }}</p>
         </div>
         <div style="text-align:left">

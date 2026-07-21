@@ -196,34 +196,121 @@
 
   </div>
 
-  {{-- ─── فعالیت‌های اخیر ─────────────────────────────────────────────────── --}}
-  <div class="card border-0 shadow-sm">
-    <div class="card-header d-flex align-items-center justify-content-between py-3">
-      <h5 class="mb-0"><i class="bx bx-history text-secondary me-2"></i>فعالیت‌های اخیر</h5>
-      <a href="{{ route('super-admin.activity-logs.index') }}" class="btn btn-sm btn-outline-secondary">مشاهده همه</a>
+  {{-- ─── نمودارهای ApexCharts ──────────────────────────────────────────────── --}}
+  <div class="row g-4 mb-4">
+    {{-- نمودار رشد سازمان‌ها (۱۲ ماه) --}}
+    <div class="col-xl-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header d-flex align-items-center justify-content-between py-3">
+          <h5 class="mb-0"><i class="bx bx-trending-up text-success me-2"></i>رشد سازمان‌ها (۱۲ ماه اخیر)</h5>
+        </div>
+        <div class="card-body">
+          <div id="tenantGrowthChart" style="min-height:250px"></div>
+        </div>
+      </div>
     </div>
-    <div class="table-responsive">
-      <table class="table table-sm table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>کاربر</th><th>سازمان</th><th>عملیات</th><th>تاریخ</th>
-          </tr>
-        </thead>
-        <tbody>
-          @forelse($recentLogs as $log)
-          <tr>
-            <td class="small">{{ $log->user?->name ?? 'سیستم' }}</td>
-            <td class="small text-muted">{{ $log->tenant?->name ?? '—' }}</td>
-            <td><span class="badge bg-label-secondary small">{{ $log->action }}</span></td>
-            <td class="small text-muted">{{ $log->created_at->toJalali('Y/m/d H:i') }}</td>
-          </tr>
+    {{-- نمودار درآمد ماهانه --}}
+    <div class="col-xl-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header py-3">
+          <h6 class="mb-0"><i class="bx bx-bar-chart text-primary me-2"></i>درآمد ماهانه (ریال)</h6>
+        </div>
+        <div class="card-body">
+          <div id="revenueChart" style="min-height:250px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- ─── تیکت‌های باز + فعالیت‌های اخیر ──────────────────────────────────── --}}
+  <div class="row g-4 mb-4">
+    <div class="col-xl-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header d-flex align-items-center justify-content-between py-3">
+          <h5 class="mb-0"><i class="bx bx-support text-danger me-2"></i>تیکت‌های باز</h5>
+          <a href="{{ route('super-admin.tickets.index') }}" class="btn btn-sm btn-outline-danger">مشاهده همه</a>
+        </div>
+        <div class="card-body py-2">
+          @forelse($openTickets ?? [] as $t)
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <a href="{{ route('super-admin.tickets.show',$t) }}" class="small fw-semibold">{{ Str::limit($t->subject,35) }}</a>
+              <div class="text-muted" style="font-size:0.72rem">{{ $t->user?->name }} — {{ $t->created_at->diffForHumans() }}</div>
+            </div>
+            @php $pc=\App\Models\Ticket::priorityColors(); @endphp
+            <span class="badge bg-label-{{ $pc[$t->priority]??'secondary' }}">{{ \App\Models\Ticket::priorityLabels()[$t->priority]??$t->priority }}</span>
+          </div>
           @empty
-          <tr><td colspan="4" class="text-center text-muted py-3">فعالیتی ثبت نشده</td></tr>
+          <p class="text-muted small mb-0">تیکت باز وجود ندارد.</p>
           @endforelse
-        </tbody>
-      </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header d-flex align-items-center justify-content-between py-3">
+          <h5 class="mb-0"><i class="bx bx-history text-secondary me-2"></i>فعالیت‌های اخیر</h5>
+          <a href="{{ route('super-admin.activity-logs.index') }}" class="btn btn-sm btn-outline-secondary">مشاهده همه</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr><th>کاربر</th><th>سازمان</th><th>عملیات</th><th>تاریخ</th></tr>
+            </thead>
+            <tbody>
+              @forelse($recentLogs as $log)
+              <tr>
+                <td class="small">{{ $log->user?->name ?? 'سیستم' }}</td>
+                <td class="small text-muted">{{ $log->tenant?->name ?? '—' }}</td>
+                <td><span class="badge bg-label-secondary small">{{ $log->action }}</span></td>
+                <td class="small text-muted">{{ $log->created_at->toJalali('Y/m/d H:i') }}</td>
+              </tr>
+              @empty
+              <tr><td colspan="4" class="text-center text-muted py-3">فعالیتی ثبت نشده</td></tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script>
+<script>
+(function(){
+  // داده‌های رشد سازمان از PHP
+  const growthLabels = @json($growthChart['labels'] ?? []);
+  const growthData   = @json($growthChart['data'] ?? []);
+  const revLabels    = @json($revenueChart['labels'] ?? []);
+  const revData      = @json($revenueChart['data'] ?? []);
+
+  // نمودار رشد سازمان‌ها
+  new ApexCharts(document.getElementById('tenantGrowthChart'), {
+    chart: { type: 'area', height: 250, toolbar: { show: false }, fontFamily: 'Tahoma,Arial,sans-serif' },
+    series: [{ name: 'سازمان جدید', data: growthData }],
+    xaxis: { categories: growthLabels },
+    colors: ['#696cff'],
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1 } },
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 2 },
+    tooltip: { rtl: true },
+  }).render();
+
+  // نمودار درآمد
+  new ApexCharts(document.getElementById('revenueChart'), {
+    chart: { type: 'bar', height: 250, toolbar: { show: false }, fontFamily: 'Tahoma,Arial,sans-serif' },
+    series: [{ name: 'درآمد (ریال)', data: revData }],
+    xaxis: { categories: revLabels },
+    colors: ['#03c3ec'],
+    dataLabels: { enabled: false },
+    plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
+    tooltip: { rtl: true, y: { formatter: v => Number(v).toLocaleString('fa-IR') + ' ریال' } },
+  }).render();
+})();
+</script>
+@endpush

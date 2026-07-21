@@ -101,7 +101,15 @@ Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superad
     // ─── نقش‌ها ────────────────────────────────────────────────────────────
     Route::resource('roles', SuperAdminRoleController::class)->except('show');
 
-    Route::get('/tickets',       fn() => view('super-admin.placeholder'))->name('tickets.index');
+    // ─── تیکت‌های پشتیبانی (سوپر ادمین) ──────────────────────────────────────
+    Route::prefix('tickets')->name('tickets.')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\SuperAdmin\SuperTicketController::class, 'index'])->name('index');
+        Route::get('/{ticket}',            [\App\Http\Controllers\SuperAdmin\SuperTicketController::class, 'show'])->name('show');
+        Route::post('/{ticket}/reply',     [\App\Http\Controllers\SuperAdmin\SuperTicketController::class, 'reply'])->name('reply');
+        Route::post('/{ticket}/status',    [\App\Http\Controllers\SuperAdmin\SuperTicketController::class, 'changeStatus'])->name('status');
+        Route::post('/{ticket}/assign',    [\App\Http\Controllers\SuperAdmin\SuperTicketController::class, 'assign'])->name('assign');
+    });
+
     Route::get('/notifications', fn() => view('super-admin.placeholder'))->name('notifications.index');
 
     // ─── تنظیمات ──────────────────────────────────────────────────────────
@@ -309,6 +317,7 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('organization',       [SettingsController::class, 'organization'])->name('organization');
         Route::put('organization',       [SettingsController::class, 'updateOrganization'])->name('organization.update');
+        Route::delete('organization/logo',[SettingsController::class, 'deleteLogo'])->name('organization.delete-logo');
         Route::get('warehouse',          [SettingsController::class, 'warehouse'])->name('warehouse');
         Route::put('warehouse',          [SettingsController::class, 'updateWarehouse'])->name('warehouse.update');
         Route::get('workflow',           [SettingsController::class, 'workflow'])->name('workflow');
@@ -363,11 +372,58 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
     Route::get('barcode/print',     [\App\Http\Controllers\Warehouse\BarcodeController::class, 'print'])->name('barcode.print');
     Route::get('barcode/scan',      [\App\Http\Controllers\Warehouse\BarcodeController::class, 'scan'])->name('barcode.scan');
 
-    // ─── خروجی CSV ─────────────────────────────────────────────────────────────
+    // ─── خروجی CSV / Excel ──────────────────────────────────────────────────────
     Route::prefix('export')->name('export.')->group(function () {
         Route::get('inventory',        [\App\Http\Controllers\Warehouse\ExportController::class, 'inventoryCsv'])->name('inventory-csv');
         Route::get('products',         [\App\Http\Controllers\Warehouse\ExportController::class, 'productsCsv'])->name('products-csv');
         Route::get('sales-invoices',   [\App\Http\Controllers\Warehouse\ExportController::class, 'salesInvoicesCsv'])->name('sales-invoices-csv');
         Route::get('purchase-orders',  [\App\Http\Controllers\Warehouse\ExportController::class, 'purchaseOrdersCsv'])->name('purchase-orders-csv');
+        // خروجی Excel واقعی
+        Route::get('inventory/excel',       [\App\Http\Controllers\Warehouse\ExportController::class, 'inventoryExcel'])->name('inventory-excel');
+        Route::get('products/excel',        [\App\Http\Controllers\Warehouse\ExportController::class, 'productsExcel'])->name('products-excel');
+        Route::get('sales-invoices/excel',  [\App\Http\Controllers\Warehouse\ExportController::class, 'salesInvoicesExcel'])->name('sales-invoices-excel');
+        Route::get('purchase-orders/excel', [\App\Http\Controllers\Warehouse\ExportController::class, 'purchaseOrdersExcel'])->name('purchase-orders-excel');
+        // خروجی PDF
+        Route::get('sales-invoices/pdf',    [\App\Http\Controllers\Warehouse\ExportController::class, 'salesInvoicesPdf'])->name('sales-invoices-pdf');
+        Route::get('inventory/pdf',         [\App\Http\Controllers\Warehouse\ExportController::class, 'inventoryPdf'])->name('inventory-pdf');
+    });
+
+    // ─── پیش‌فاکتور ─────────────────────────────────────────────────────────────
+    Route::resource('quotations', \App\Http\Controllers\Warehouse\QuotationController::class)
+        ->names([
+            'index'   => 'warehouse.quotations.index',
+            'create'  => 'warehouse.quotations.create',
+            'store'   => 'warehouse.quotations.store',
+            'show'    => 'warehouse.quotations.show',
+            'edit'    => 'warehouse.quotations.edit',
+            'update'  => 'warehouse.quotations.update',
+            'destroy' => 'warehouse.quotations.destroy',
+        ]);
+    Route::post('quotations/{quotation}/status',  [\App\Http\Controllers\Warehouse\QuotationController::class, 'updateStatus'])->name('warehouse.quotations.status');
+    Route::post('quotations/{quotation}/convert', [\App\Http\Controllers\Warehouse\QuotationController::class, 'convertToInvoice'])->name('warehouse.quotations.convert');
+    Route::get('quotations/{quotation}/print',    [\App\Http\Controllers\Warehouse\QuotationController::class, 'print'])->name('warehouse.quotations.print');
+
+    // ─── سریال / بچ ──────────────────────────────────────────────────────────────
+    Route::prefix('serial-batch')->name('warehouse.serial-batch.')->group(function () {
+        Route::get('/',                        [\App\Http\Controllers\Warehouse\SerialBatchController::class, 'index'])->name('index');
+        Route::post('/',                       [\App\Http\Controllers\Warehouse\SerialBatchController::class, 'store'])->name('store');
+        Route::put('/{serialBatch}',           [\App\Http\Controllers\Warehouse\SerialBatchController::class, 'update'])->name('update');
+        Route::get('/product/{product}/ledger',[\App\Http\Controllers\Warehouse\SerialBatchController::class, 'productLedger'])->name('ledger');
+    });
+
+    // ─── وارد کردن داده (Import) ─────────────────────────────────────────────────
+    Route::prefix('import')->name('warehouse.import.')->group(function () {
+        Route::get('/',                        [\App\Http\Controllers\Warehouse\ImportController::class, 'index'])->name('index');
+        Route::get('/product-template',        [\App\Http\Controllers\Warehouse\ImportController::class, 'productTemplate'])->name('product-template');
+        Route::post('/products',               [\App\Http\Controllers\Warehouse\ImportController::class, 'importProducts'])->name('products');
+    });
+
+    // ─── تیکت پشتیبانی (کاربر) ───────────────────────────────────────────────────
+    Route::prefix('tickets')->name('tickets.')->group(function () {
+        Route::get('/',              [\App\Http\Controllers\Core\TicketController::class, 'index'])->name('index');
+        Route::get('/create',        [\App\Http\Controllers\Core\TicketController::class, 'create'])->name('create');
+        Route::post('/',             [\App\Http\Controllers\Core\TicketController::class, 'store'])->name('store');
+        Route::get('/{ticket}',      [\App\Http\Controllers\Core\TicketController::class, 'show'])->name('show');
+        Route::post('/{ticket}/reply',[\App\Http\Controllers\Core\TicketController::class, 'reply'])->name('reply');
     });
 });

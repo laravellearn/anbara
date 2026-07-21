@@ -34,6 +34,12 @@ class SalesInvoiceController extends BaseController
             ->forTenant($tenantId, $companyId)
             ->latest('invoice_date');
 
+        // ─── فیلتر سال مالی ───────────────────────────────────────────────────
+        $activeFiscalYear = $this->manager->getFiscalYear();
+        if ($activeFiscalYear) {
+            $query->where('fiscal_year_id', $activeFiscalYear->id);
+        }
+
         if ($request->filled('status'))      { $query->where('status', $request->status); }
         if ($request->filled('customer_id')) { $query->where('customer_id', $request->customer_id); }
         if ($request->filled('date_from'))   { $query->whereDate('invoice_date', '>=', $request->date_from); }

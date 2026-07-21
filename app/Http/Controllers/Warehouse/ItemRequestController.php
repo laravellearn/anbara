@@ -31,6 +31,12 @@ class ItemRequestController extends BaseController
             ->withCount('items')
             ->latest('request_date');
 
+        // ─── فیلتر سال مالی ───────────────────────────────────────────────────
+        $activeFiscalYear = $this->manager->getFiscalYear();
+        if ($activeFiscalYear) {
+            $query->where('fiscal_year_id', $activeFiscalYear->id);
+        }
+
         if ($request->filled('status'))     { $query->where('status', $request->status); }
         if ($request->filled('priority'))   { $query->where('priority', $request->priority); }
         if ($request->filled('warehouse_id')){ $query->where('warehouse_id', $request->warehouse_id); }
@@ -177,20 +183,42 @@ class ItemRequestController extends BaseController
         Gate::authorize('access', 'item-requests.submit');
         $this->authorizeTenant($itemRequest);
         abort_unless($itemRequest->canSubmit(), 403);
+
         $itemRequest->update(['status' => ItemRequest::STATUS_SUBMITTED, 'submitted_at' => now()]);
+
+        // اعلان به مدیران انبار برای بررسی مرحله اول
+        $this->notifyManagers($itemRequest, 'item_request_submitted',
+            'درخواست کالا جدید: ' . $itemRequest->ir_number,
+            'ارسال‌شده توسط ' . auth()->user()->name . ' — اولویت: ' . $itemRequest->priority,
+            'item-requests.review'
+        );
+
         return back()->with('success', 'درخواست برای بررسی ارسال شد.');
     }
 
+    /** مرحله اول تأیید: مدیر انبار */
     public function approve(Request $request, ItemRequest $itemRequest)
     {
         Gate::authorize('access', 'item-requests.approve');
         $this->authorizeTenant($itemRequest);
         abort_unless($itemRequest->canApprove(), 403);
+
+        $request->validate(['notes' => 'nullable|string|max:500']);
+
         $itemRequest->update([
             'status'      => ItemRequest::STATUS_APPROVED,
             'approver_id' => auth()->id(),
             'approved_at' => now(),
+            'notes'       => $request->notes ?? $itemRequest->notes,
         ]);
+
+        // اعلان به درخواست‌دهنده
+        $this->notifyUser($itemRequest->requester_id, $itemRequest, 'item_request_approved',
+            'درخواست ' . $itemRequest->ir_number . ' تأیید شد',
+            'درخواست کالای شما تأیید گردید و در انتظار صدور حواله است.',
+            'success'
+        );
+
         return back()->with('success', 'درخواست کالا تأیید شد.');
     }
 
@@ -200,12 +228,21 @@ class ItemRequestController extends BaseController
         $this->authorizeTenant($itemRequest);
         abort_unless($itemRequest->canReject(), 403);
         $request->validate(['rejection_reason' => 'required|string|max:500']);
+
         $itemRequest->update([
             'status'           => ItemRequest::STATUS_REJECTED,
             'approver_id'      => auth()->id(),
             'rejected_at'      => now(),
             'rejection_reason' => $request->rejection_reason,
         ]);
+
+        // اعلان به درخواست‌دهنده
+        $this->notifyUser($itemRequest->requester_id, $itemRequest, 'item_request_rejected',
+            'درخواست ' . $itemRequest->ir_number . ' رد شد',
+            'دلیل: ' . $request->rejection_reason,
+            'danger'
+        );
+
         return back()->with('success', 'درخواست رد شد.');
     }
 
@@ -229,7 +266,7 @@ class ItemRequestController extends BaseController
                 'cost_center_id'  => $itemRequest->cost_center_id,
                 'document_date'   => now()->toDateString(),
                 'reference_number'=> $itemRequest->ir_number,
-                'description'     => "حواله برای درخواست {$itemRequest->ir_number}",
+                'description'     => 'حواله برای درخواست ' . $itemRequest->ir_number,
                 'created_by'      => auth()->id(),
             ]);
 
@@ -252,8 +289,42 @@ class ItemRequestController extends BaseController
             return $doc;
         });
 
+        // اعلان به درخواست‌دهنده — حواله صادر شد
+        $this->notifyUser($itemRequest->requester_id, $itemRequest, 'item_request_issued',
+            'حواله ' . $doc->document_number . ' برای درخواست ' . $itemRequest->ir_number . ' صادر شد',
+            'کالاهای درخواستی آماده تحویل می‌باشند.',
+            'success'
+        );
+
         return redirect()->route('warehouse.documents.show', $doc)
             ->with('success', 'حواله انبار برای این درخواست ایجاد شد.');
+    }
+
+    // ─── Notification helpers ─────────────────────────────────────────────────
+    private function notifyManagers(ItemRequest $ir, string $type, string $title, string $body, string $routeName): void
+    {
+        try {
+            $notif    = app(\App\Services\NotificationService::class);
+            $managers = \App\Models\User::where('tenant_id', $ir->tenant_id)
+                ->whereHas('roles', fn($q) => $q->whereIn('slug', ['admin', 'warehouse-manager', 'owner']))
+                ->pluck('id');
+            foreach ($managers as $uid) {
+                $notif->send(userId: $uid, type: $type, title: $title, body: $body,
+                    icon: 'package', color: 'warning',
+                    actionUrl: route($routeName, $ir));
+            }
+        } catch (\Throwable) {}
+    }
+
+    private function notifyUser(int $userId, ItemRequest $ir, string $type, string $title, string $body, string $color): void
+    {
+        try {
+            app(\App\Services\NotificationService::class)->send(
+                userId: $userId, type: $type, title: $title, body: $body,
+                icon: 'package', color: $color,
+                actionUrl: route('warehouse.item-requests.show', $ir)
+            );
+        } catch (\Throwable) {}
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

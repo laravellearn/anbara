@@ -38,6 +38,12 @@ class WarehouseDocumentController extends BaseController
             ->forTenant($tenantId, $companyId)
             ->latest('document_date');
 
+        // ─── فیلتر سال مالی ───────────────────────────────────────────────────
+        $activeFiscalYear = $this->manager->getFiscalYear();
+        if ($activeFiscalYear) {
+            $query->where('fiscal_year_id', $activeFiscalYear->id);
+        }
+
         if ($request->filled('type'))         { $query->ofType($request->type); }
         if ($request->filled('status'))       { $query->withStatus($request->status); }
         if ($request->filled('warehouse_id')) { $query->where('warehouse_id', $request->warehouse_id); }

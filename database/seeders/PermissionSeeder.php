@@ -211,10 +211,20 @@ class PermissionSeeder extends Seeder
             ['name' => 'sales-invoices.cancel',  'title' => 'لغو فاکتور فروش',               'group' => 'فاکتور فروش'],
 
             // ==================== ۲۵. خروجی (Export) ====================
-            ['name' => 'export.inventory',       'title' => 'خروجی موجودی انبار (CSV)',       'group' => 'خروجی داده'],
-            ['name' => 'export.products',        'title' => 'خروجی لیست کالاها (CSV)',        'group' => 'خروجی داده'],
-            ['name' => 'export.sales-invoices',  'title' => 'خروجی فاکتورهای فروش (CSV)',     'group' => 'خروجی داده'],
-            ['name' => 'export.purchase-orders', 'title' => 'خروجی سفارشات خرید (CSV)',       'group' => 'خروجی داده'],
+            ['name' => 'export.inventory',       'title' => 'خروجی موجودی انبار (CSV)',           'group' => 'خروجی داده'],
+            ['name' => 'export.products',        'title' => 'خروجی لیست کالاها (CSV)',            'group' => 'خروجی داده'],
+            ['name' => 'export.sales-invoices',  'title' => 'خروجی فاکتورهای فروش (CSV)',         'group' => 'خروجی داده'],
+            ['name' => 'export.purchase-orders', 'title' => 'خروجی سفارشات خرید (CSV)',           'group' => 'خروجی داده'],
+            // Excel
+            ['name' => 'export.inventory-excel',       'title' => 'خروجی موجودی انبار (Excel)',   'group' => 'خروجی داده'],
+            ['name' => 'export.products-excel',        'title' => 'خروجی لیست کالاها (Excel)',    'group' => 'خروجی داده'],
+            ['name' => 'export.sales-invoices-excel',  'title' => 'خروجی فاکتورهای فروش (Excel)', 'group' => 'خروجی داده'],
+            ['name' => 'export.purchase-orders-excel', 'title' => 'خروجی سفارشات خرید (Excel)',   'group' => 'خروجی داده'],
+            // PDF
+            ['name' => 'export.sales-invoices-pdf',  'title' => 'خروجی فاکتورهای فروش (PDF)',    'group' => 'خروجی داده'],
+            ['name' => 'export.inventory-pdf',        'title' => 'خروجی موجودی انبار (PDF)',      'group' => 'خروجی داده'],
+            // تنظیمات برند
+            ['name' => 'settings.branding',      'title' => 'تنظیمات لوگو و رنگ سازمان',         'group' => 'تنظیمات'],
 
             // ==================== ۲۶. بارکد / QR ====================
             ['name' => 'barcode.view',           'title' => 'مشاهده و چاپ بارکد / QR',       'group' => 'بارکد و QR'],
@@ -227,6 +237,29 @@ class PermissionSeeder extends Seeder
             // ==================== ۲۸. پرداخت ====================
             ['name' => 'billing.pay',            'title' => 'پرداخت اشتراک از طریق درگاه',   'group' => 'اشتراک و صورتحساب'],
             ['name' => 'billing.payment.history','title' => 'مشاهده تاریخچه پرداخت‌ها',       'group' => 'اشتراک و صورتحساب'],
+
+            // ==================== ۲۹. تیکت پشتیبانی ====================
+            ['name' => 'tickets.view',           'title' => 'مشاهده تیکت‌ها',                 'group' => 'پشتیبانی (تیکت)'],
+            ['name' => 'tickets.create',         'title' => 'ثبت تیکت جدید',                  'group' => 'پشتیبانی (تیکت)'],
+            ['name' => 'tickets.reply',          'title' => 'پاسخ به تیکت',                   'group' => 'پشتیبانی (تیکت)'],
+            ['name' => 'tickets.close',          'title' => 'بستن / حل‌شده تیکت',             'group' => 'پشتیبانی (تیکت)'],
+            ['name' => 'tickets.assign',         'title' => 'تخصیص تیکت به کارشناس',          'group' => 'پشتیبانی (تیکت)'],
+
+            // ==================== ۳۰. پیش‌فاکتور ====================
+            ['name' => 'quotations.view',        'title' => 'مشاهده پیش‌فاکتورها',            'group' => 'پیش‌فاکتور'],
+            ['name' => 'quotations.create',      'title' => 'ثبت پیش‌فاکتور جدید',            'group' => 'پیش‌فاکتور'],
+            ['name' => 'quotations.edit',        'title' => 'ویرایش پیش‌فاکتور',              'group' => 'پیش‌فاکتور'],
+            ['name' => 'quotations.delete',      'title' => 'حذف پیش‌فاکتور',                 'group' => 'پیش‌فاکتور'],
+            ['name' => 'quotations.convert',     'title' => 'تبدیل پیش‌فاکتور به فاکتور',     'group' => 'پیش‌فاکتور'],
+
+            // ==================== ۳۱. سریال / بچ ====================
+            ['name' => 'serial-batch.view',      'title' => 'مشاهده سریال‌ها و بچ‌ها',        'group' => 'سریال / بچ'],
+            ['name' => 'serial-batch.create',    'title' => 'ثبت سریال / بچ جدید',            'group' => 'سریال / بچ'],
+            ['name' => 'serial-batch.edit',      'title' => 'ویرایش وضعیت سریال / بچ',        'group' => 'سریال / بچ'],
+
+            // ==================== ۳۲. وارد کردن داده ====================
+            ['name' => 'import.products',        'title' => 'وارد کردن کالاها از CSV',         'group' => 'ورود داده (Import)'],
+            ['name' => 'import.contacts',        'title' => 'وارد کردن مخاطبان از CSV',        'group' => 'ورود داده (Import)'],
         ];
 
 

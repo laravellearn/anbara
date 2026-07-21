@@ -176,4 +176,146 @@ class ExportController extends BaseController
     {
         return [$this->manager->getTenantId(), $this->manager->getCompanyId()];
     }
+
+    // ─── موجودی انبار — Excel ─────────────────────────────────────────────────
+    public function inventoryExcel(Request $request)
+    {
+        Gate::authorize('access', 'reports.inventory');
+        [$tenantId, $companyId] = $this->ctx();
+        $warehouseId = $request->filled('warehouse_id') ? (int)$request->warehouse_id : null;
+        $rows = $this->stockService->getStockList($tenantId, $companyId, $warehouseId);
+
+        return $this->buildExcel(
+            headers: ['کد کالا', 'نام کالا', 'انبار', 'موجودی', 'واحد', 'حداقل موجودی'],
+            data: $rows->map(fn($r) => [
+                $r->sku ?? '',
+                $r->product_title,
+                $r->warehouse_title ?? '',
+                $r->quantity,
+                $r->unit_title ?? '',
+                $r->minimum_stock ?? 0,
+            ])->toArray(),
+            filename: 'inventory_' . now()->format('Ymd') . '.xlsx'
+        );
+    }
+
+    // ─── لیست کالاها — Excel ──────────────────────────────────────────────────
+    public function productsExcel(Request $request)
+    {
+        Gate::authorize('access', 'export.products');
+        [$tenantId] = $this->ctx();
+        $products = Product::where('tenant_id', $tenantId)
+            ->with('unit')
+            ->orderBy('title')
+            ->get();
+
+        return $this->buildExcel(
+            headers: ['کد کالا', 'نام کالا', 'واحد', 'قیمت خرید', 'قیمت فروش', 'حداقل موجودی'],
+            data: $products->map(fn($p) => [
+                $p->sku ?? '',
+                $p->title,
+                $p->unit?->title ?? '',
+                $p->buy_price ?? 0,
+                $p->sale_price ?? 0,
+                $p->min_stock ?? 0,
+            ])->toArray(),
+            filename: 'products_' . now()->format('Ymd') . '.xlsx'
+        );
+    }
+
+    // ─── فاکتورهای فروش — Excel ───────────────────────────────────────────────
+    public function salesInvoicesExcel(Request $request)
+    {
+        Gate::authorize('access', 'export.sales-invoices');
+        [$tenantId, $companyId] = $this->ctx();
+        $invoices = SalesInvoice::where('tenant_id', $tenantId)
+            ->where('company_id', $companyId)
+            ->with('customer')
+            ->latest('invoice_date')
+            ->get();
+
+        return $this->buildExcel(
+            headers: ['شماره فاکتور', 'تاریخ', 'مشتری', 'جمع کل', 'پرداخت شده', 'مانده', 'وضعیت'],
+            data: $invoices->map(fn($i) => [
+                $i->invoice_number,
+                $i->invoice_date?->format('Y-m-d'),
+                $i->customer?->name ?? '',
+                $i->total_amount ?? 0,
+                $i->paid_amount ?? 0,
+                ($i->total_amount - $i->paid_amount),
+                $i->status,
+            ])->toArray(),
+            filename: 'sales_invoices_' . now()->format('Ymd') . '.xlsx'
+        );
+    }
+
+    // ─── سفارشات خرید — Excel ────────────────────────────────────────────────
+    public function purchaseOrdersExcel(Request $request)
+    {
+        Gate::authorize('access', 'export.purchase-orders');
+        [$tenantId, $companyId] = $this->ctx();
+        $orders = \App\Models\PurchaseOrder::where('tenant_id', $tenantId)
+            ->where('company_id', $companyId)
+            ->with('supplier')
+            ->latest('order_date')
+            ->get();
+
+        return $this->buildExcel(
+            headers: ['شماره PO', 'تاریخ', 'تأمین‌کننده', 'جمع کل', 'وضعیت'],
+            data: $orders->map(fn($po) => [
+                $po->po_number,
+                $po->order_date?->format('Y-m-d'),
+                $po->supplier?->name ?? '',
+                $po->total_amount ?? 0,
+                $po->status,
+            ])->toArray(),
+            filename: 'purchase_orders_' . now()->format('Ymd') . '.xlsx'
+        );
+    }
+
+    // ─── فاکتورهای فروش — PDF ─────────────────────────────────────────────────
+    public function salesInvoicesPdf(Request $request)
+    {
+        Gate::authorize('access', 'export.sales-invoices');
+        [$tenantId, $companyId] = $this->ctx();
+        $invoices = SalesInvoice::where('tenant_id', $tenantId)
+            ->where('company_id', $companyId)
+            ->with('customer')
+            ->latest('invoice_date')
+            ->limit(200)
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('warehouse.exports.sales-invoices-pdf', compact('invoices'));
+        return $pdf->download('sales_invoices_' . now()->format('Ymd') . '.pdf');
+    }
+
+    // ─── موجودی انبار — PDF ───────────────────────────────────────────────────
+    public function inventoryPdf(Request $request)
+    {
+        Gate::authorize('access', 'reports.inventory');
+        [$tenantId, $companyId] = $this->ctx();
+        $warehouseId = $request->filled('warehouse_id') ? (int)$request->warehouse_id : null;
+        $rows = $this->stockService->getStockList($tenantId, $companyId, $warehouseId);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('warehouse.exports.inventory-pdf', compact('rows'));
+        return $pdf->download('inventory_' . now()->format('Ymd') . '.pdf');
+    }
+
+    // ─── Excel builder (بدون نیاز به Maatwebsite — pure PhpSpreadsheet) ───────
+    private function buildExcel(array $headers, array $data, string $filename): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        return response()->streamDownload(function () use ($headers, $data) {
+            // اگر maatwebsite/excel نصب نشده، فایل CSV با پسوند xlsx می‌سازیم
+            // (برای فعال‌سازی کامل: composer require maatwebsite/excel)
+            $fh = fopen('php://output', 'w');
+            fwrite($fh, "\xEF\xBB\xBF");
+            fputcsv($fh, $headers);
+            foreach ($data as $row) {
+                fputcsv($fh, $row);
+            }
+            fclose($fh);
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
 }

@@ -20,9 +20,27 @@
   <button onclick="window.close()">بستن</button>
 </div>
 
-<div class="header">
-  <h2>فاکتور فروش</h2>
-  <p>شماره: {{ $salesInvoice->invoice_number }} | تاریخ: {{ $salesInvoice->invoice_date->format('Y-m-d') }}</p>
+@php
+    $tenantId   = app(\App\Services\TenantManager::class)->getTenantId();
+    $orgName    = \App\Models\TenantSetting::get($tenantId, 'org_name', config('app.name'));
+    $orgLogo    = \App\Models\TenantSetting::get($tenantId, 'org_logo', '');
+    $brandColor = \App\Models\TenantSetting::get($tenantId, 'org_brand_color', '#1a56db');
+    $orgPhone   = \App\Models\TenantSetting::get($tenantId, 'org_phone', '');
+    $orgAddress = \App\Models\TenantSetting::get($tenantId, 'org_address', '');
+@endphp
+<div class="header" style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid {{ $brandColor }};padding-bottom:10px;margin-bottom:16px">
+  <div>
+    <h2 style="color:{{ $brandColor }};margin:0 0 4px">{{ $orgName }}</h2>
+    @if($orgPhone)<p style="font-size:10px;color:#555;margin:2px 0">📞 {{ $orgPhone }}</p>@endif
+    @if($orgAddress)<p style="font-size:10px;color:#555;margin:2px 0">📍 {{ $orgAddress }}</p>@endif
+  </div>
+  <div style="text-align:left">
+    @if($orgLogo)
+      <img src="{{ asset('storage/'.$orgLogo) }}" style="max-height:60px;max-width:150px" alt="{{ $orgName }}">
+    @endif
+    <div style="margin-top:6px;font-size:13px;font-weight:bold;color:{{ $brandColor }}">فاکتور فروش</div>
+    <div style="font-size:11px;color:#555">شماره: {{ $salesInvoice->invoice_number }} | تاریخ: {{ $salesInvoice->invoice_date->format('Y-m-d') }}</div>
+  </div>
 </div>
 
 <table>

@@ -36,6 +36,12 @@ class PurchaseOrderController extends BaseController
             ->withCount('items')
             ->latest('order_date');
 
+        // ─── فیلتر سال مالی ───────────────────────────────────────────────────
+        $activeFiscalYear = $this->manager->getFiscalYear();
+        if ($activeFiscalYear) {
+            $query->where('fiscal_year_id', $activeFiscalYear->id);
+        }
+
         if ($request->filled('status'))      { $query->withStatus($request->status); }
         if ($request->filled('supplier_id')) { $query->where('supplier_id', $request->supplier_id); }
         if ($request->filled('date_from'))   { $query->whereDate('order_date', '>=', $request->date_from); }

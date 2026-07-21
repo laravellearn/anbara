@@ -118,4 +118,14 @@ class SalesInvoice extends Model
     {
         return in_array($this->status, [self::STATUS_DRAFT, self::STATUS_CONFIRMED]);
     }
+
+    public function invoicePayments()
+    {
+        return $this->hasMany(\App\Models\InvoicePayment::class, 'sales_invoice_id');
+    }
+
+    public function returnInvoices()
+    {
+        return $this->hasMany(\App\Models\ReturnInvoice::class, 'sales_invoice_id');
+    }
 }

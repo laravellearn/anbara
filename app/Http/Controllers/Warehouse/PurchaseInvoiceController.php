@@ -47,10 +47,10 @@ class PurchaseInvoiceController extends BaseController
         $suppliers = Contact::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $stats = [
-            'total'      => PurchaseInvoice::forTenant($tenantId, $companyId)->count(),
-            'draft'      => PurchaseInvoice::forTenant($tenantId, $companyId)->where('status', 'draft')->count(),
-            'registered' => PurchaseInvoice::forTenant($tenantId, $companyId)->where('status', 'registered')->count(),
-            'unpaid'     => PurchaseInvoice::forTenant($tenantId, $companyId)->whereNotIn('status', ['paid', 'cancelled'])->count(),
+            'total'      => $this->fyQuery(PurchaseInvoice::class, $tenantId, $companyId)->count(),
+            'draft'      => $this->fyQuery(PurchaseInvoice::class, $tenantId, $companyId)->where('status', 'draft')->count(),
+            'registered' => $this->fyQuery(PurchaseInvoice::class, $tenantId, $companyId)->where('status', 'registered')->count(),
+            'unpaid'     => $this->fyQuery(PurchaseInvoice::class, $tenantId, $companyId)->whereNotIn('status', ['paid', 'cancelled'])->count(),
         ];
 
         return view('warehouse.purchase-invoices.index', compact('invoices', 'suppliers', 'stats'));

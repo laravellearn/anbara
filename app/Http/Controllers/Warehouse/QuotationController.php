@@ -49,10 +49,10 @@ class QuotationController extends BaseController
         $customers  = Contact::where('tenant_id', $tenantId)->where('type', 'customer')->orderBy('name')->get();
 
         $stats = [
-            'total'    => Quotation::forTenant($tenantId, $companyId)->count(),
-            'draft'    => Quotation::forTenant($tenantId, $companyId)->where('status', 'draft')->count(),
-            'sent'     => Quotation::forTenant($tenantId, $companyId)->where('status', 'sent')->count(),
-            'accepted' => Quotation::forTenant($tenantId, $companyId)->where('status', 'accepted')->count(),
+            'total'    => $this->fyQuery(Quotation::class, $tenantId, $companyId)->count(),
+            'draft'    => $this->fyQuery(Quotation::class, $tenantId, $companyId)->where('status', 'draft')->count(),
+            'sent'     => $this->fyQuery(Quotation::class, $tenantId, $companyId)->where('status', 'sent')->count(),
+            'accepted' => $this->fyQuery(Quotation::class, $tenantId, $companyId)->where('status', 'accepted')->count(),
         ];
 
         return view('warehouse.quotations.index', compact('quotations', 'customers', 'stats'));

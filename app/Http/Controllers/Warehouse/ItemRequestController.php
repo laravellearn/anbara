@@ -51,10 +51,10 @@ class ItemRequestController extends BaseController
         $warehouses   = Warehouse::where('tenant_id', $tenantId)->where('is_active', true)->orderBy('title')->get();
 
         $stats = [
-            'total'     => ItemRequest::forTenant($tenantId, $companyId)->count(),
-            'draft'     => ItemRequest::forTenant($tenantId, $companyId)->where('status', 'draft')->count(),
-            'submitted' => ItemRequest::forTenant($tenantId, $companyId)->where('status', 'submitted')->count(),
-            'approved'  => ItemRequest::forTenant($tenantId, $companyId)->where('status', 'approved')->count(),
+            'total'     => $this->fyQuery(ItemRequest::class, $tenantId, $companyId)->count(),
+            'draft'     => $this->fyQuery(ItemRequest::class, $tenantId, $companyId)->where('status', 'draft')->count(),
+            'submitted' => $this->fyQuery(ItemRequest::class, $tenantId, $companyId)->where('status', 'submitted')->count(),
+            'approved'  => $this->fyQuery(ItemRequest::class, $tenantId, $companyId)->where('status', 'approved')->count(),
         ];
 
         return view('warehouse.item-requests.index', compact('itemRequests', 'warehouses', 'stats'));

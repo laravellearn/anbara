@@ -62,10 +62,10 @@ class WarehouseDocumentController extends BaseController
         $warehouses = Warehouse::where('tenant_id', $tenantId)->where('is_active', true)->get();
 
         $stats = [
-            'total'    => WarehouseDocument::forTenant($tenantId, $companyId)->count(),
-            'draft'    => WarehouseDocument::forTenant($tenantId, $companyId)->withStatus('draft')->count(),
-            'pending'  => WarehouseDocument::forTenant($tenantId, $companyId)->withStatus('pending')->count(),
-            'approved' => WarehouseDocument::forTenant($tenantId, $companyId)->withStatus('approved')->count(),
+            'total'    => $this->fyQuery(WarehouseDocument::class, $tenantId, $companyId)->count(),
+            'draft'    => $this->fyQuery(WarehouseDocument::class, $tenantId, $companyId)->withStatus('draft')->count(),
+            'pending'  => $this->fyQuery(WarehouseDocument::class, $tenantId, $companyId)->withStatus('pending')->count(),
+            'approved' => $this->fyQuery(WarehouseDocument::class, $tenantId, $companyId)->withStatus('approved')->count(),
         ];
 
         if ($request->ajax() || $request->input('ajax')) {

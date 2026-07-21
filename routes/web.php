@@ -53,6 +53,11 @@ use App\Http\Controllers\Warehouse\{
     ItemRequestController,
     SettingsController,
     FixedAssetController,
+    ReturnInvoiceController,
+    InvoicePaymentController,
+    QuotationController,
+    SalesInvoiceController,
+    DashboardController,
 };
 
 
@@ -305,6 +310,17 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
     Route::post('purchase-invoices/{purchaseInvoice}/register',  [PurchaseInvoiceController::class, 'register'])->name('purchase-invoices.register');
     Route::post('purchase-invoices/{purchaseInvoice}/mark-paid', [PurchaseInvoiceController::class, 'markPaid'])->name('purchase-invoices.mark-paid');
     Route::post('purchase-invoices/{purchaseInvoice}/cancel',    [PurchaseInvoiceController::class, 'cancel'])->name('purchase-invoices.cancel');
+
+    // ─── برگشت از فروش / خرید (Return Invoice) ───────────────────────────────
+    Route::resource('return-invoices', ReturnInvoiceController::class)->except(['edit', 'update']);
+    Route::post('return-invoices/{returnInvoice}/confirm', [ReturnInvoiceController::class, 'confirm'])->name('return-invoices.confirm');
+    Route::post('return-invoices/{returnInvoice}/cancel',  [ReturnInvoiceController::class, 'cancel'])->name('return-invoices.cancel');
+
+    // ─── پرداخت‌های فاکتور (Invoice Payments) ────────────────────────────────
+    Route::post('sales-invoices/{salesInvoice}/payments',           [InvoicePaymentController::class, 'storeForSalesInvoice'])->name('invoice-payments.store-sales');
+    Route::post('purchase-invoices/{purchaseInvoice}/payments',     [InvoicePaymentController::class, 'storeForPurchaseInvoice'])->name('invoice-payments.store-purchase');
+    Route::delete('invoice-payments/{invoicePayment}',              [InvoicePaymentController::class, 'destroy'])->name('invoice-payments.destroy');
+    Route::get('sales-invoices/{salesInvoice}/payments',            [InvoicePaymentController::class, 'forSalesInvoice'])->name('invoice-payments.for-sales');
 
     // ─── درخواست کالا از انبار (Item Request) ────────────────────────────────
     Route::resource('item-requests', ItemRequestController::class);

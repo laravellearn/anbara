@@ -189,11 +189,16 @@ class FiscalYearController extends BaseController
 
     public function close(FiscalYear $fiscalYear)
     {
-        $fiscalYear->close();
+        Gate::authorize('access', 'fiscal-years.close');
+
+        $carryForward = request()->boolean('carry_forward', true);
+        $result = app(\App\Services\FiscalYearClosingService::class)->close($fiscalYear, $carryForward);
+
+        $type = $result['success'] ? 'success' : 'error';
         return redirect()->back()->with('toast', [
-            'message' => 'سال مالی بسته شد.',
-            'type'    => 'success',
-            'title'   => 'بستن سال مالی'
+            'message' => $result['message'],
+            'type'    => $type,
+            'title'   => 'بستن سال مالی',
         ]);
     }
 }

@@ -58,10 +58,10 @@ class PurchaseOrderController extends BaseController
         $suppliers = \App\Models\Contact::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $stats = [
-            'total'    => PurchaseOrder::forTenant($tenantId, $companyId)->count(),
-            'draft'    => PurchaseOrder::forTenant($tenantId, $companyId)->withStatus('draft')->count(),
-            'pending'  => PurchaseOrder::forTenant($tenantId, $companyId)->whereIn('status', ['confirmed','sent'])->count(),
-            'open'     => PurchaseOrder::forTenant($tenantId, $companyId)->whereIn('status', ['confirmed','sent','partial_received'])->count(),
+            'total'   => $this->fyQuery(PurchaseOrder::class, $tenantId, $companyId)->count(),
+            'draft'   => $this->fyQuery(PurchaseOrder::class, $tenantId, $companyId)->withStatus('draft')->count(),
+            'pending' => $this->fyQuery(PurchaseOrder::class, $tenantId, $companyId)->whereIn('status', ['confirmed','sent'])->count(),
+            'open'    => $this->fyQuery(PurchaseOrder::class, $tenantId, $companyId)->whereIn('status', ['confirmed','sent','partial_received'])->count(),
         ];
 
         if ($request->ajax() || $request->input('ajax')) {

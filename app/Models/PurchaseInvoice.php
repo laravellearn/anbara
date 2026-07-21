@@ -140,4 +140,14 @@ class PurchaseInvoice extends Model
     {
         return $q->where('tenant_id', $tenantId)->where('company_id', $companyId);
     }
+
+    public function invoicePayments()
+    {
+        return $this->hasMany(\App\Models\InvoicePayment::class, 'purchase_invoice_id');
+    }
+
+    public function returnInvoices()
+    {
+        return $this->hasMany(\App\Models\ReturnInvoice::class, 'purchase_invoice_id');
+    }
 }

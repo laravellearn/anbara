@@ -25,6 +25,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'fiscal_years.create', 'title' => 'ایجاد سال مالی', 'group' => 'سال‌های مالی'],
             ['name' => 'fiscal_years.edit', 'title' => 'ویرایش سال مالی', 'group' => 'سال‌های مالی'],
             ['name' => 'fiscal_years.delete', 'title' => 'حذف سال مالی', 'group' => 'سال‌های مالی'],
+            ['name' => 'fiscal-years.close', 'title' => 'بستن سال مالی', 'group' => 'سال‌های مالی'],
 
             // ==================== ۳. گزارشات و لاگ‌ها ====================
             ['name' => 'activity_logs.view', 'title' => 'مشاهده لاگ فعالیت‌ها', 'group' => 'گزارشات'],
@@ -225,6 +226,18 @@ class PermissionSeeder extends Seeder
             ['name' => 'export.inventory-pdf',        'title' => 'خروجی موجودی انبار (PDF)',      'group' => 'خروجی داده'],
             // تنظیمات برند
             ['name' => 'settings.branding',      'title' => 'تنظیمات لوگو و رنگ سازمان',         'group' => 'تنظیمات'],
+
+            // ==================== برگشت از فروش / خرید ====================
+            ['name' => 'return-invoices.view',    'title' => 'مشاهده اسناد برگشت',            'group' => 'برگشت کالا'],
+            ['name' => 'return-invoices.create',  'title' => 'ثبت سند برگشت',                 'group' => 'برگشت کالا'],
+            ['name' => 'return-invoices.confirm', 'title' => 'تأیید سند برگشت',               'group' => 'برگشت کالا'],
+            ['name' => 'return-invoices.cancel',  'title' => 'لغو سند برگشت',                 'group' => 'برگشت کالا'],
+            ['name' => 'return-invoices.delete',  'title' => 'حذف سند برگشت',                 'group' => 'برگشت کالا'],
+
+            // ==================== پرداخت‌های فاکتور ====================
+            ['name' => 'invoice-payments.view',   'title' => 'مشاهده پرداخت‌های فاکتور',      'group' => 'پرداخت‌ها'],
+            ['name' => 'invoice-payments.create', 'title' => 'ثبت پرداخت فاکتور',             'group' => 'پرداخت‌ها'],
+            ['name' => 'invoice-payments.delete', 'title' => 'حذف پرداخت فاکتور',             'group' => 'پرداخت‌ها'],
 
             // ==================== ۲۶. بارکد / QR ====================
             ['name' => 'barcode.view',           'title' => 'مشاهده و چاپ بارکد / QR',       'group' => 'بارکد و QR'],

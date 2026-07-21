@@ -56,11 +56,11 @@ class SalesInvoiceController extends BaseController
         $customers  = Contact::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $stats = [
-            'total'    => SalesInvoice::forTenant($tenantId, $companyId)->count(),
-            'draft'    => SalesInvoice::forTenant($tenantId, $companyId)->where('status', 'draft')->count(),
-            'unpaid'   => SalesInvoice::forTenant($tenantId, $companyId)->whereIn('status', ['confirmed', 'partially_paid'])->count(),
-            'paid'     => SalesInvoice::forTenant($tenantId, $companyId)->where('status', 'paid')->count(),
-            'total_revenue' => SalesInvoice::forTenant($tenantId, $companyId)->whereIn('status', ['confirmed','partially_paid','paid'])->sum('paid_amount'),
+            'total'         => $this->fyQuery(SalesInvoice::class, $tenantId, $companyId)->count(),
+            'draft'         => $this->fyQuery(SalesInvoice::class, $tenantId, $companyId)->where('status', 'draft')->count(),
+            'unpaid'        => $this->fyQuery(SalesInvoice::class, $tenantId, $companyId)->whereIn('status', ['confirmed', 'partially_paid'])->count(),
+            'paid'          => $this->fyQuery(SalesInvoice::class, $tenantId, $companyId)->where('status', 'paid')->count(),
+            'total_revenue' => $this->fyQuery(SalesInvoice::class, $tenantId, $companyId)->whereIn('status', ['confirmed','partially_paid','paid'])->sum('paid_amount'),
         ];
 
         return view('warehouse.sales-invoices.index', compact('invoices', 'customers', 'stats'));

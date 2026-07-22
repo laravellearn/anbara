@@ -174,6 +174,8 @@
         </div>
     </div>
 </div>
+{{-- پیوست‌ها --}}
+@include('components.attachments-panel', ['model' => $doc, 'modelType' => 'WarehouseDocument'])
 @endsection
 
 @push('scripts')

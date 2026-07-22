@@ -259,4 +259,6 @@
     </div>
 </div>
 @endif
+{{-- پیوست‌ها --}}
+@include('components.attachments-panel', ['model' => $po, 'modelType' => 'PurchaseOrder'])
 @endsection

@@ -2,17 +2,13 @@
 
 namespace App\Models;
 
-use App\Concerns\AutoFillTenantAndCompany;
-use App\Concerns\BelongsToCompany;
-use App\Concerns\BelongsToTenant;
-use App\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WarehouseDocument extends Model
 {
-    use HasFactory, SoftDeletes, BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, LogsActivity;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'tenant_id', 'company_id',
@@ -153,6 +149,11 @@ class WarehouseDocument extends Model
     }
 
     // ─── Relations ────────────────────────────────────────────────────────────
+    public function attachments()
+    {
+        return $this->morphMany(Attachment::class, 'attachable')->orderByDesc('created_at');
+    }
+
     public function items()
     {
         return $this->hasMany(WarehouseDocumentItem::class)->orderBy('sort_order');

@@ -47,21 +47,31 @@
 </div>
 
 <div class="page">
+    @php
+        $tenantId  = $doc->tenant_id;
+        $companyId = $doc->company_id;
+        $cName    = \App\Models\Setting::where('tenant_id',$tenantId)->where('company_id',$companyId)->where('group','company')->where('key','company_name')->value('value')    ?? config('app.name','سیستم انبار');
+        $cAddress = \App\Models\Setting::where('tenant_id',$tenantId)->where('company_id',$companyId)->where('group','company')->where('key','company_address')->value('value') ?? '';
+        $cPhone   = \App\Models\Setting::where('tenant_id',$tenantId)->where('company_id',$companyId)->where('group','company')->where('key','company_phone')->value('value')   ?? '';
+        $cEmail   = \App\Models\Setting::where('tenant_id',$tenantId)->where('company_id',$companyId)->where('group','company')->where('key','company_email')->value('value')   ?? '';
+        $cTaxNo   = \App\Models\Setting::where('tenant_id',$tenantId)->where('company_id',$companyId)->where('group','company')->where('key','company_tax_no')->value('value')  ?? '';
+        $cFooter  = \App\Models\Setting::where('tenant_id',$tenantId)->where('company_id',$companyId)->where('group','company')->where('key','print_footer')->value('value')    ?? '';
+        $logoPath = \App\Models\Setting::where('tenant_id',$tenantId)->where('company_id',$companyId)->where('group','company')->where('key','company_logo')->value('value')    ?? null;
+        $logoUrl  = ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath))
+                    ? \Illuminate\Support\Facades\Storage::disk('public')->url($logoPath) : null;
+    @endphp
     <div class="header">
-        <div class="company-info">
-            @php
-                $tenantId   = app(\App\Services\TenantManager::class)->getTenantId();
-                $orgName    = \App\Models\TenantSetting::get($tenantId, 'org_name', config('app.name'));
-                $orgLogo    = \App\Models\TenantSetting::get($tenantId, 'org_logo', '');
-                $brandColor = \App\Models\TenantSetting::get($tenantId, 'org_brand_color', '#059669');
-                $orgPhone   = \App\Models\TenantSetting::get($tenantId, 'org_phone', '');
-            @endphp
-            @if($orgLogo)
-                <img src="{{ asset('storage/'.$orgLogo) }}" style="max-height:55px;max-width:140px;margin-bottom:6px;display:block" alt="{{ $orgName }}">
+        <div class="company-info" style="display:flex;align-items:center;gap:12px">
+            @if($logoUrl)
+            <img src="{{ $logoUrl }}" alt="لوگو" style="max-height:60px;max-width:120px;object-fit:contain">
             @endif
-            <h1 style="color:{{ $brandColor }}">{{ $orgName }}</h1>
-            @if($orgPhone)<p style="font-size:10px;color:#555">📞 {{ $orgPhone }}</p>@endif
-            <p>{{ $doc->type_label ?? $doc->type }}</p>
+            <div>
+                <h1>{{ $cName }}</h1>
+                @if($cAddress)<p>{{ $cAddress }}</p>@endif
+                @if($cPhone || $cEmail)<p>@if($cPhone)تلفن: {{ $cPhone }}@endif @if($cEmail) | {{ $cEmail }}@endif</p>@endif
+                @if($cTaxNo)<p>شناسه مالیاتی: {{ $cTaxNo }}</p>@endif
+                <p>{{ $doc->type_label ?? $doc->type }}</p>
+            </div>
         </div>
         <div style="text-align:left">
             <div style="font-size:10px;color:#888">شماره سند</div>
@@ -142,7 +152,7 @@
 
     <div class="footer">
         <span>تاریخ چاپ: {{ now()->format('Y/m/d H:i') }}</span>
-        <span>{{ $doc->document_number }} | {{ config('app.name') }}</span>
+        <span>{{ $cFooter ?: ($doc->document_number . ' | ' . $cName) }}</span>
     </div>
 </div>
 </body>

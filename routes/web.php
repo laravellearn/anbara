@@ -11,7 +11,6 @@ use App\Http\Controllers\superAdmin\{
     SuperAdminRoleController,
     ToolController,
     SuperUserController,
-    SuperSettingsController,
     ImpersonateController
 };
 
@@ -48,11 +47,12 @@ use App\Http\Controllers\Warehouse\{
     WarehouseDocumentController,
     ReportController,
     PurchaseOrderController,
-    PurchaseRequestController,
-    PurchaseInvoiceController,
-    ItemRequestController,
-    SettingsController,
-    FixedAssetController,
+    ApprovalInboxController,
+    AttachmentController,
+    ProductImportController,
+    PriceHistoryController,
+    CompanySettingsController,
+    DashboardController,
 };
 
 
@@ -72,50 +72,29 @@ Route::prefix('super-admin')->name('super-admin.')->middleware(['auth', 'superad
     // چک Super Admin در یک Middleware اختصاصی (یا با استفاده از Controller)
     Route::get('/', [SuperDashboardController::class, 'index'])->name('dashboard');
 
-    // ─── سازمان‌ها ─────────────────────────────────────────────────────────
-    Route::resource('tenants', SuperTenantController::class);
-    Route::post('tenants/{tenant}/toggle-status', [SuperTenantController::class, 'toggleStatus'])->name('tenants.toggle-status');
-    Route::post('tenants/{tenant}/assign-plan',   [SuperTenantController::class, 'assignPlan'])->name('tenants.assign-plan');
+    // مدیریت Tenantها
+    Route::resource('tenants', SuperTenantController::class)->except(['show']);
+    Route::resource('users', SuperUserController::class)->except(['show']);
 
-    // ─── کاربران ───────────────────────────────────────────────────────────
-    Route::resource('users', SuperUserController::class);
-    Route::post('users/{user}/toggle-status', [SuperUserController::class, 'toggleStatus'])->name('users.toggle-status');
-
-    // ─── پلن‌ها ────────────────────────────────────────────────────────────
+    // مدیریت پلن‌ها
     Route::resource('plans', SuperPlanController::class)->except(['show']);
-    Route::post('plans/{plan}/toggle-status', [SuperPlanController::class, 'toggleStatus'])->name('plans.toggle-status');
 
-    // ─── اشتراک‌ها ─────────────────────────────────────────────────────────
-    Route::get('subscriptions',                           [SuperSubscriptionController::class, 'index'])->name('subscriptions.index');
-    Route::get('subscriptions/create',                    [SuperSubscriptionController::class, 'create'])->name('subscriptions.create');
-    Route::post('subscriptions',                          [SuperSubscriptionController::class, 'store'])->name('subscriptions.store');
-    Route::post('subscriptions/{subscription}/cancel',    [SuperSubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
-    Route::post('subscriptions/{subscription}/renew',     [SuperSubscriptionController::class, 'renew'])->name('subscriptions.renew');
-
-    Route::get('/payments',  fn() => view('super-admin.placeholder'))->name('payments.index');
-    Route::get('/licenses',  fn() => view('super-admin.placeholder'))->name('licenses.index');
-
-    // ─── لاگ‌های سیستمی ────────────────────────────────────────────────────
+    // مدیریت اشتراک‌ها
+    Route::get('subscriptions', [SuperSubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::post('subscriptions/{subscription}/cancel', [SuperSubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+    Route::post('subscriptions/{subscription}/renew', [SuperSubscriptionController::class, 'renew'])->name('subscriptions.renew');
+    Route::get('/payments', fn() => view('super-admin.placeholder'))->name('payments.index');
+    Route::get('/licenses', fn() => view('super-admin.placeholder'))->name('licenses.index');
     Route::get('activity-logs', [SuperActivityLogController::class, 'index'])->name('activity-logs.index');
-
-    // ─── نقش‌ها ────────────────────────────────────────────────────────────
     Route::resource('roles', SuperAdminRoleController::class)->except('show');
-
-    Route::get('/tickets',       fn() => view('super-admin.placeholder'))->name('tickets.index');
+    Route::get('/tickets', fn() => view('super-admin.placeholder'))->name('tickets.index');
     Route::get('/notifications', fn() => view('super-admin.placeholder'))->name('notifications.index');
-
-    // ─── تنظیمات ──────────────────────────────────────────────────────────
-    Route::get('/settings',                      [SuperSettingsController::class, 'index'])->name('settings.index');
-    Route::post('/settings/clear-cache',         [SuperSettingsController::class, 'clearCache'])->name('settings.clear-cache');
-    Route::post('/settings/sync-permissions',    [SuperSettingsController::class, 'syncPermissions'])->name('settings.sync-permissions');
-
-    // ─── ابزارها (backward-compat) ─────────────────────────────────────────
+    Route::get('/settings', fn() => view('super-admin.placeholder'))->name('settings.index');
     Route::post('/tools/sync-permissions', [ToolController::class, 'syncPermissions'])->name('tools.sync-permissions');
-    Route::post('/tools/clear-cache',      [ToolController::class, 'clearCache'])->name('tools.clear-cache');
+    Route::post('/tools/clear-cache', [ToolController::class, 'clearCache'])->name('tools.clear-cache');
 
-    // ─── جعل هویت ─────────────────────────────────────────────────────────
-    Route::post('/impersonate',    [ImpersonateController::class, 'store'])->name('impersonate.store');
-    Route::delete('/impersonate',  [ImpersonateController::class, 'destroy'])->name('impersonate.destroy');
+    Route::post('/impersonate', [ImpersonateController::class, 'store'])->name('impersonate.store');
+    Route::delete('/impersonate', [ImpersonateController::class, 'destroy'])->name('impersonate.destroy');
 });
 
 //Authentication-----------------
@@ -157,7 +136,6 @@ Route::middleware(['guest', 'throttle:7,1'])->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('warehouse.dashboard');
-    Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
@@ -246,30 +224,12 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
     Route::get('documents/{document}/print', [WarehouseDocumentController::class, 'print'])->name('documents.print');
 
     // ─── گزارشات انبار ───────────────────────────────────────────────────────
-    // ─── دارایی ثابت ─────────────────────────────────────────────────────────
-    Route::prefix('fixed-assets')->name('fixed-assets.')->group(function () {
-        Route::get('/',                              [FixedAssetController::class, 'index'])->name('index');
-        Route::get('/create',                        [FixedAssetController::class, 'create'])->name('create');
-        Route::post('/',                             [FixedAssetController::class, 'store'])->name('store');
-        Route::get('/{fixedAsset}',                  [FixedAssetController::class, 'show'])->name('show');
-        Route::get('/{fixedAsset}/edit',             [FixedAssetController::class, 'edit'])->name('edit');
-        Route::put('/{fixedAsset}',                  [FixedAssetController::class, 'update'])->name('update');
-        Route::delete('/{fixedAsset}',               [FixedAssetController::class, 'destroy'])->name('destroy');
-        Route::post('/{fixedAsset}/assign',          [FixedAssetController::class, 'assign'])->name('assign');
-        Route::post('/{fixedAsset}/return',          [FixedAssetController::class, 'returnAsset'])->name('return');
-        Route::post('/{fixedAsset}/maintenance',     [FixedAssetController::class, 'addMaintenance'])->name('maintenance');
-        Route::post('/{fixedAsset}/scrap',           [FixedAssetController::class, 'scrap'])->name('scrap');
-    });
-
     Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('inventory',              [ReportController::class, 'inventory'])->name('inventory');
-        Route::get('inventory/pdf',          [ReportController::class, 'inventoryPdf'])->name('inventory.pdf');
-        Route::get('ledger',                 [ReportController::class, 'ledger'])->name('ledger');
-        Route::get('in-out-summary',         [ReportController::class, 'inOutSummary'])->name('in-out-summary');
-        Route::get('below-minimum',          [ReportController::class, 'belowMinimum'])->name('below-minimum');
-        Route::get('stock-value',            [ReportController::class, 'stockValue'])->name('stock-value');
-        Route::get('purchase-summary',       [ReportController::class, 'purchaseSummary'])->name('purchase-summary');
-        Route::get('supplier-performance',   [ReportController::class, 'supplierPerformance'])->name('supplier-performance');
+        Route::get('inventory',           [ReportController::class, 'inventory'])->name('inventory');
+        Route::get('ledger',              [ReportController::class, 'ledger'])->name('ledger');
+        Route::get('in-out-summary',      [ReportController::class, 'inOutSummary'])->name('in-out-summary');
+        Route::get('below-minimum',       [ReportController::class, 'belowMinimum'])->name('below-minimum');
+        Route::get('purchase-orders-export', [ReportController::class, 'purchaseOrdersExport'])->name('purchase-orders-export');
     });
 
     // ─── اسناد انبار ────────────────────────────────────────────────────────────
@@ -279,45 +239,38 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
     Route::post('documents/{document}/reject',  [WarehouseDocumentController::class, 'reject'])->name('documents.reject');
     Route::post('documents/{document}/cancel',  [WarehouseDocumentController::class, 'cancel'])->name('documents.cancel');
 
+    // ─── کارتابل تأیید ───────────────────────────────────────────────────────
+    Route::get('approval-inbox', [ApprovalInboxController::class, 'index'])->name('approval-inbox.index');
+    Route::post('approval-inbox/documents/{document}/approve', [ApprovalInboxController::class, 'approveDocument'])->name('approval-inbox.approve-document');
+    Route::post('approval-inbox/documents/{document}/reject',  [ApprovalInboxController::class, 'rejectDocument'])->name('approval-inbox.reject-document');
+    Route::post('approval-inbox/purchase-orders/{purchaseOrder}/approve', [ApprovalInboxController::class, 'approvePo'])->name('approval-inbox.approve-po');
+    Route::post('approval-inbox/purchase-orders/{purchaseOrder}/reject',  [ApprovalInboxController::class, 'rejectPo'])->name('approval-inbox.reject-po');
+
+    // ─── پیوست‌ها ─────────────────────────────────────────────────────────────
+    Route::post('attachments',              [AttachmentController::class, 'store'])->name('attachments.store');
+    Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
+    Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
+
+    // ─── ایمپورت کالا ────────────────────────────────────────────────────────
+    Route::get('products/import/form',     [ProductImportController::class, 'form'])->name('products.import.form');
+    Route::post('products/import',         [ProductImportController::class, 'import'])->name('products.import');
+    Route::get('products/import/template', [ProductImportController::class, 'template'])->name('products.import.template');
+
+    // ─── تاریخچه قیمت ────────────────────────────────────────────────────────
+    Route::get('price-history',                    [PriceHistoryController::class, 'index'])->name('price-history.index');
+    Route::post('price-history',                   [PriceHistoryController::class, 'store'])->name('price-history.store');
+    Route::delete('price-history/{priceHistory}',  [PriceHistoryController::class, 'destroy'])->name('price-history.destroy');
+    Route::get('price-history/last-price',         [PriceHistoryController::class, 'lastPrice'])->name('price-history.last-price');
+
+    // ─── تنظیمات شرکت ────────────────────────────────────────────────────────
+    Route::get('settings/company',  [CompanySettingsController::class, 'index'])->name('settings.company.index');
+    Route::put('settings/company',  [CompanySettingsController::class, 'update'])->name('settings.company.update');
+
     // ─── موجودی انبار (لایو) ──────────────────────────────────────────────────
     Route::get('inventory',                        [InventoryController::class, 'index'])->name('inventory.index');
     Route::get('inventory/below-minimum',          [InventoryController::class, 'belowMinimum'])->name('inventory.below-minimum');
     Route::get('inventory/products/{product}',     [InventoryController::class, 'productStock'])->name('inventory.product-stock');
     Route::get('inventory/ledger/{product}',       [InventoryController::class, 'ledger'])->name('inventory.ledger');
-
-    // ─── درخواست خرید (Purchase Request) ────────────────────────────────────
-    Route::resource('purchase-requests', PurchaseRequestController::class);
-    Route::post('purchase-requests/{purchaseRequest}/submit',  [PurchaseRequestController::class, 'submit'])->name('purchase-requests.submit');
-    Route::post('purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
-    Route::post('purchase-requests/{purchaseRequest}/reject',  [PurchaseRequestController::class, 'reject'])->name('purchase-requests.reject');
-    Route::post('purchase-requests/{purchaseRequest}/convert', [PurchaseRequestController::class, 'convertToPo'])->name('purchase-requests.convert');
-
-    // ─── فاکتور خرید (Purchase Invoice) ─────────────────────────────────────
-    Route::resource('purchase-invoices', PurchaseInvoiceController::class);
-    Route::post('purchase-invoices/{purchaseInvoice}/register',  [PurchaseInvoiceController::class, 'register'])->name('purchase-invoices.register');
-    Route::post('purchase-invoices/{purchaseInvoice}/mark-paid', [PurchaseInvoiceController::class, 'markPaid'])->name('purchase-invoices.mark-paid');
-    Route::post('purchase-invoices/{purchaseInvoice}/cancel',    [PurchaseInvoiceController::class, 'cancel'])->name('purchase-invoices.cancel');
-
-    // ─── درخواست کالا از انبار (Item Request) ────────────────────────────────
-    Route::resource('item-requests', ItemRequestController::class);
-    Route::post('item-requests/{itemRequest}/submit',  [ItemRequestController::class, 'submit'])->name('item-requests.submit');
-    Route::post('item-requests/{itemRequest}/approve', [ItemRequestController::class, 'approve'])->name('item-requests.approve');
-    Route::post('item-requests/{itemRequest}/reject',  [ItemRequestController::class, 'reject'])->name('item-requests.reject');
-    Route::post('item-requests/{itemRequest}/issue',   [ItemRequestController::class, 'issueDocument'])->name('item-requests.issue');
-
-    // ─── تنظیمات سیستم (Settings) ────────────────────────────────────────────
-    Route::prefix('settings')->name('settings.')->group(function () {
-        Route::get('organization',       [SettingsController::class, 'organization'])->name('organization');
-        Route::put('organization',       [SettingsController::class, 'updateOrganization'])->name('organization.update');
-        Route::get('warehouse',          [SettingsController::class, 'warehouse'])->name('warehouse');
-        Route::put('warehouse',          [SettingsController::class, 'updateWarehouse'])->name('warehouse.update');
-        Route::get('workflow',           [SettingsController::class, 'workflow'])->name('workflow');
-        Route::put('workflow',           [SettingsController::class, 'updateWorkflow'])->name('workflow.update');
-        Route::get('numbering',          [SettingsController::class, 'numbering'])->name('numbering');
-        Route::put('numbering',          [SettingsController::class, 'updateNumbering'])->name('numbering.update');
-        Route::get('notifications',      [SettingsController::class, 'notifications'])->name('notifications');
-        Route::put('notifications',      [SettingsController::class, 'updateNotifications'])->name('notifications.update');
-    });
 });
 
 

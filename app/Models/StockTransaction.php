@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\AutoFillTenantAndCompany;
 use App\Concerns\BelongsToCompany;
 use App\Concerns\BelongsToTenant;
+use App\Concerns\LogsActivity;
 use App\Enums\InventoryTransactionStatus;
 use App\Enums\InventoryTransactionType;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StockTransaction extends Model
 {
-    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes;
+    use BelongsToTenant, BelongsToCompany, AutoFillTenantAndCompany, SoftDeletes, LogsActivity;
 
     protected $fillable = [
         'tenant_id',

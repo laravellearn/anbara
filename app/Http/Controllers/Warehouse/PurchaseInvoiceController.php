@@ -47,10 +47,10 @@ class PurchaseInvoiceController extends BaseController
         $suppliers = Contact::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         $stats = [
-            'total'      => $this->fyQuery(PurchaseInvoice::class, $tenantId, $companyId)->count(),
-            'draft'      => $this->fyQuery(PurchaseInvoice::class, $tenantId, $companyId)->where('status', 'draft')->count(),
-            'registered' => $this->fyQuery(PurchaseInvoice::class, $tenantId, $companyId)->where('status', 'registered')->count(),
-            'unpaid'     => $this->fyQuery(PurchaseInvoice::class, $tenantId, $companyId)->whereNotIn('status', ['paid', 'cancelled'])->count(),
+            'total'      => PurchaseInvoice::forTenant($tenantId, $companyId)->count(),
+            'draft'      => PurchaseInvoice::forTenant($tenantId, $companyId)->where('status', 'draft')->count(),
+            'registered' => PurchaseInvoice::forTenant($tenantId, $companyId)->where('status', 'registered')->count(),
+            'unpaid'     => PurchaseInvoice::forTenant($tenantId, $companyId)->whereNotIn('status', ['paid', 'cancelled'])->count(),
         ];
 
         return view('warehouse.purchase-invoices.index', compact('invoices', 'suppliers', 'stats'));
@@ -209,7 +209,32 @@ class PurchaseInvoiceController extends BaseController
             'registered_by' => auth()->id(),
             'registered_at' => now(),
         ]);
-        return back()->with('success', 'فاکتور ثبت رسمی شد.');
+        // ارسال فاکتور به ایمیل تأمین‌کننده
+        try {
+            $supplier = $purchaseInvoice->supplier;
+            if ($supplier && $supplier->email) {
+                \Illuminate\Support\Facades\Mail::to($supplier->email)
+                    ->send(new \App\Mail\PurchaseInvoiceMail($purchaseInvoice));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('خطا در ارسال ایمیل فاکتور: ' . $e->getMessage());
+        }
+        // ارسال webhook outbound
+        try {
+            app(\App\Services\WebhookDispatcher::class)->dispatch(
+                'invoice.registered',
+                [
+                    'invoice_id'     => $purchaseInvoice->id,
+                    'invoice_number' => $purchaseInvoice->invoice_number,
+                    'supplier'       => $purchaseInvoice->supplier?->name,
+                    'status'         => 'registered',
+                ],
+                $purchaseInvoice->tenant_id
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('خطا در ارسال webhook فاکتور: ' . $e->getMessage());
+        }
+        return back()->with('success', 'فاکتور ثبت رسمی شد و به ایمیل تأمین‌کننده ارسال گردید.');
     }
 
     public function markPaid(Request $request, PurchaseInvoice $purchaseInvoice)

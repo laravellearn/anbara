@@ -37,8 +37,21 @@ class DashboardController extends BaseController
         // ─── کالاهای زیر حداقل (تا ۵ مورد) ────────────────────────────────
         $belowMin = $this->belowMinimumItems($tenantId, $companyId, 5);
 
+        // ─── نمودار ABC انبار ────────────────────────────────────────────────
+        $abcChart = $this->abcAnalysis($tenantId, $companyId);
+
+        // ─── محصولات پرفروش (فروش ماه جاری) ────────────────────────────────
+        $topSelling = $this->topSellingProducts($tenantId, $companyId);
+
+        // ─── روند موجودی ماهانه (۶ ماه) ────────────────────────────────────
+        $stockTrend = $this->monthlyStockTrend($tenantId, $companyId);
+
+        // ─── آمار فاکتورها و پرداخت‌ها ──────────────────────────────────────
+        $invoiceKpi = $this->invoiceKpi($tenantId, $companyId);
+
         return view('warehouse.dashboard', compact(
-            'kpi', 'monthlyChart', 'topProducts', 'recentDocs', 'recentPos', 'belowMin'
+            'kpi', 'monthlyChart', 'topProducts', 'recentDocs', 'recentPos', 'belowMin',
+            'abcChart', 'topSelling', 'stockTrend', 'invoiceKpi'
         ));
     }
 
@@ -149,3 +162,4 @@ class DashboardController extends BaseController
         return $this->belowMinimumItems($tenantId, $companyId, 9999)->count();
     }
 }
+

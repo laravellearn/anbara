@@ -283,6 +283,10 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
         Route::get('stock-value',            [ReportController::class, 'stockValue'])->name('stock-value');
         Route::get('purchase-summary',       [ReportController::class, 'purchaseSummary'])->name('purchase-summary');
         Route::get('supplier-performance',   [ReportController::class, 'supplierPerformance'])->name('supplier-performance');
+        // ─── فاز ۵: گزارش‌های پیشرفته ─────────────────────────────────────
+        Route::get('stock-card',             [ReportController::class, 'stockCard'])->name('stock-card');
+        Route::get('profit-loss',            [ReportController::class, 'profitLoss'])->name('profit-loss');
+        Route::get('inventory-valuation',    [ReportController::class, 'inventoryValuation'])->name('inventory-valuation');
     });
 
     // ─── اسناد انبار ────────────────────────────────────────────────────────────
@@ -441,5 +445,59 @@ Route::prefix('warehouse')->name('warehouse.')->middleware(['auth', 'require.ten
         Route::post('/',             [\App\Http\Controllers\Core\TicketController::class, 'store'])->name('store');
         Route::get('/{ticket}',      [\App\Http\Controllers\Core\TicketController::class, 'show'])->name('show');
         Route::post('/{ticket}/reply',[\App\Http\Controllers\Core\TicketController::class, 'reply'])->name('reply');
+    });
+
+    // ─── فاز ۶: انتقال بین انبارها ───────────────────────────────────────────
+    Route::prefix('transfers')->name('transfers.')->group(function () {
+        Route::get('/',                          [\App\Http\Controllers\Warehouse\TransferOrderController::class, 'index'])->name('index');
+        Route::get('/create',                    [\App\Http\Controllers\Warehouse\TransferOrderController::class, 'create'])->name('create');
+        Route::post('/',                         [\App\Http\Controllers\Warehouse\TransferOrderController::class, 'store'])->name('store');
+        Route::get('/{transfer}',                [\App\Http\Controllers\Warehouse\TransferOrderController::class, 'show'])->name('show');
+        Route::post('/{transfer}/confirm',       [\App\Http\Controllers\Warehouse\TransferOrderController::class, 'confirm'])->name('confirm');
+        Route::post('/{transfer}/transit',       [\App\Http\Controllers\Warehouse\TransferOrderController::class, 'transit'])->name('transit');
+        Route::post('/{transfer}/complete',      [\App\Http\Controllers\Warehouse\TransferOrderController::class, 'complete'])->name('complete');
+        Route::post('/{transfer}/cancel',        [\App\Http\Controllers\Warehouse\TransferOrderController::class, 'cancel'])->name('cancel');
+    });
+
+    // ─── فاز ۶: انبارگردانی ───────────────────────────────────────────────────
+    Route::prefix('physical-inventory')->name('physical-inventory.')->group(function () {
+        Route::get('/',                              [\App\Http\Controllers\Warehouse\PhysicalInventoryController::class, 'index'])->name('index');
+        Route::get('/create',                        [\App\Http\Controllers\Warehouse\PhysicalInventoryController::class, 'create'])->name('create');
+        Route::post('/',                             [\App\Http\Controllers\Warehouse\PhysicalInventoryController::class, 'store'])->name('store');
+        Route::get('/{physicalInventory}',           [\App\Http\Controllers\Warehouse\PhysicalInventoryController::class, 'show'])->name('show');
+        Route::post('/{physicalInventory}/counts',   [\App\Http\Controllers\Warehouse\PhysicalInventoryController::class, 'saveCounts'])->name('save-counts');
+        Route::post('/{physicalInventory}/adjust',   [\App\Http\Controllers\Warehouse\PhysicalInventoryController::class, 'adjust'])->name('adjust');
+    });
+
+    // ─── فاز ۶: برنامه‌ریزی خرید (Reorder) ──────────────────────────────────
+    Route::prefix('reorder')->name('reorder.')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\Warehouse\ReorderController::class, 'index'])->name('index');
+        Route::post('/',                   [\App\Http\Controllers\Warehouse\ReorderController::class, 'store'])->name('store');
+        Route::put('/{reorderRule}',       [\App\Http\Controllers\Warehouse\ReorderController::class, 'update'])->name('update');
+        Route::delete('/{reorderRule}',    [\App\Http\Controllers\Warehouse\ReorderController::class, 'destroy'])->name('destroy');
+        Route::get('/form-data',           [\App\Http\Controllers\Warehouse\ReorderController::class, 'formData'])->name('form-data');
+    });
+
+    // ─── فاز ۶: قراردادهای تأمین‌کنندگان ────────────────────────────────────
+    Route::prefix('supplier-contracts')->name('supplier-contracts.')->group(function () {
+        Route::get('/',                          [\App\Http\Controllers\Warehouse\SupplierContractController::class, 'index'])->name('index');
+        Route::get('/create',                    [\App\Http\Controllers\Warehouse\SupplierContractController::class, 'create'])->name('create');
+        Route::post('/',                         [\App\Http\Controllers\Warehouse\SupplierContractController::class, 'store'])->name('store');
+        Route::get('/{supplierContract}',        [\App\Http\Controllers\Warehouse\SupplierContractController::class, 'show'])->name('show');
+        Route::get('/{supplierContract}/edit',   [\App\Http\Controllers\Warehouse\SupplierContractController::class, 'edit'])->name('edit');
+        Route::put('/{supplierContract}',        [\App\Http\Controllers\Warehouse\SupplierContractController::class, 'update'])->name('update');
+        Route::post('/{supplierContract}/terminate', [\App\Http\Controllers\Warehouse\SupplierContractController::class, 'terminate'])->name('terminate');
+    });
+
+    // ─── فاز ۶: کاتالوگ قیمت (Price List) ───────────────────────────────────
+    Route::prefix('price-lists')->name('price-lists.')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\Warehouse\PriceListController::class, 'index'])->name('index');
+        Route::get('/create',              [\App\Http\Controllers\Warehouse\PriceListController::class, 'create'])->name('create');
+        Route::post('/',                   [\App\Http\Controllers\Warehouse\PriceListController::class, 'store'])->name('store');
+        Route::get('/{priceList}',         [\App\Http\Controllers\Warehouse\PriceListController::class, 'show'])->name('show');
+        Route::get('/{priceList}/edit',    [\App\Http\Controllers\Warehouse\PriceListController::class, 'edit'])->name('edit');
+        Route::put('/{priceList}',         [\App\Http\Controllers\Warehouse\PriceListController::class, 'update'])->name('update');
+        Route::delete('/{priceList}',      [\App\Http\Controllers\Warehouse\PriceListController::class, 'destroy'])->name('destroy');
+        Route::get('/product-price',       [\App\Http\Controllers\Warehouse\PriceListController::class, 'productPrice'])->name('product-price');
     });
 });

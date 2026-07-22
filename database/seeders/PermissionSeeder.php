@@ -137,10 +137,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'warehouse-documents.approve', 'title' => 'تأیید / رد / لغو سند انبار', 'group' => 'اسناد انبار'],
 
             // ==================== ۱۵. گزارشات انبار ====================
-            ['name' => 'reports.inventory', 'title' => 'گزارش موجودی لحظه‌ای',    'group' => 'گزارشات انبار'],
-            ['name' => 'reports.ledger',    'title' => 'کارتکس کالا',             'group' => 'گزارشات انبار'],
-            ['name' => 'reports.summary',   'title' => 'خلاصه ورود و خروج',       'group' => 'گزارشات انبار'],
-
+            ['name' => 'reports.inventory', 'title' => 'گزارش موجودی لحظه‌ای',            'group' => 'گزارشات انبار'],
+            ['name' => 'reports.ledger',    'title' => 'کارتکس کالا',                     'group' => 'گزارشات انبار'],
+            ['name' => 'reports.summary',   'title' => 'خلاصه ورود و خروج',               'group' => 'گزارشات انبار'],
+            ['name' => 'reports.stock-card',          'title' => 'کارت موجودی پیشرفته',    'group' => 'گزارشات انبار'],
+            ['name' => 'reports.profit-loss',         'title' => 'گزارش سود و زیان فروش',  'group' => 'گزارشات انبار'],
+            ['name' => 'reports.inventory-valuation', 'title' => 'ارزیابی موجودی انبار',   'group' => 'گزارشات انبار'],
             // ==================== ۱۶. سفارش خرید ====================
             ['name' => 'purchase-orders.view',    'title' => 'مشاهده سفارشات خرید',   'group' => 'سفارش خرید'],
             ['name' => 'purchase-orders.create',  'title' => 'ثبت سفارش خرید جدید',   'group' => 'سفارش خرید'],
@@ -188,7 +190,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'reports.purchase',          'title' => 'گزارش خلاصه خرید',           'group' => 'گزارشات خرید'],
             ['name' => 'reports.supplier',          'title' => 'گزارش عملکرد تامین‌کنندگان',  'group' => 'گزارشات خرید'],
             ['name' => 'reports.stock-value',       'title' => 'گزارش ارزش موجودی',          'group' => 'گزارشات انبار'],
-
             // ==================== ۲۲. دارایی ثابت ====================
             ['name' => 'fixed-assets.view',     'title' => 'مشاهده دارایی‌های ثابت',         'group' => 'دارایی ثابت'],
             ['name' => 'fixed-assets.create',   'title' => 'ثبت دارایی ثابت جدید',           'group' => 'دارایی ثابت'],
@@ -273,6 +274,30 @@ class PermissionSeeder extends Seeder
             // ==================== ۳۲. وارد کردن داده ====================
             ['name' => 'import.products',        'title' => 'وارد کردن کالاها از CSV',         'group' => 'ورود داده (Import)'],
             ['name' => 'import.contacts',        'title' => 'وارد کردن مخاطبان از CSV',        'group' => 'ورود داده (Import)'],
+
+            // ==================== ۳۳. انتقال بین انبارها ====================
+            ['name' => 'transfers.view',         'title' => 'مشاهده اسناد انتقال',              'group' => 'انتقال بین انبارها'],
+            ['name' => 'transfers.create',       'title' => 'ثبت سند انتقال جدید',              'group' => 'انتقال بین انبارها'],
+            ['name' => 'transfers.confirm',      'title' => 'تأیید و تکمیل سند انتقال',         'group' => 'انتقال بین انبارها'],
+            ['name' => 'transfers.cancel',       'title' => 'لغو سند انتقال',                   'group' => 'انتقال بین انبارها'],
+
+            // ==================== ۳۴. انبارگردانی ====================
+            ['name' => 'physical-inventory.view',   'title' => 'مشاهده انبارگردانی',            'group' => 'انبارگردانی'],
+            ['name' => 'physical-inventory.create', 'title' => 'ایجاد و ثبت شمارش انبارگردانی', 'group' => 'انبارگردانی'],
+            ['name' => 'physical-inventory.adjust', 'title' => 'صدور سند تعدیل موجودی',         'group' => 'انبارگردانی'],
+
+            // ==================== ۳۵. برنامه‌ریزی خرید (Reorder) ====================
+            ['name' => 'reorder.view',           'title' => 'مشاهده قوانین نقطه سفارش',         'group' => 'برنامه‌ریزی خرید'],
+            ['name' => 'reorder.manage',         'title' => 'مدیریت قوانین نقطه سفارش',         'group' => 'برنامه‌ریزی خرید'],
+
+            // ==================== ۳۶. قراردادهای تأمین‌کنندگان ====================
+            ['name' => 'supplier-contracts.view',   'title' => 'مشاهده قراردادهای تأمین‌کنندگان', 'group' => 'قرارداد تأمین‌کننده'],
+            ['name' => 'supplier-contracts.create', 'title' => 'ثبت و ویرایش قرارداد',            'group' => 'قرارداد تأمین‌کننده'],
+
+            // ==================== ۳۷. کاتالوگ قیمت ====================
+            ['name' => 'price-lists.view',       'title' => 'مشاهده لیست‌های قیمت',             'group' => 'کاتالوگ قیمت'],
+            ['name' => 'price-lists.create',     'title' => 'ثبت و ویرایش لیست قیمت',           'group' => 'کاتالوگ قیمت'],
+            ['name' => 'price-lists.delete',     'title' => 'حذف لیست قیمت',                    'group' => 'کاتالوگ قیمت'],
         ];
 
 
